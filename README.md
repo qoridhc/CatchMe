@@ -1,6 +1,6 @@
 # captone4
 
-A new Flutter project.
+컴공 4학년 캡스톤디자인 
 
 ## Getting Started
 
@@ -16,3 +16,4 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 - capstone fisrt commit 참여입니다 - 황대규
+- capstone fisrt commit 참여입니다 - 이승환
