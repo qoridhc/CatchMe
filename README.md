@@ -17,3 +17,4 @@ samples, guidance on mobile development, and a full API reference.
 
 - capstone fisrt commit 참여입니다 - 황대규
 - capstone fisrt commit 참여입니다 - 이승환
+- capstone first commit 참여입니다 - 윤재민
