@@ -65,24 +65,84 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //화면 제작
+
     return Scaffold(
-      backgroundColor: Color(0xffFF6961),
+      backgroundColor: Color(0xffEEDDD6),
       body: SafeArea(
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '로그인',
-                style: TextStyle(color: Colors.white, fontSize: 30.0),
+
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                fit: BoxFit.contain,
+                image: AssetImage('asset/img/login_back.png'),
+              )),
+            ),
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    height: 300.0,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(50),
+                        topRight: Radius.circular(50),
+                      ),
+                      color: Color(0xffFF6961),
+                    ),
+
+                    child: Container(
+
+                      child: Column(
+
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                        children: [
+                          Text(
+
+                            "로그인",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 25.0,
+                            ),
+
+                          ),
+                          OutlinedButton(
+                            onPressed: buttonLoginPressed,
+                            child: Text(
+                              "Naver Login",
+                              style: TextStyle(
+                                color: Colors.black,
+                              ),
+                            ),
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(Colors.white),
+                            ),
+                          ),
+                          OutlinedButton(
+                            onPressed: buttonLoginPressed,
+                            child: Text(
+                              "회원 로그인",
+                              style: TextStyle(
+                                color: Colors.black,
+                              ),
+                            ),
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
               ),
-              ElevatedButton(
-                onPressed: buttonLoginPressed,
-                child: Text("Naver Login"),
-              ),
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
