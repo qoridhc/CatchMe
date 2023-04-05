@@ -70,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Color(0xffEEDDD6),
       body: SafeArea(
-
         child: Stack(
           children: [
             Container(
@@ -94,45 +93,59 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       color: Color(0xffFF6961),
                     ),
-
                     child: Container(
-
                       child: Column(
-
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
                         children: [
                           Text(
-
                             "로그인",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 25.0,
                             ),
-
                           ),
-                          OutlinedButton(
-                            onPressed: buttonLoginPressed,
-                            child: Text(
-                              "Naver Login",
-                              style: TextStyle(
-                                color: Colors.black,
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 2/3,
+                            child: OutlinedButton(
+                              onPressed: buttonLoginPressed,
+                              child: Text(
+                                "Naver Login",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(Colors.white),
+                              style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all(Colors.white),
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0),
+                                          side:
+                                              BorderSide(color: Colors.red)))),
                             ),
                           ),
-                          OutlinedButton(
-                            onPressed: buttonLoginPressed,
-                            child: Text(
-                              "회원 로그인",
-                              style: TextStyle(
-                                color: Colors.black,
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 2/3,
+                            child: OutlinedButton(
+                              onPressed: buttonLoginPressed,
+                              child: Text(
+                                "회원 로그인",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(Colors.white),
+                              style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all(Colors.white),
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0),
+                                          side:
+                                              BorderSide(color: Colors.red)))),
                             ),
                           ),
                         ],
