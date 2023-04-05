@@ -80,6 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
               )),
             ),
             Container(
+
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.none,
+                    image: AssetImage('asset/img/Main_logo.png'),
+                  )),
+            ),
+            Container(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
