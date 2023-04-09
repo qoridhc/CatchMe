@@ -1,6 +1,8 @@
 import 'package:captone4/color_scheme.dart';
 import 'package:captone4/swipe.dart';
 import 'package:captone4/theme.dart';
+import 'package:captone4/screen/my_page_screen.dart';
+import 'package:captone4/screen/root_tab.dart';
 import 'package:flutter/material.dart';
 
 void main() {
