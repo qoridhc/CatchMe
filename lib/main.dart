@@ -4,6 +4,7 @@ import 'package:captone4/theme.dart';
 import 'package:captone4/screen/my_page_screen.dart';
 import 'package:captone4/screen/root_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:captone4/screen/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
