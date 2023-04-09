@@ -8,4 +8,7 @@ import 'package:flutter/material.dart';
     return MediaQuery.of(context).size.width;
   }
 
+  double getAppBarHeight(BuildContext context){
+    return MediaQuery.of(context).padding.top;
+  }
 

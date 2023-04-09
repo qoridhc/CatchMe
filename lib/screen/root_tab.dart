@@ -3,6 +3,7 @@ import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:captone4/screen/favorite_list_screen.dart';
 import 'package:captone4/screen/main_page_screen.dart';
 import 'package:captone4/screen/my_page_screen.dart';
+import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
@@ -18,22 +19,23 @@ class RootTab extends StatefulWidget {
 
 class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   late TabController controller;
-  final autoSizeGroup = AutoSizeGroup();
+  int _bottomNavIndex = 0;
 
   @override
   void initState() {
     // TODO: implement initState
+    super.initState();
+
     controller = TabController(length: 4, vsync: this);
 
     controller.addListener(tabListener);
-    controller.animateTo(3);
-    super.initState();
   }
 
   @override
   void dispose() {
-    controller.removeListener(tabListener);
     // TODO: implement dispose
+
+    controller.removeListener(tabListener);
     super.dispose();
   }
 
@@ -51,9 +53,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     ImageIcon(AssetImage('assets/images/icons/my_page_icon.png')),
   ];
 
-  List<Icon> tmp = [
-
-  ];
+  List<Icon> tmp = [];
 
   List<String> iconText = [
     "Main",
@@ -62,37 +62,30 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     "My Page",
   ];
 
-  int _bottomNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: TabBarView(
-          physics: NeverScrollableScrollPhysics(),
-          controller: controller,
-          children: [
-            MainPageScreen(),
-            ChatRoomScreen(),
-            FavoriteListScreen(),
-            MyPageScreen(),
-          ],
-        ),
+    return DefaultLayout(
+      // backgroundColor: BACKGROUND_COLOR,
+      child : TabBarView(
+        physics: NeverScrollableScrollPhysics(),
+        controller: controller,
+        children: [
+          MainPageScreen(),
+          ChatRoomScreen(),
+          FavoriteListScreen(),
+          MyPageScreen(),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: PRIMARY_COLOR,
-        child: Icon(Icons.favorite_border_outlined),
-        onPressed: () {},
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: AnimatedBottomNavigationBar.builder(
         notchSmoothness: NotchSmoothness.softEdge,
         leftCornerRadius: 32,
         rightCornerRadius: 32,
         gapLocation: GapLocation.center,
         itemCount: iconList.length,
-        // splashSpeedInMilliseconds: 10,
-        // height: 65,
+        borderColor: Colors.grey,
+        borderWidth: 0.5,
+        // splashSpeedInMilliseconds: 20,
         tabBuilder: (int index, bool isActive) {
           // final color = isActive ? Colors.red : Colors.green;
           return Column(
@@ -120,10 +113,10 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
             ],
           );
         },
-        activeIndex: _bottomNavIndex,
         onTap: (int index) {
           controller.animateTo(index);
         },
+        activeIndex: _bottomNavIndex,
       ),
     );
   }

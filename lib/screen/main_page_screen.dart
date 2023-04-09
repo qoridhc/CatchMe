@@ -1,3 +1,4 @@
+import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 
 class MainPageScreen extends StatefulWidget {
@@ -10,8 +11,9 @@ class MainPageScreen extends StatefulWidget {
 class _MainPageScreenState extends State<MainPageScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
+    return DefaultLayout(
+      title: "Main",
+      child: Center(
         child: Text("Main Page Screen"),
       ),
     );

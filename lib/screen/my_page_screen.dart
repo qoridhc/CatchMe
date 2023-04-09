@@ -1,5 +1,6 @@
 import 'package:captone4/const/colors.dart';
 import 'package:captone4/utils/utils.dart';
+import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
@@ -13,13 +14,11 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: BACKGROUND_COLOR,
-      appBar: AppBar(
-        backgroundColor: PRIMARY_COLOR,
-        title: Text("Cath Me Default AppBar"),
-      ),
-      body: Center(
+    return DefaultLayout(
+      // backgroundColor: BACKGROUND_COLOR,
+      title: "My Page",
+      child: Padding(
+        padding: EdgeInsets.only(top: getAppBarHeight(context) * 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -109,6 +108,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
+              border: Border.all(),
             ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),

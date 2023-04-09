@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widget/default_layout.dart';
+
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
 
@@ -10,9 +12,10 @@ class ChatRoomScreen extends StatefulWidget {
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text("Chat Room Screen"),
+    return DefaultLayout(
+      title: "Message",
+      child: Center(
+        child: Text("Chat Page Screen"),
       ),
     );
   }

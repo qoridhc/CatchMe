@@ -1,5 +1,5 @@
 import 'package:captone4/color_scheme.dart';
-import 'package:captone4/swipe.dart';
+// import 'package:captone4/swipe.dart';
 import 'package:captone4/theme.dart';
 import 'package:captone4/screen/my_page_screen.dart';
 import 'package:captone4/screen/root_tab.dart';
@@ -15,31 +15,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    var appBar = AppBar();
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Catch Me',
       theme: lightThemeDataCustom,
-      home: Scaffold(
-        extendBodyBehindAppBar: true, // AppBar 뒤쪽에 화면 보일 수 있게 함.
-        appBar: AppBar(
-          title: const Text(
-            'Catch Me',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontFamily: 'Pacifico', fontSize: 40, color: Colors.white),
-          ),
-          shape: const ContinuousRectangleBorder(
-            borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(50),
-                bottomRight: Radius.circular(50)),
-          ),
-          elevation: 0,
-          // backgroundColor: Colors.transparent,
-        ),
-        body: const Text('Main Page'),
-      ),
+      home: RootTab(),
     );
   }
 }
