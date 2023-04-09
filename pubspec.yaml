@@ -38,6 +38,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   animated_bottom_navigation_bar: ^1.2.0
   auto_size_text: ^3.0.0
+  cloud_firestore: ^4.4.0
+  firebase_core: ^2.5.0
+  firebase_auth: ^4.2.6
+  firebase_storage: ^11.1.0
+  flutter_chat_bubble: ^2.0.2   #chat bubble을 위해 사용
+  image_picker: ^0.8.4+11
+  cached_network_image: ^3.2.3
 
 dev_dependencies:
   flutter_test:
