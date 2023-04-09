@@ -2,6 +2,8 @@ import 'package:captone4/screen/chatting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../widget/default_layout.dart';
+
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
 

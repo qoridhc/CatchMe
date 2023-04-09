@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widget/default_layout.dart';
+
 class FavoriteListScreen extends StatefulWidget {
   const FavoriteListScreen({Key? key}) : super(key: key);
 
@@ -10,9 +12,10 @@ class FavoriteListScreen extends StatefulWidget {
 class _FavoriteListScreenState extends State<FavoriteListScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text("Favorite List Screen"),
+    return DefaultLayout(
+      title: "Favorite",
+      child: Center(
+        child: Text("Favorite Page Screen"),
       ),
     );
   }
