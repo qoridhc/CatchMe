@@ -47,5 +47,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>fonts/NanumGothic-Regular.ttf</string>
+		<string>fonts/NanumGothic-Bold.ttf</string>
+		<string>fonts/NanumGothic-ExtraBold.ttf</string>
+	</array>
+
 </dict>
 </plist>
