@@ -40,6 +40,7 @@ dependencies:
   animated_bottom_navigation_bar: ^1.2.0
   auto_size_text: ^3.0.0
   percent_indicator: ^4.2.3
+  image_picker: ^0.8.7+1
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +89,10 @@ flutter:
         - asset: assets/fonts/Pacifico-Regular.ttf
           weight: 100
 
+    - family: BMJua
+      fonts:
+        - asset: assets/fonts/BMJUA_ttf.ttf
+          weight: 100
 
   #   - family: Trajan Pro
   #     fonts:
