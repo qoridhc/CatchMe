@@ -66,6 +66,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: BACKGROUND_COLOR,
       body: SafeArea(
         child: TabBarView(
           physics: NeverScrollableScrollPhysics(),
