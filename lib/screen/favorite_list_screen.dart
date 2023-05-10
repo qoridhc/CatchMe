@@ -74,25 +74,12 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
             )
           ),
           SizedBox(
-            height: _sw * 0.001,
+            height: _sw * 0.01,
           ),
           Container(
-            child: PageView(
-              scrollDirection: Axis.horizontal,
-              controller: pageController,
-              children: [
-                SizedBox.expand(
-                  child: Container(
-                    color: Colors.pink,
-                  ),
-                ),
-                SizedBox.expand(
-                  child: Container(
-                    color: Colors.yellow,
-                  ),
-                )
-              ],
-            ),
+            color: Colors.purple,
+            width: _sw * 0.9,
+            height: _sw * 1.7,
           )
         ],
       ),
