@@ -5,7 +5,6 @@ import 'package:flutter_naver_login/flutter_naver_login.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -19,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? refreshToken;
 
   LoginPlatform _loginPlatform = LoginPlatform.none;
+
 
   void signInWithNaver() async {
     try {
@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: BoxDecoration(
                   image: DecorationImage(
                 fit: BoxFit.contain,
-                image: AssetImage('asset/img/login_back.png'),
+                image: AssetImage('assets/images/login_back.png'),
               )),
             ),
             Container(
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: BoxDecoration(
                   image: DecorationImage(
                     fit: BoxFit.none,
-                    image: AssetImage('asset/img/Main_logo.png'),
+                    image: AssetImage('assets/images/Main_logo.png'),
                   )),
             ),
             Container(
