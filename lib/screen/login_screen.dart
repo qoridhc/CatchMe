@@ -1,3 +1,4 @@
+import 'package:captone4/screen/root_tab.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:captone4/login_platform.dart';
@@ -8,15 +9,16 @@ import 'dart:convert';
 
 class Token{
   final String accessToken;
-  final String type;
+  final int id;
 
   Token({required this.accessToken,
-  required this.type});
+  required this.id});
 
   factory Token.fromJson(Map<String, dynamic> json){
-    return Token(accessToken: json["accessToken"], type: json["type"]);
+    return Token(accessToken: json["accessToken"], id: json["id"]);
   }
 }
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -32,10 +34,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? name;
   String? refreshToken;
 
+  Token? token;
+
   LoginPlatform _loginPlatform = LoginPlatform.none;
 
   final idController = TextEditingController();
   final pwController = TextEditingController();
+
+
 
   void signInWithNaver() async {   //네이버 로그인 관리
     try {
@@ -236,31 +242,27 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<Token> buttonLoginPressed() async{
-    String userId = idController.text;
-    String password = pwController.text;
+  void loginPost(String userId,String password) async
+  {
     var url = "http://10.0.2.2:8080/api/v1/login";
-
-    print(userId);
-    print(password);
-
     try{
       Map data = {"userId": userId, "password" : password};
 
       var body = json.encode(data);
 
-      final response = await http.post(Uri.parse(url),headers: {"Content-Type": "application/json"}, body: body);
+      final response = await http.post(Uri.parse(url),headers:  <String, String>{"Content-Type": "application/json"}, body: body);
       if(response.statusCode == 200)
-        {
-          print('로그인 토큰 발행');
-          return Token.fromJson(json.decode(response.body));
+      {
+        print('로그인 토큰 발행');
+        token =  Token.fromJson(json.decode(response.body));
+        print(token);
+        isLogin = true;
 
-        }
+      }
       else{
         throw Exception('로그인 오류');
 
       }
-
     }
     catch(e){
       print(e);
@@ -269,8 +271,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
     }
   }
+ void buttonLoginPressed() //일반 로그인 실행 - 서버 요청 토큰 받아와 return token
+  {
+    String userId = idController.text;
+    String password = pwController.text;
 
-  Future<void> buttonNaverLoginPressed() async {   //로그인 눌렀을때 동작
+
+    print(userId);
+    print(password);
+
+    loginPost(userId,password);
+    if(isLogin == true)
+      {
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> const RootTab()));
+      }
+
+
+  }
+
+
+  Future<void> buttonNaverLoginPressed() async //로그인 눌렀을때 동작
+  {
     try {
       final NaverLoginResult res = await FlutterNaverLogin.logIn();
       setState(() {
@@ -282,7 +303,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Widget _loginButton(String path, VoidCallback onTap) {  //네이버 로그인 버튼
+  Widget _loginButton(String path, VoidCallback onTap) //네이버 로그인 버튼
+  {
     return ElevatedButton(
       onPressed: signInWithNaver,
       style: ButtonStyle(
