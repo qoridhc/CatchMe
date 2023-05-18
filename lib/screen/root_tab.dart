@@ -65,17 +65,19 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultLayout(
-      // backgroundColor: BACKGROUND_COLOR,
-      child : TabBarView(
-        physics: NeverScrollableScrollPhysics(),
-        controller: controller,
-        children: [
-          MainPageScreen(),
-          ChatRoomScreen(),
-          FavoriteListScreen(),
-          MyPageScreen(),
-        ],
+    return Scaffold(
+      backgroundColor: BACKGROUND_COLOR,
+      body: SafeArea(
+        child: TabBarView(
+          physics: NeverScrollableScrollPhysics(),
+          controller: controller,
+          children: [
+            MainPageScreen(),
+            ChatRoomScreen(),
+            FavoriteListScreen(),
+            MyPageScreen(),
+          ],
+        ),
       ),
       bottomNavigationBar: AnimatedBottomNavigationBar.builder(
         notchSmoothness: NotchSmoothness.softEdge,
