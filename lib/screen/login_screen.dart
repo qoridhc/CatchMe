@@ -6,18 +6,8 @@ import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart' show Client;
 import 'dart:convert';
+import 'package:captone4/Token.dart';
 
-class Token{
-  final String accessToken;
-  final int id;
-
-  Token({required this.accessToken,
-  required this.id});
-
-  factory Token.fromJson(Map<String, dynamic> json){
-    return Token(accessToken: json["accessToken"], id: json["id"]);
-  }
-}
 
 
 class LoginScreen extends StatefulWidget {
@@ -283,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
     loginPost(userId,password);
     if(isLogin == true)
       {
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> const RootTab()));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
       }
 
 
