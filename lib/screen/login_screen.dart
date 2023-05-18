@@ -232,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void loginPost(String userId,String password) async
+  Future<void> loginPost(String userId,String password) async
   {
     var url = "http://10.0.2.2:8080/api/v1/login";
     try{
@@ -246,8 +246,10 @@ class _LoginScreenState extends State<LoginScreen> {
         print('로그인 토큰 발행');
         token =  Token.fromJson(json.decode(response.body));
         print(token);
-        isLogin = true;
-
+        if(token !=null)
+          {
+            isLogin = true;
+          }
       }
       else{
         throw Exception('로그인 오류');
@@ -261,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     }
   }
- void buttonLoginPressed() //일반 로그인 실행 - 서버 요청 토큰 받아와 return token
+ Future<void> buttonLoginPressed() async//일반 로그인 실행 - 서버 요청 토큰 받아와 return token
   {
     String userId = idController.text;
     String password = pwController.text;
@@ -270,11 +272,18 @@ class _LoginScreenState extends State<LoginScreen> {
     print(userId);
     print(password);
 
-    loginPost(userId,password);
+    await loginPost(userId,password);
     if(isLogin == true)
       {
+        await Future.delayed(const Duration(seconds: 1));
+        if (!mounted) return;
         Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
       }
+    else{
+     //아이디 비밀번호 확인해달라
+      //회원가입하기?
+
+    }
 
 
   }

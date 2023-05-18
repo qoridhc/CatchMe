@@ -1,6 +1,6 @@
 class Token{
-  final String accessToken;
-  final int id;
+  final String? accessToken;
+  final int? id;
 
   Token({required this.accessToken,
     required this.id});
