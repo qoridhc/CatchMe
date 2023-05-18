@@ -67,7 +67,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return DefaultLayout(
       // backgroundColor: BACKGROUND_COLOR,
-      child : TabBarView(
+      child: TabBarView(
         physics: NeverScrollableScrollPhysics(),
         controller: controller,
         children: [
