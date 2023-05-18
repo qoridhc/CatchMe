@@ -26,9 +26,10 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       initialPage: 0,
     );
 
-    return Scaffold(
-      backgroundColor: BACKGROUND_COLOR,
-      body: Column(
+    return DefaultLayout(
+      // backgroundColor: BACKGROUND_COLOR,
+      title: 'Favorite',
+      child: Column(
         children: [
           SizedBox(
             height: _sw * 0.001,
