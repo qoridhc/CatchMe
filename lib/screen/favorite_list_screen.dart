@@ -90,41 +90,6 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                         //버튼
                       ),
                     ),
-                    // Container(
-                    //   width: _sw * 0.39,
-                    //   height: _sw * 0.08,
-                    //   decoration: BoxDecoration(
-                    //     borderRadius: BorderRadius.circular(15),
-                    //   ),
-                    //   child: InkWell(
-                    //     onTap: () {
-                    //       _pageController.animateToPage(0,
-                    //           duration: Duration(milliseconds: 250),
-                    //           curve: Curves.linear);
-                    //     },
-                    //     child: Center(child: Text('Send')),
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   width: _sw * 0.01,
-                    // ),
-                    // Container(
-                    //   width: _sw * 0.39,
-                    //   height: _sw * 0.08,
-                    //   decoration: BoxDecoration(
-                    //     borderRadius: BorderRadius.circular(15),
-                    //   ),
-                    //   child: InkWell(
-                    //     onTap: () {
-                    //       _pageController.animateToPage(1,
-                    //           duration: Duration(milliseconds: 250),
-                    //           curve: Curves.linear);
-                    //     },
-                    //     borderRadius: BorderRadius.circular(15),
-                    //     focusColor: Colors.white,
-                    //     child: Center(child: Text('Received')),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
