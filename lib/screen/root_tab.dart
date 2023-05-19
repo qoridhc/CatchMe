@@ -5,13 +5,14 @@ import 'package:captone4/screen/main_page_screen.dart';
 import 'package:captone4/screen/my_page_screen.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
-
+import 'package:captone4/Token.dart'; //토큰 클래스
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 
 import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
-  const RootTab({Key? key}) : super(key: key);
+  final Token? token;
+  const RootTab({Key? key,@required this.token}) : super(key: key);
 
   @override
   State<RootTab> createState() => _RootTabState();
@@ -25,7 +26,6 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   void initState() {
     // TODO: implement initState
     super.initState();
-
     controller = TabController(length: 4, vsync: this);
 
     controller.addListener(tabListener);
@@ -67,7 +67,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return DefaultLayout(
       // backgroundColor: BACKGROUND_COLOR,
-      child : TabBarView(
+      child: TabBarView(
         physics: NeverScrollableScrollPhysics(),
         controller: controller,
         children: [

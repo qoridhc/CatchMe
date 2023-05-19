@@ -1,4 +1,5 @@
 import 'package:captone4/const/colors.dart';
+import 'package:captone4/screen/profile_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +25,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Flexible(
-              child: Container(
-                // color: Colors.red,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileScreen(),
+                    ),
+                  );
+                },
                 child: CircleAvatar(
                   radius: getMediaWidth(context) * 0.32,
                   backgroundImage: NetworkImage(
@@ -74,16 +82,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         for (int i = 0; i < 5; i++)
                           _generateCategoryIcon(
                               "assets/images/icons/chat_icon.png"),
-                        // _generateCategoryIcon(
-                        //     "assets/images/icons/chat_icon.png"),
-                        // _generateCategoryIcon(
-                        //     "assets/images/icons/chat_icon.png"),
-                        // _generateCategoryIcon(
-                        //     "assets/images/icons/chat_icon.png"),
-                        // _generateCategoryIcon(
-                        //     "assets/images/icons/chat_icon.png"),
-                        // _generateCategoryIcon(
-                        //     "assets/images/icons/chat_icon.png"),
                       ],
                     ),
                   ],
@@ -100,8 +98,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     return Column(
       children: [
         InkWell(
-          onTap: () {
-          },
+          onTap: () {},
           child: Container(
             // height: getMediaHeight(context) * 0.2,
             width: getMediaWidth(context) * 0.15,
