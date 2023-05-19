@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:captone4/login_platform.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart' show Client;
 import 'dart:convert';
 import 'package:captone4/Token.dart';
 
-
+final GlobalKey<ScaffoldMessengerState> snackbarKey =
+GlobalKey<ScaffoldMessengerState>();
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -21,8 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
   String? accesToken;
   String? expiresAt;
   String? tokenType;
-  String? name;
+  String? nickName;
   String? refreshToken;
+
 
   Token? token;
 
@@ -36,18 +37,38 @@ class _LoginScreenState extends State<LoginScreen> {
   void signInWithNaver() async {   //네이버 로그인 관리
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
-
-      NaverAccessToken res = await FlutterNaverLogin.currentAccessToken;
+      NaverAccessToken accessTokenRes = await FlutterNaverLogin.currentAccessToken;
+      //NaverAccessToken res = await FlutterNaverLogin.currentAccessToken;
 
       if (result.status == NaverLoginStatus.loggedIn) {
-        print('accessToken = ${result.accessToken}');
-        print('gender = ${result.account.gender}');
-        print('birthyear = ${result.account.birthyear}');
-        print('phone = ${result.account.mobile}');
+
 
         setState(() {
           _loginPlatform = LoginPlatform.naver;
+          accesToken  = accessTokenRes.accessToken;
+          expiresAt  = accessTokenRes.expiresAt;
+          tokenType  = accessTokenRes.tokenType;
+          refreshToken  = accessTokenRes.refreshToken;
+          print(accessTokenRes);
+          print(result.accessToken.tokenType);
         });
+        if(_loginPlatform == LoginPlatform.naver)
+          {
+            await naverloginPost("naver");
+          }
+
+        if(isLogin == true)
+        {
+          await Future.delayed(const Duration(seconds: 1));
+          if (!mounted) return;
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
+        }
+        else{
+          //아이디 비밀번호 확인해달라
+          //회원가입하기?
+
+        }
+
       }
     } catch (error) {
       print(error.toString());
@@ -128,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 2/3,
                             child: OutlinedButton(
-                              onPressed: buttonNaverLoginPressed,  //로그인 함수 실행
+                              onPressed: signInWithNaver,  //로그인 함수 실행
                               child: Text(
                                 "Naver Login",
                                 style: TextStyle(
@@ -219,6 +240,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                               BorderSide(color: Colors.red)))),
                             ),
                           ),
+                          ElevatedButton(
+                            onPressed: buttonLogoutAndDeleteTokenPressed,
+                            child: const Text("LogOutAndDeleteToken"),
+                          )
+
                         ],
                       ),
                     ),
@@ -243,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await http.post(Uri.parse(url),headers:  <String, String>{"Content-Type": "application/json"}, body: body);
       if(response.statusCode == 200)
       {
-        print('로그인 토큰 발행');
+        print('일반 로그인 토큰 발행');
         token =  Token.fromJson(json.decode(response.body));
         print(token);
         if(token !=null)
@@ -253,14 +279,40 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       else{
         throw Exception('로그인 오류');
+      }
+    }
+    catch(e){
+      print(e);
+      rethrow;
+    }
+  }
+  Future<void> naverloginPost( String type) async
+  {
+    var url = "http://10.0.2.2:8080/api/v1/oauth/login";
+    try{
+      Map data = {"accessToken": accesToken, "type" : type};
+
+      var body = json.encode(data);
+
+      final response = await http.post(Uri.parse(url),headers:  <String, String>{"Content-Type": "application/json"}, body: body);
+      if(response.statusCode == 200)
+      {
+        print('네이버 로그인 토큰 발행');
+        token =  Token.fromJson(json.decode(response.body));
+        print(token);
+        if(token !=null)
+        {
+          isLogin = true;
+        }
+      }
+      else{
+        throw Exception('로그인 오류');
 
       }
     }
     catch(e){
       print(e);
       rethrow;
-
-
     }
   }
  Future<void> buttonLoginPressed() async//일반 로그인 실행 - 서버 요청 토큰 받아와 return token
@@ -289,12 +341,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
 
+
   Future<void> buttonNaverLoginPressed() async //로그인 눌렀을때 동작
   {
     try {
       final NaverLoginResult res = await FlutterNaverLogin.logIn();
       setState(() {
-        name = res.account.nickname;
+        nickName = res.account.nickname;
         isLogin = true;
       });
     } catch (error) {
@@ -331,5 +384,41 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showSnackError(String error) {
+    snackbarKey.currentState?.showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(error.toString()),
+      ),
+    );
+  }
 
+
+  Future<void> buttonLogoutAndDeleteTokenPressed() async {  //로그아웃 및 토큰 제거
+    try {
+      await FlutterNaverLogin.logOutAndDeleteToken();
+      setState(() {
+        isLogin = false;
+        accesToken = null;
+        tokenType = null;
+        nickName = null;
+      });
+    } catch (error) {
+      _showSnackError(error.toString());
+    }
+  }
+
+  Future<void> buttonLogoutPressed() async {  //로그아웃시
+    try {
+      await FlutterNaverLogin.logOut();
+      setState(() {
+        isLogin = false;
+        accesToken = null;
+        tokenType = null;
+        nickName = null;
+      });
+    } catch (error) {
+      _showSnackError(error.toString());
+    }
+  }
 }

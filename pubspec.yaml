@@ -47,6 +47,9 @@ dependencies:
   cached_network_image: ^3.2.3
   percent_indicator: ^4.2.3
   image_picker: ^0.8.7+1
+  dio: ^5.1.2
+  image_network: ^2.5.2
+  permission_handler: ^10.2.0
   google_fonts: ^3.0.1
 
 dev_dependencies:
