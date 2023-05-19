@@ -1,13 +1,28 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:captone4/const/colors.dart';
 import 'package:captone4/utils/utils.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
+
+import '../const/data.dart';
 
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen({Key? key}) : super(key: key);
+  final tmpMemberId;
+  final tmpAccessToken;
+  final profileImage;
+
+
+  ProfileScreen({
+    required this.tmpMemberId,
+    required this.tmpAccessToken,
+    this.profileImage,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -62,14 +77,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
                 child: Container(
-                  color: Colors.black,
+                  // color: Colors.black,
                   height: getMediaHeight(context) * 0.6,
                   width: getMediaWidth(context),
                   child: _pickedFile == null
-                      ? Image.network(
-                          "https://image.ytn.co.kr/general/jpg/2022/0516/202205160929084105_d.jpg",
-                          fit: BoxFit.cover,
-                        )
+                      ? Container(
+                    child: Center(
+                      child: Text("프로필 이미지를 선택해주세요"),
+                    ),
+                  )
                       : Image.file(
                           File(_pickedFile!.path),
                           fit: BoxFit.cover,
@@ -229,6 +245,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _pickedFile = pickedFile;
       });
+
+      uploadUserProfileImage(pickedFile);
+      
       Navigator.of(context).pop();
     } else {
       if (kDebugMode) {
@@ -238,17 +257,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   _getPhotoLibraryImage() async {
-    final pickedFile =
+    final XFile? pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
       setState(() {
         _pickedFile = pickedFile;
       });
+
+      uploadUserProfileImage(pickedFile);
+
       Navigator.of(context).pop();
     } else {
       if (kDebugMode) {
         print('이미지 선택안함');
       }
+    }
+  }
+
+  Future<dynamic> uploadUserProfileImage(dynamic file) async {
+    print("프로필 사진을 서버에 업로드 합니다.");
+
+    final List<XFile?> selectedImages = [];
+
+    selectedImages.add(file);
+
+    final List<MultipartFile> files = selectedImages
+        .map(
+          (e) => MultipartFile.fromFileSync(
+            e!.path,
+            contentType: MediaType("image", "jpeg"),
+          ),
+        )
+        .toList();
+
+    var formData = FormData.fromMap({"images": files});
+
+    Dio dio = Dio();
+
+    dio.options.contentType = 'multipart/form-data';
+    dio.options.maxRedirects.isFinite;
+
+    try {
+      final res = await dio.post(
+        'http://$ip/api/v1/members/${widget.tmpMemberId}/images',
+        options: Options(
+          headers: {
+            'authorization': 'Bearer ${widget.tmpAccessToken}',
+          },
+        ),
+        data: formData,
+      );
+      print("이미지 전송 성공");
+    } on DioError catch (e) {
+      print(e);
     }
   }
 }
