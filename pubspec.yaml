@@ -41,6 +41,10 @@ dependencies:
   auto_size_text: ^3.0.0
   percent_indicator: ^4.2.3
   image_picker: ^0.8.7+1
+  cached_network_image: ^3.2.3
+  dio: ^5.1.2
+  image_network: ^2.5.2
+  permission_handler: ^10.2.0
 
 dev_dependencies:
   flutter_test:
