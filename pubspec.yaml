@@ -44,10 +44,10 @@ dependencies:
   firebase_auth: ^4.2.6
   firebase_storage: ^11.1.0
   flutter_chat_bubble: ^2.0.2   #chat bubble을 위해 사용
-  image_picker: ^0.8.4+11
   cached_network_image: ^3.2.3
   percent_indicator: ^4.2.3
   image_picker: ^0.8.7+1
+  google_fonts: ^3.0.1
 
 dev_dependencies:
   flutter_test:

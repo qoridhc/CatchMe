@@ -1,4 +1,5 @@
 import 'package:captone4/color_scheme.dart';
+import 'package:captone4/screen/main_page_screen.dart';
 // import 'package:captone4/swipe.dart';
 import 'package:captone4/theme.dart';
 import 'package:captone4/screen/my_page_screen.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: lightThemeDataCustom,
-      home: LoginScreen(),
+      home: const RootTab(),
     );
   }
 }
