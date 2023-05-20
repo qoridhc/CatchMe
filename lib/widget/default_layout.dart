@@ -45,12 +45,12 @@ class DefaultLayout extends StatelessWidget {
           title!,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontFamily: 'Pacifico', fontSize: 28, color: Colors.white),
+              fontFamily: 'Pacifico', fontSize: 40, color: Colors.white),
         ),
         shape: const ContinuousRectangleBorder(
           borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(50),
-              bottomRight: Radius.circular(50)),
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20)),
         ),
         elevation: 0,
         // backgroundColor: Colors.transparent,
