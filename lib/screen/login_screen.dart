@@ -1,3 +1,4 @@
+import 'package:captone4/screen/join_screen.dart';
 import 'package:captone4/screen/root_tab.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -170,6 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(   //ID입력
                             width: MediaQuery.of(context).size.width * 2/3,
+                            height: 40,
                             child: OutlinedButton(
                               onPressed: buttonLoginPressed,
                               child: TextField(
@@ -195,6 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(  //password입력
                             width: MediaQuery.of(context).size.width * 2/3,
+                            height: 40,
                             child: OutlinedButton(
                               onPressed: buttonLoginPressed,
                               child: TextField(
@@ -240,10 +243,39 @@ class _LoginScreenState extends State<LoginScreen> {
                                               BorderSide(color: Colors.red)))),
                             ),
                           ),
-                          ElevatedButton(
-                            onPressed: buttonLogoutAndDeleteTokenPressed,
-                            child: const Text("LogOutAndDeleteToken"),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                            ElevatedButton(
+                              onPressed: buttonNaverLogoutAndDeleteTokenPressed,
+                              child: const Text("로그아웃"),
+                            ),
+
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 1/4,
+                              child: OutlinedButton(
+                                onPressed: memberJoin,
+                                child: Text(
+                                  "회원가입",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                style: ButtonStyle(
+                                    backgroundColor:
+                                    MaterialStateProperty.all(Colors.white),
+                                    shape: MaterialStateProperty.all<
+                                        RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(18.0),
+                                            side:
+                                            BorderSide(color: Colors.red)))),
+                              ),
+                            )
+                          ],
                           )
+                          ,
 
                         ],
                       ),
@@ -394,7 +426,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
 
-  Future<void> buttonLogoutAndDeleteTokenPressed() async {  //로그아웃 및 토큰 제거
+  Future<void> buttonNaverLogoutAndDeleteTokenPressed() async {  //로그아웃 및 토큰 제거
     try {
       await FlutterNaverLogin.logOutAndDeleteToken();
       setState(() {
@@ -408,7 +440,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> buttonLogoutPressed() async {  //로그아웃시
+  Future<void> buttonLogoutPressed() async {  //로그아웃만
     try {
       await FlutterNaverLogin.logOut();
       setState(() {
@@ -420,5 +452,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (error) {
       _showSnackError(error.toString());
     }
+  }
+
+  void memberJoin() {
+    Navigator.push(context, MaterialPageRoute(builder: (context)=>  const joinScreen()));
+
   }
 }
