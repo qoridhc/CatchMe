@@ -10,4 +10,7 @@ import Flutter
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+  - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *,id> *)options {
+      return [[NaverThirdPartyLoginConnection getSharedInstance] application:app openURL:url options:options];
+  }
 }
