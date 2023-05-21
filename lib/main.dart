@@ -19,10 +19,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: lightThemeDataCustom,
-      home: LoginScreen(),
+      home: RootTab(),
     );
   }
-}
+} 
 
 // class MyHomePage extends StatefulWidget {
 //   const MyHomePage({super.key, required this.title});
