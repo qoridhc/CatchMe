@@ -3,78 +3,91 @@
 <plist version="1.0">
 <dict>
 
- <key>CFBundleURLTypes</key>
-        <array>
-            <dict>
-                <key>CFBundleTypeRole</key>
-                <string>Editor</string>
-                <key>CFBundleURLSchemes</key>
-                <array>
-                    <string>capstone4</string>
-                </array>
-            </dict>
-        </array>
+<key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <!-- facebook login -->
+        <string>fbUrlSchemes</string>
 
-        <key>LSApplicationQueriesSchemes</key>
-        <array>
-            <string>naversearchapp</string>
-            <string>naversearchthirdlogin</string>
-        </array>
-        <key>naverServiceAppUrlScheme</key>
+        <!-- google login -->
+        <string>google url schemes</string>
+
+        <!-- kakao login -->
+        <string>kakao네이티브 앱 키</string>
+
+        <!-- naver login -->
         <string>capstone4</string>
-        <key>naverConsumerKey</key>
-        <string>SroDprexKkRl_wqsPTZk</string>
-        <key>naverConsumerSecret</key>
-        <string>jqG9Wgkr5J</string>
-        <key>naverServiceAppName</key>
-        <string>catch_me</string>
+      </array>
+      </dict>
+    </array>
 
-        <!-- http allows configurations -->
-        <key>NSAppTransportSecurity</key>
-        <dict>
-           <key>NSAllowsArbitraryLoads</key>
-           <true/>
-           <key>NSExceptionDomains</key>
-           <dict>
-              <key>naver.com</key>
-              <dict>
-                 <key>NSExceptionRequiresForwardSecrecy</key>
-                 <false/>
-                 <key>NSIncludesSubdomains</key>
-                 <true/>
-              </dict>
-              <key>naver.net</key>
-              <dict>
-                 <key>NSExceptionRequiresForwardSecrecy</key>
-                 <false/>
-                 <key>NSIncludesSubdomains</key>
-                 <true/>
-              </dict>
-           </dict>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+       <string>naversearchapp</string>
+       <string>naversearchthirdlogin</string>
+    </array>
+
+    <key>naverServiceAppUrlScheme</key>
+    <string>socialloginapp</string>
+
+    <!-- naver client_id -->
+    <key>naverConsumerKey</key>
+    <string>SroDprexKkRl_wqsPTZk</string>
+
+    <!-- naver client_secret -->
+    <key>naverConsumerSecret</key>
+    <string>jqG9Wgkr5J</string>
+
+    <key>naverServiceAppName</key>
+    <string>catch_me</string>
+
+    <!-- http allows configurations -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+       <key>NSExceptionDomains</key>
+       <dict>
+          <key>naver.com</key>
+          <dict>
+             <key>NSExceptionRequiresForwardSecrecy</key>
+             <false/>
+             <key>NSIncludesSubdomains</key>
+             <true/>
+          </dict>
+          <key>naver.net</key>
+          <dict>
+             <key>NSExceptionRequiresForwardSecrecy</key>
+             <false/>
+             <key>NSIncludesSubdomains</key>
+             <true/>
+          </dict>
         </dict>
     </dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Captone4</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>captone4</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
+   <key>CFBundleDevelopmentRegion</key>
+   <string>$(DEVELOPMENT_LANGUAGE)</string>
+   <key>CFBundleDisplayName</key>
+   <string>Captone4</string>
+   <key>CFBundleExecutable</key>
+   <string>$(EXECUTABLE_NAME)</string>
+   <key>CFBundleIdentifier</key>
+   <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+   <key>CFBundleInfoDictionaryVersion</key>
+   <string>6.0</string>
+   <key>CFBundleName</key>
+   <string>captone4</string>
+   <key>CFBundlePackageType</key>
+   <string>APPL</string>
+   <key>CFBundleShortVersionString</key>
+   <string>$(FLUTTER_BUILD_NAME)</string>
+   <key>CFBundleSignature</key>
+   <string>????</string>
+   <key>CFBundleVersion</key>
+   <string>$(FLUTTER_BUILD_NUMBER)</string>
+   <key>LSRequiresIPhoneOS</key>
+   <true/>
 
 <key>NSCameraUsageDescription</key>
 <string>카메라 사용에 필요합니다.</string>
@@ -83,28 +96,28 @@
 <key>NSPhotoLibraryUsageDescription</key>
 <string>사진라이브러리 사용에 필요합니다.</string>
 
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
+   <key>UILaunchStoryboardName</key>
+   <string>LaunchScreen</string>
+   <key>UIMainStoryboardFile</key>
+   <string>Main</string>
+   <key>UISupportedInterfaceOrientations</key>
+   <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationLandscapeLeft</string>
+      <string>UIInterfaceOrientationLandscapeRight</string>
+   </array>
+   <key>UISupportedInterfaceOrientations~ipad</key>
+   <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
+      <string>UIInterfaceOrientationLandscapeLeft</string>
+      <string>UIInterfaceOrientationLandscapeRight</string>
+   </array>
+   <key>UIViewControllerBasedStatusBarAppearance</key>
+   <false/>
+   <key>CADisableMinimumFrameDurationOnPhone</key>
+   <true/>
+   <key>UIApplicationSupportsIndirectInputEvents</key>
+   <true/>
 </dict>
 </plist>
