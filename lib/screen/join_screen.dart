@@ -1,7 +1,10 @@
+import 'package:captone4/screen/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:captone4/NumberFormatter.dart';
 import 'package:flutter/services.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:captone4/utils/alert.dart';
 import '../validate.dart';
 
 class joinScreen extends StatefulWidget {
@@ -20,9 +23,9 @@ class _joinScreenState extends State<joinScreen> {
   final eMailController = TextEditingController();
   final birthYearController = TextEditingController();
   List<String> _year = [];
-  FocusNode _emailFocus = new FocusNode();
-  FocusNode _passwordFocus = new FocusNode();
-
+  final FocusNode _emailFocus =  FocusNode();
+  final FocusNode _passwordFocus =  FocusNode();
+  final FocusNode _checkPasswordFocus =  FocusNode();
   Gender? _gender = Gender.male;  //남자 더많으니 처음에 남자로 세팅
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -43,7 +46,7 @@ class _joinScreenState extends State<joinScreen> {
                     style: TextStyle(fontSize: 25.0),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextField(
                       controller: idController,
@@ -58,7 +61,7 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
                       obscureText: true,
@@ -77,14 +80,14 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
                       obscureText: true,
-                      focusNode: _passwordFocus,
                       keyboardType: TextInputType.visiblePassword,
                       controller: pwCheckController,
                       validator: (value) {
+
                         if(value == null || value.isEmpty)
                           {
                             return '비밀번호를 입력하세요';
@@ -106,7 +109,7 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
                       controller: phoneController,
@@ -126,7 +129,7 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
                       controller: eMailController,
@@ -142,7 +145,7 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
                       controller: nicknameController,
@@ -163,7 +166,7 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     child: Column(
                       children: [
                         ListTile(
@@ -194,7 +197,7 @@ class _joinScreenState extends State<joinScreen> {
                     ),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width *2/3,
+                    width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
                       controller: birthYearController,
@@ -210,14 +213,14 @@ class _joinScreenState extends State<joinScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // Validate returns true if the form is valid, or false otherwise.
+
                       if (formKey.currentState!.validate()) {
-                        // If the form is valid, display a snackbar. In the real world,
-                        // you'd often call a server or save the information in a database.
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Processing Data')),
-                        );
+                        String gender = _gender == Gender.male ? "M" : "W" ;
+
+                        joinPost(idController.text, pwController.text, phoneController.text, eMailController.text, nicknameController.text, birthYearController.text, gender);
+
                       }
+
                     },
                     child: const Text('Submit'),
                   )
@@ -228,7 +231,44 @@ class _joinScreenState extends State<joinScreen> {
         )
     );
 
+
   }
 
+
+  Future<void> joinPost(String userId,String password,String phoneNumber,String email, String nickName,String birthYear,String gender ) async
+  {
+    var url = "http://10.0.2.2:8080/api/v1/join";
+    try{
+      Map data = {
+        "userId": userId,
+        "password" : password,
+        "phoneNumber" : phoneNumber,
+        "email" : email,
+        "nickname" : nickName,
+        "birthYear" : birthYear,
+        "gender" : gender
+      };
+
+      var body = json.encode(data);
+
+      final response = await http.post(Uri.parse(url),headers:  <String, String>{"Content-Type": "application/json"}, body: body);
+      if(response.statusCode == 200) {
+        await Future.delayed(const Duration(seconds: 1));
+        if (!mounted) return;
+        await Alert.showAlert(context, "로그인 완료", "로그인 화면으로 넘어갑니다.");
+        await Future.delayed(const Duration(seconds: 1));
+        if (!mounted) return;
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>  const LoginScreen()));
+      }
+      else{
+
+        throw Exception('로그인 오류');
+      }
+    }
+    catch(e){
+      print(e);
+      rethrow;
+    }
+  }
 
 }

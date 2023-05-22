@@ -27,7 +27,7 @@ class CheckValidate{
       RegExp regExp =  RegExp(pattern.toString());
       if(!regExp.hasMatch(value)){
         focusNode.requestFocus();
-        return '특수문자, 대소문자, 숫자 포함 8자 이상 15자 이내로 입력하세요.';
+        return '특수문자, 대소문자, 숫자 포함 8자 이상 15자 이내.';
       }else{
         return null;
       }

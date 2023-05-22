@@ -7,6 +7,7 @@ import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:captone4/Token.dart';
+import 'package:captone4/utils/alert.dart';
 
 final GlobalKey<ScaffoldMessengerState> snackbarKey =
 GlobalKey<ScaffoldMessengerState>();
@@ -310,6 +311,9 @@ class _LoginScreenState extends State<LoginScreen> {
           }
       }
       else{
+        await Future.delayed(const Duration(seconds: 1));
+        if (!mounted) return;
+        Alert.showAlert(context, "로그인 오류","아이디 혹은 비밀번호를 확인해 주세요");
         throw Exception('로그인 오류');
       }
     }
@@ -318,6 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
       rethrow;
     }
   }
+
   Future<void> naverloginPost( String type) async
   {
     var url = "http://10.0.2.2:8080/api/v1/oauth/login";
@@ -364,8 +369,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
       }
     else{
-     //아이디 비밀번호 확인해달라
-      //회원가입하기?
+
 
     }
 
