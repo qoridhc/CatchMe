@@ -4,21 +4,24 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:captone4/login_platform.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:captone4/Token.dart';
 import 'package:captone4/utils/alert.dart';
 
+import '../const/data.dart';
+
 final GlobalKey<ScaffoldMessengerState> snackbarKey =
 GlobalKey<ScaffoldMessengerState>();
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool isLogin = false;
   String? accesToken;
   String? expiresAt;
@@ -63,6 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
         {
           await Future.delayed(const Duration(seconds: 1));
           if (!mounted) return;
+
+          // 로그인 성공하면 provider로 토큰 넘김
+          ref.read(tokenProvider.notifier).state = token!;
+
           Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
         }
         else{
@@ -325,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> naverloginPost( String type) async
   {
-    var url = "http://10.0.2.2:8080/api/v1/oauth/login";
+    var url = "http://$ip/api/v1/oauth/login";
     try{
       Map data = {"accessToken": accesToken, "type" : type};
 

@@ -1,7 +1,15 @@
-
-//localhost
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 
+// dio 반환해주는 provider
+final dioProvider = Provider<Dio>((ref) {
+  final dio = Dio();
+
+  return dio;
+});
+
+//localhost
 final emulatorIp = '10.0.2.2:8080';
 final simulatorIp = '127.0.0.1:8080';
 

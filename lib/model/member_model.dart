@@ -1,12 +1,12 @@
 class MemberModel {
   final String memberId;
   final String nickname;
-  final String imageUrls;
+  final List<dynamic> imageUrls;
   final String birthYear;
-  final String introduction;
+  final String? introduction;
   final String gender;
   final String mbti;
-  final String averageScore;
+  final double averageScore;
 
   MemberModel({
     required this.memberId,
@@ -23,7 +23,7 @@ class MemberModel {
     required Map<String, dynamic> json,
   }) {
     return MemberModel(
-      memberId: json['memberId'],
+      memberId: json['memberId'].toString(),
       nickname: json['nickname'],
       imageUrls: json['imageUrls'],
       birthYear: json['birthYear'],
@@ -31,6 +31,21 @@ class MemberModel {
       gender: json['gender'],
       mbti: json['mbti'],
       averageScore: json['averageScore'],
+    );
+  }
+
+  MemberModel copyWith({
+    required Map<String, dynamic> json,
+  }) {
+    return MemberModel(
+      memberId: json['memberId'] ?? this.memberId,
+      nickname: json['nickname'] ?? this.nickname,
+      imageUrls: json['imageUrls'] ?? this.imageUrls,
+      birthYear: json['birthYear'] ?? this.birthYear,
+      introduction: json['introduction'] ?? this.introduction,
+      gender: json['gender'] ?? this.gender,
+      mbti: json['mbti'] ?? this.mbti,
+      averageScore: json['averageScore'] ?? this.averageScore,
     );
   }
 }
