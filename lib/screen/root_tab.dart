@@ -73,7 +73,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         children: [
           MainPageScreen(),
           ChatRoomScreen(),
-          FavoriteListScreen(),
+          FavoriteListScreen(token: widget.token),
           MyPageScreen(),
         ],
       ),

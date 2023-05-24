@@ -1,27 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:image_network/image_network.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../const/data.dart';
+import '../Token.dart';
+import '../model/like_list_model.dart';
+import '../model/member_model.dart';
 import '../const/colors.dart';
 import '../utils/utils.dart';
-
 import '../widget/default_layout.dart';
 
 class FavoriteListScreen extends StatefulWidget {
-  const FavoriteListScreen({Key? key}) : super(key: key);
+  final Token? token;
+  const FavoriteListScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
   State<FavoriteListScreen> createState() => _FavoriteListScreenState();
 }
 
 class _FavoriteListScreenState extends State<FavoriteListScreen> {
-  int _pageChanged = 0;
+  int _pageChanged = 0;     //page view index state
+  bool _sendOrReceived = true;    //page view Send or Received bool
 
-  bool _sendOrReceived = true;
+  late int _memberId;
+  late String _memberToken;
+  late LikeModel _sendModel;
+  late LikeModel _receivedModel;
+
+  late final _sendImage;
+  late final _sendNickName;
+
+  late final _receivedImage;
+  late final _receivedNickName;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    // _memberId = widget.token!.id!;
+    // _memberToken = widget.token!.accessToken!;
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
 
     final _sw = MediaQuery.of(context).size.width;
     final _sh = MediaQuery.of(context).size.height;
-
 
     final PageController _pageController = PageController(
       initialPage: 0,
@@ -90,7 +122,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                             borderRadius: BorderRadius.circular(15),
                             color: _sendOrReceived ? Colors.transparent : Colors.white,
                           ),
-                          child: Center(child: Text('Recieved')),
+                          child: Center(child: Text('Received')),
                           //버튼
                         ),
                       ),
@@ -134,122 +166,272 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
     );
   }
 
-  Widget sendListviewBuilder(){
+  //사용자가 보낸 like
+  Future<LikeListModel> getSendLike() async {
+    print("getFavoriteTargetID 실행");
+    final dio = Dio();
+    final List<String> ls;
 
-    final _sw = MediaQuery.of(context).size.width;
-    final _sh = MediaQuery.of(context).size.height;
+    try{
+      final resp = await dio.get(
+        'http://$ip/api/v1/members/classifications?memberId=$_memberId&status=true',
+        options: Options(
+          headers: {
+            'authorization': 'Bearer $_memberToken'
+          },
+        ),
+      );
+      return LikeListModel.fromJson(json: resp.data);
+    } on DioError catch (e) {
+      print("에러 발생");
+      print(e);
+      rethrow;
+    }
+  }
 
-    final List<String> _img = <String>[
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-    ];
+  //사용자 받은 like
+  Future<LikeListModel> getReceivedLike() async {
+    print("getFavoriteTargetID 실행");
+    final dio = Dio();
+    final List<String> ls;
 
-    final List<String> _name = <String>[
-      '아이유',
-      '차은우',
-      '배수지',
-      '아이유',
-      '차은우',
-      '배수지',
-      '아이유',
-      '차은우',
-      '배수지',
-      '아이유',
-      '차은우',
-      '배수지',
-    ];
+    try{
+      final resp = await dio.get(
+        'http://$ip/api/v1/members/classifications?targetId=$_memberId&status=true',
+        options: Options(
+          headers: {
+            'authorization': 'Bearer $_memberToken'
+          },
+        ),
+      );
+      return LikeListModel.fromJson(json: resp.data);
+    } on DioError catch (e) {
+      print("에러 발생");
+      print(e);
+      rethrow;
+    }
+  }
 
-    return ListView.builder(
-      // scrollDirection: Axis.vertical,
-      itemCount: _img.length,
-      padding: EdgeInsets.symmetric(vertical: 0),
-      itemBuilder: (BuildContext context, int index){
-        return Container(
-          height: _sw * 0.2,
-          child: Row(
-            children: [
-              Container(
-                height: _sw * 0.15,
-                width: _sw * 0.15,
-                decoration: BoxDecoration(
-                  image: DecorationImage(image: AssetImage(_img[index]))
-                ),
-              ),
-              SizedBox(
-                width: _sw * 0.15,
-              ),
-              Container(
-                child: Text(
-                  _name[index] + '님에게 하트를 보냈습니다.'
-                ),
-              ),
-            ],
-          )
-        );
-      },
+  _getUserInfoFromServer() async {
+    print("");
+  }
 
+  // Widget sendListviewBuilder(){
+  //
+  //   final _sw = MediaQuery.of(context).size.width;
+  //   final _sh = MediaQuery.of(context).size.height;
+  //
+  //   final List<String> _img = <String>[
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //   ];
+  //
+  //   final List<String> _name = <String>[
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //   ];
+  //
+  //   return ListView.builder(
+  //     // scrollDirection: Axis.vertical,
+  //     itemCount: _img.length,
+  //     padding: EdgeInsets.symmetric(vertical: 0),
+  //     itemBuilder: (BuildContext context, int index){
+  //       return Column(
+  //         children: [
+  //           Container(
+  //             width:  _sw * 0.94,
+  //             height: _sw * 0.2,
+  //             decoration: BoxDecoration(
+  //               color: Colors.white,
+  //               borderRadius: BorderRadius.all(Radius.circular(10)),
+  //               boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.7),
+  //                 blurRadius: 5.0,
+  //                 spreadRadius: 0.0,
+  //                 offset: const Offset(0,7),)]
+  //             ),
+  //             child: Row(
+  //               children: [
+  //                 SizedBox(width: _sw * 0.015,),
+  //                 Container(
+  //                   height: _sw * 0.15,
+  //                   width: _sw * 0.15,
+  //                   decoration: BoxDecoration(
+  //                     borderRadius: BorderRadius.circular(50),
+  //                     image: DecorationImage(image: AssetImage(_img[index]), fit: BoxFit.fill)
+  //                   ),
+  //                 ),
+  //                 SizedBox(
+  //                   width: _sw * 0.08,
+  //                 ),
+  //                 Container(
+  //                   child: Text(
+  //                     _name[index] + '님에게 하트를 보냈습니다.'
+  //                   ),
+  //                 ),
+  //               ],
+  //             )
+  //           ),
+  //           Container(height: _sw*0.05,)
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
+  Widget sendListviewBuilder() {
+    return Container(
+        child: FutureBuilder<LikeListModel>(
+            future: getSendLike(),
+            builder: (_, AsyncSnapshot<LikeListModel> snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                    child: Text(snapshot.error.toString())
+                );
+              }
+              if (!snapshot.hasData) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.data!.count != 0) {
+                return ListView.builder(
+                    itemCount: snapshot.data!.likeList.length,
+                    padding: EdgeInsets.symmetric(vertical: 0),
+                    itemBuilder: (context, index) {
+                      return _renderSendListView(snapshot.data!.likeList[index]);
+                    });
+              }
+              else {
+                return Container(child: Text('없음'),);
+              }
+            }
+        )
     );
   }
 
-  Widget receivedListviewBuilder(){
+  Widget _renderSendListView(LikeModel l){
+    double _sw = getMediaWidth(context);
+    double _sh = getMediaHeight(context);
 
-    final _sw = MediaQuery.of(context).size.width;
-    final _sh = MediaQuery.of(context).size.height;
+    return Column(
+      children: [
+        Container(
+        width:  _sw * 0.94,
+        height: _sw * 0.2,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          border: Border.all(color: Colors.black38),
+        ),
+        child: Row(
+          children: [
+            SizedBox(width: _sw * 0.015,),
+            ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+               child: Container(
+                 height: _sw * 0.15,
+                 width: _sw * 0.15,
+                  child: Image.network(
+                    l.imgUrls[0],
+                    fit: BoxFit.fill,
+                  ),
+               ),
+             ),
+             SizedBox(
+               width: _sw * 0.15,
+             ),
+             Container(
+               child: Text(
+                  l.nickname + '님에게 하트를 받았습니다.'
+               ),
+              ),
+            ],
+          )
+        ),
+         Container(height: _sw*0.03,)
+      ],
+    );
+  }
 
-    final List<String> _img = <String>[
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-    ];
+  Widget receivedListviewBuilder() {
+    return Container(
+        child: FutureBuilder<LikeListModel>(
+            future: getReceivedLike(),
+            builder: (_, AsyncSnapshot<LikeListModel> snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                    child: Text(snapshot.error.toString())
+                );
+              }
+              if (!snapshot.hasData) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
 
-    final List<String> _name = <String>[
-      '아이유',
-      '차은우',
-      '배수지',
-      '아이유',
-      '차은우',
-      '배수지',
-      '아이유',
-      '차은우',
-      '배수지',
-      '아이유',
-      '차은우',
-      '배수지',
-    ];
-    return ListView.builder(
-      // scrollDirection: Axis.vertical,
-      itemCount: _img.length,
-      padding: EdgeInsets.symmetric(vertical: 0),
-      itemBuilder: (BuildContext context, int index){
-        return Container(
+              if (snapshot.data!.count != 0) {
+                return ListView.builder(
+                    itemCount: snapshot.data!.likeList.length,
+                    padding: EdgeInsets.symmetric(vertical: 0),
+                    itemBuilder: (context, index) {
+                      return _renderReceivedListView(snapshot.data!.likeList[index]);
+                    });
+              }
+              else {
+                return Container(child: Text('없음'),);
+              }
+            }
+        )
+    );
+  }
+
+  Widget _renderReceivedListView(LikeModel l){
+    double _sw = getMediaWidth(context);
+    double _sh = getMediaHeight(context);
+
+    return Column(
+      children: [
+        Container(
+            width:  _sw * 0.94,
             height: _sw * 0.2,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              border: Border.all(color: Colors.black38),
+            ),
             child: Row(
               children: [
-                Container(
-                  height: _sw * 0.15,
-                  width: _sw * 0.15,
-                  decoration: BoxDecoration(
-                      image: DecorationImage(image: AssetImage(_img[index]))
+                SizedBox(width: _sw * 0.015,),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Container(
+                    height: _sw * 0.15,
+                    width: _sw * 0.15,
+                    child: Image.network(
+                      l.imgUrls[0],
+                      fit: BoxFit.fill,
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -257,13 +439,92 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                 ),
                 Container(
                   child: Text(
-                      _name[index] + '님에게 하트를 받았습니다.'
+                      l.nickname + '님에게 하트를 받았습니다.'
                   ),
                 ),
               ],
             )
-        );
-      },
+        ),
+        Container(height: _sw*0.03,)
+      ],
     );
   }
+
+  // Widget receivedListviewBuilder(){
+  //
+  //   final _sw = MediaQuery.of(context).size.width;
+  //   final _sh = MediaQuery.of(context).size.height;
+  //
+  //   final List<String> _img = <String>[
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //     'assets/images/test_img/1.jpg',
+  //     'assets/images/test_img/2.jpg',
+  //     'assets/images/test_img/3.jpg',
+  //   ];
+  //
+  //   final List<String> _name = <String>[
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //     '아이유',
+  //     '차은우',
+  //     '배수지',
+  //   ];
+  //   return ListView.builder(
+  //     // scrollDirection: Axis.vertical,
+  //     itemCount: _img.length,
+  //     padding: EdgeInsets.symmetric(vertical: 0),
+  //     itemBuilder: (BuildContext context, int index){
+  //       return Column(
+  //         children: [
+  //           Container(
+  //               width:  _sw * 0.94,
+  //               height: _sw * 0.2,
+  //               decoration: BoxDecoration(
+  //                 color: Colors.white,
+  //                 borderRadius: BorderRadius.all(Radius.circular(10)),
+  //                 border: Border.all(color: Colors.black38),
+  //               ),
+  //               child: Row(
+  //                 children: [
+  //                   SizedBox(width: _sw * 0.015,),
+  //                   Container(
+  //                     height: _sw * 0.15,
+  //                     width: _sw * 0.15,
+  //                     decoration: BoxDecoration(
+  //                         borderRadius: BorderRadius.circular(50),
+  //                         image: DecorationImage(image: AssetImage(_img[index]), fit: BoxFit.fill)
+  //                     ),
+  //                   ),
+  //                   SizedBox(
+  //                     width: _sw * 0.15,
+  //                   ),
+  //                   Container(
+  //                     child: Text(
+  //                         _name[index] + '님에게 하트를 받았습니다.'
+  //                     ),
+  //                   ),
+  //                 ],
+  //               )
+  //           ),
+  //           Container(height: _sw*0.03,)
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 }
