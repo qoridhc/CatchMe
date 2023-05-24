@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       //NaverAccessToken res = await FlutterNaverLogin.currentAccessToken;
 
       if (result.status == NaverLoginStatus.loggedIn) {
-
+        //수정
 
         setState(() {
           _loginPlatform = LoginPlatform.naver;
