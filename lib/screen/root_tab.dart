@@ -76,15 +76,11 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         children: [
           MainPageScreen(),
           ChatRoomScreen(),
-<<<<<<< Updated upstream
           FavoriteListScreen(token: widget.token),
-          MyPageScreen(),
-=======
           FavoriteListScreen(),
           MyPageScreen(
             token: widget.token!,
           ),
->>>>>>> Stashed changes
         ],
       ),
       bottomNavigationBar: AnimatedBottomNavigationBar.builder(
