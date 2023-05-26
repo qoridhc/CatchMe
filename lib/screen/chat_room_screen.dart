@@ -1,8 +1,21 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:captone4/screen/chatting_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../utils/utils.dart';
 import '../widget/default_layout.dart';
+
+import 'package:stomp_dart_client/parser.dart';
+import 'package:stomp_dart_client/sock_js/sock_js_parser.dart';
+import 'package:stomp_dart_client/sock_js/sock_js_utils.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_exception.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+import 'package:stomp_dart_client/stomp_handler.dart';
+import 'package:stomp_dart_client/stomp_parser.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
@@ -11,19 +24,86 @@ class ChatRoomScreen extends StatefulWidget {
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
 
+
+
+
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _pageChanged = 0;
 
   bool _chatsOrGroups = true;
+  late StompClient stompClient;
+  TextEditingController messageController = TextEditingController();
+  late WebSocketChannel channel;
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
+    print("웹 소캣 연결");
+    connectToStomp();
+
+  }
+  void connectToStomp() {
+    stompClient = StompClient(
+      config: StompConfig(
+        url: 'ws://10.0.2.2:9081/chat', // Spring Boot 서버의 WebSocket URL
+        onConnect: onConnectCallback, // 연결 성공 시 호출되는 콜백 함수
+      ),
+    );
+
+    stompClient.activate();
+  }
+  void onConnectCallback(StompFrame connectFrame) {
+    // 연결이 성공하면 메시지를 보내는 예제
+    stompClient.send(
+      destination: '/app/sendMessage', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로
+      body: 'Hello, server!', // 보낼 메시지
+    );
+    stompClient.subscribe(
+      destination: '/topic/message', // 구독할 주제 경로
+      callback: (StompFrame frame) {
+        // 메시지 처리
+        final message = frame.body;
+        // TODO: 메시지 처리 로직 작성
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    stompClient?.deactivate();
+    channel.sink.close();
+    super.dispose();
+  }
+
+  void sendMessage() {
+    String message = messageController.text;
+    stompClient.send(
+      destination: '/app/sendMessage', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로
+      body: message,
+    );
+    print("전송!");
+    messageController.clear();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final _sw = MediaQuery.of(context).size.width;
     final _sh = MediaQuery.of(context).size.height;
 
+    stompClient.activate();
+
+
+
+
     final PageController _pageController = PageController(
       initialPage: 0,
     );
+
+
 
     return DefaultLayout(
       // backgroundColor: BACKGROUND_COLOR,
@@ -31,7 +111,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       child: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
+          children: <Widget>[
             SizedBox(
               height: _sh * 0.005,
             ),
@@ -124,13 +204,30 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
             SizedBox(
               height: _sw * 0.02,
-            )
+            ),
+            Column(
+              children: [
+                TextField(
+                  controller: messageController,
+                  decoration: InputDecoration(
+                    labelText: 'Message',
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: sendMessage,
+                  child: Text('Send'),
+                ),
+              ],
+            ),
+
             //listview_builder(_index),
           ],
         ),
       ),
     );
   }
+
   Widget chatsListviewBuilder(){
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
@@ -362,7 +459,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         'Estonia',
                         fontSize: 20*ffem,
                         fontWeight: FontWeight.w400,
-                        height: 1.24*ffem/fem,
+                        height: 1.24*fem/fem,
                         color: Color(0xff000000),
                       ),
                     ),
@@ -375,4 +472,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
+
+
+
+
 }
