@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:captone4/utils/alert.dart';
+import '../const/data.dart';
 import '../validate.dart';
 
 class joinScreen extends StatefulWidget {
@@ -237,7 +238,7 @@ class _joinScreenState extends State<joinScreen> {
 
   Future<void> joinPost(String userId,String password,String phoneNumber,String email, String nickName,String birthYear,String gender ) async
   {
-    var url = "http://10.0.2.2:8080/api/v1/join";
+    var url = "http://$ip/api/v1/join";
     try{
       Map data = {
         "userId": userId,

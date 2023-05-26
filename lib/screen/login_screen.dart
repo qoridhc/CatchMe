@@ -37,8 +37,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final idController = TextEditingController();
   final pwController = TextEditingController();
 
-
-
   void signInWithNaver() async {   //네이버 로그인 관리
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
@@ -298,7 +296,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> loginPost(String userId,String password) async
   {
-    var url = "http://10.0.2.2:8080/api/v1/login";
+    var url = "http://$ip/api/v1/login";
     try{
       Map data = {"userId": userId, "password" : password};
 
