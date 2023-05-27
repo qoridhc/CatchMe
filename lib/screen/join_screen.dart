@@ -35,6 +35,7 @@ class _joinScreenState extends State<joinScreen> {
     return Scaffold(
         backgroundColor: Color(0xffEEDDD6),
         body: SingleChildScrollView(
+          child:SafeArea(
           child: Form(
             key: formKey,
             child: Container(
@@ -50,6 +51,7 @@ class _joinScreenState extends State<joinScreen> {
                     width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextField(
+                      textInputAction: TextInputAction.next,
                       controller: idController,
                       decoration: InputDecoration(
                         fillColor: Colors.white,
@@ -65,6 +67,7 @@ class _joinScreenState extends State<joinScreen> {
                     width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
+                      textInputAction: TextInputAction.next,
                       obscureText: true,
                       focusNode: _passwordFocus,
                       keyboardType: TextInputType.visiblePassword,
@@ -84,6 +87,7 @@ class _joinScreenState extends State<joinScreen> {
                     width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
+                      textInputAction: TextInputAction.next,
                       obscureText: true,
                       keyboardType: TextInputType.visiblePassword,
                       controller: pwCheckController,
@@ -113,6 +117,7 @@ class _joinScreenState extends State<joinScreen> {
                     width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
+                      textInputAction: TextInputAction.next,
                       controller: phoneController,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly, //숫자만!
@@ -133,6 +138,7 @@ class _joinScreenState extends State<joinScreen> {
                     width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
+                      textInputAction: TextInputAction.next,
                       controller: eMailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
@@ -149,6 +155,7 @@ class _joinScreenState extends State<joinScreen> {
                     width: MediaQuery.of(context).size.width *4/5,
                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                     child: TextFormField(
+                      textInputAction: TextInputAction.next,
                       controller: nicknameController,
                       decoration: InputDecoration(
                           fillColor: Colors.white,
@@ -229,6 +236,7 @@ class _joinScreenState extends State<joinScreen> {
               ),
             ),
           ),
+          )
         )
     );
 

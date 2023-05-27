@@ -1,3 +1,4 @@
+import 'package:captone4/const/colors.dart';
 import 'package:captone4/model/member_model.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
@@ -28,6 +29,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   late String accessToken;
   late MemberModel tmpMember;
 
+  Offset? offset;
+
+  final GlobalKey _globalKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -47,53 +52,83 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     return DefaultLayout(
       backgroundColor: const Color(0xFFFAFAFA),
       title: "My Page",
-      child: Padding(
-        padding: EdgeInsets.only(top: getAppBarHeight(context) * 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            state.images.isEmpty == true
-                ? _renderMemberInfoTop("empty", memberState)
-                : _renderMemberInfoTop(state.images.last.url, memberState),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
-              child: LinearPercentIndicator(
-                percent: 0.5,
+      child: SafeArea(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          // color: Colors.black,
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  state.images.isEmpty == true
+                      ? _renderMemberInfoTop("empty", memberState)
+                      : _renderMemberInfoTop(
+                          state.images.last.url, memberState),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
+                    child: LinearPercentIndicator(
+                      percent: memberState.averageScore / 100,
+                      // trailing: Text("${memberState.averageScore}"),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFFFFF),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          _generateCategoryIcon(
+                            const Icon(Icons.settings),
+                            "settings",
+                          ),
+                          _generateCategoryIcon(
+                            const Icon(Icons.question_mark),
+                            "FAQ",
+                          ),
+                          _generateCategoryIcon(
+                            const Icon(Icons.info_rounded),
+                            "information",
+                          ),
+                          _generateCategoryIcon(
+                            const Icon(Icons.logout),
+                            "logout",
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
               ),
-            ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration:const BoxDecoration(
-                  color: Color(0xFFFFFFFF),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
+              Positioned(
+                top: getMediaHeight(context) * 0.31,
+                left: getMediaWidth(context) *
+                    (1 - 0.11) *
+                    (memberState.averageScore / 100),
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: PRIMARY_COLOR,
+                      borderRadius: BorderRadius.circular(20)),
+                  width: getMediaWidth(context) * 0.07,
+                  height: getMediaHeight(context) * 0.03,
+                  child: Center(
+                    child: Text(
+                      memberState.averageScore.toString(),
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-                child: Column(
-                  children: [
-                    _generateCategoryIcon(
-                      const Icon(Icons.settings),
-                      "settings",
-                    ),
-                    _generateCategoryIcon(
-                      const Icon(Icons.question_mark),
-                      "FAQ",
-                    ),
-                    _generateCategoryIcon(
-                      const Icon(Icons.info_rounded),
-                      "information",
-                    ),
-                    _generateCategoryIcon(
-                      const Icon(Icons.logout),
-                      "logout",
-                    ),
-                  ],
-                ),
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -153,8 +188,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               member.nickname != ""
                   ? Text(
                       member.nickname,
-                      style:
-                          const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.w700),
                     )
                   : const Text(
                       "",
@@ -162,7 +197,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                           TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                     ),
               Text(
-                "@" + member.memberId.toString(),
+                member.email,
                 style: TextStyle(fontSize: 15, color: Colors.grey),
               ),
             ],
@@ -242,4 +277,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
+  Offset? _getOffset() {
+    if (_globalKey.currentContext != null) {
+      final RenderBox renderBox =
+          _globalKey.currentContext!.findRenderObject() as RenderBox;
+      Offset offset = renderBox.localToGlobal(Offset.zero);
+      return offset;
+    }
+  }
 }

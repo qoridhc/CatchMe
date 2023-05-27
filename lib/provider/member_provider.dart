@@ -34,7 +34,9 @@ class MemberNotifier extends StateNotifier<MemberModel> {
               introduction: "",
               gender: "",
               mbti: "",
-              averageScore: 0.0),
+              averageScore: 0.0,
+              email: "",
+          ),
         );
 
   void getMemberInfoFromServer() async {
