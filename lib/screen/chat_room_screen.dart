@@ -186,51 +186,57 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 80*fem, 0*fem),
                       width: 80*fem,
                       height: 42*fem,
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            // message5MP (9:155)
-                            left: 5*fem,
-                            top: 20*fem,
-                            child: Align(
-                              child: SizedBox(
-                                width: 77*fem,
-                                height: 22*fem,
-                                child: Text(
-                                  'message',
-                                  style: SafeGoogleFont (
-                                    'Inter',
-                                    fontSize: 18*ffem,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.2222222222*ffem/fem,
-                                    color: Color(0xff808080),
+                      child: GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                          context,MaterialPageRoute(builder: (context)=>const ChatScreen()),
+                        );},
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              // message5MP (9:155)
+                              left: 5*fem,
+                              top: 20*fem,
+                              child: Align(
+                                child: SizedBox(
+                                  width: 77*fem,
+                                  height: 22*fem,
+                                  child: Text(
+                                    'message',
+                                    style: SafeGoogleFont (
+                                      'Inter',
+                                      fontSize: 18*ffem,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.2222222222*ffem/fem,
+                                      color: Color(0xff808080),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Positioned(
-                            // Adj (9:156)
-                            left: 5*fem,
-                            top: 0*fem,
-                            child: Align(
-                              child: SizedBox(
-                                width: 60*fem,
-                                height: 25*fem,
-                                child: Text(
-                                  _name[index],
-                                  style: SafeGoogleFont (
-                                    'Estonia',
-                                    fontSize: 20*ffem,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.24*ffem/fem,
-                                    color: Color(0xff000000),
+                            Positioned(
+                              // Adj (9:156)
+                              left: 5*fem,
+                              top: 0*fem,
+                              child: Align(
+                                child: SizedBox(
+                                  width: 60*fem,
+                                  height: 25*fem,
+                                  child: Text(
+                                    _name[index],
+                                    style: SafeGoogleFont (
+                                      'Estonia',
+                                      fontSize: 20*ffem,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.24*ffem/fem,
+                                      color: Color(0xff000000),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     Text(

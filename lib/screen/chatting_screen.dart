@@ -1,10 +1,8 @@
+import 'dart:async';
 import 'package:captone4/chat/message.dart';
 import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -14,8 +12,61 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final _authentication = FirebaseAuth.instance;
-  User? loggedUser;
+  bool _visibility = true;
+  int sec = 60;
+  int min = 3;
+  String secText = '00';
+  String minText = '3';
+  Timer? _timer;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _handleTimer();
+  }
+
+  void _handleTimer() {
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      setState(() {
+        if(min >= 3){
+          min--;
+          sec--;
+        }else{
+          if(sec == 60){
+            min--;
+          }
+          sec--;
+        }
+
+        if(sec > 9){
+          secText = '$sec';
+        }else{
+          if(sec > 0){
+            secText = '0$sec';
+          } else {
+            sec = 60;
+            secText = '00';
+          }
+        }
+
+        if(min > 9){
+          minText = '$min';
+        }else{
+          if(min > 0){
+            minText = '0$min';
+          } else {
+            minText = '00';
+            if(sec == 60){
+              _timer?.cancel();
+              _visibility = false;
+            }
+          }
+        }
+
+      });
+    });
+  }
 
   AppBar _buildAppBar(){
     return AppBar(
@@ -44,60 +95,72 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
       title: Container(
-        padding: EdgeInsets.only(top: 0,bottom: 0,right: 0),
+        padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.only(top: 0,bottom: 0,right: 0),
+              padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: InkWell(
                 child: SizedBox(
                   width: 44,
                   height: 44,
-                  child: CachedNetworkImage(
-                    imageUrl: 'https://picsum.photos/id/421/200/200',
-                    imageBuilder: (context, imageProvider) => Container(
-                      height: 44,
-                      width: 44,
-                      margin: null,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(44)),
-                          image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.cover
-                          )
-                      ),
-                    ),
-                    errorWidget: (context, url, error)=>Image(
-                        image: AssetImage('../image/chat_back.jpg')),
+                  child: CircleAvatar(
+                    backgroundImage:
+                    AssetImage('assets/images/test_img/조유리.jpg'),
                   ),
                 ),
               ),
             ), // 채팅창 앱바 프로필 사진 파트
             Container(
-              width: 180,
-              padding: EdgeInsets.only(top: 0,bottom: 0,right: 0),
+              width: 200,
+              padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: Row(
                 children: [
                   SizedBox(
-                    width: 100,
+                    width: 80,
                     height: 30,
                     child: GestureDetector(
-                      onTap: (){
-
-                      },
+                      onTap: () {},
                       child: Column(
                         children: [
-                          Text('user이름',
+                          Text(
+                            '채팅방',
                             style: TextStyle(
                                 fontFamily: 'Avenir',
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
-                                fontSize: 16
-                            ),
+                                fontSize: 16),
                           ),
                         ],
                       ),
                     ),
+                  ),
+                  SizedBox(
+                    width: 70,
+                  ),
+                  Text(
+                    minText,
+                    style: TextStyle(
+                        fontFamily: 'Avenir',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16),
+                  ),
+                  Text(
+                    ':',
+                    style: TextStyle(
+                        fontFamily: 'Avenir',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16),
+                  ),
+                  Text(
+                    secText,
+                    style: TextStyle(
+                        fontFamily: 'Avenir',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16),
                   )
                 ],
               ),
@@ -108,24 +171,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getCurrentUSer();
-  }
-
-  void getCurrentUSer() {
-    try {
-      final user = _authentication.currentUser;
-      if (user != null) {
-        loggedUser = user;
-        print(loggedUser!.email);
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +182,9 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Messages(),
             ),
-            NewMessage(),
+            Visibility(child: NewMessage(),
+            visible: _visibility,)
+            ,
           ],
         ),
       ),
