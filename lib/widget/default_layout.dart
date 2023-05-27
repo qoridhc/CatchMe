@@ -45,7 +45,7 @@ class DefaultLayout extends StatelessWidget {
           title!,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontFamily: 'Pacifico', fontSize: 40, color: Colors.white),
+              fontFamily: 'Pacifico', fontSize: 30, color: Colors.white),
         ),
         shape: const ContinuousRectangleBorder(
           borderRadius: BorderRadius.only(

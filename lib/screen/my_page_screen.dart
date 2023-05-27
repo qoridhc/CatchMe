@@ -49,12 +49,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final state = ref.watch(memberProfileNotifierProvider);
     final memberState = ref.watch(memberNotifierProvider);
 
-    return SafeArea(
-      child: DefaultLayout(
-        backgroundColor: const Color(0xFFFAFAFA),
-        title: "My Page",
-        child: Padding(
-          padding: EdgeInsets.only(top: getAppBarHeight(context) * 4),
+    return DefaultLayout(
+      backgroundColor: const Color(0xFFFAFAFA),
+      title: "My Page",
+      child: SafeArea(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          // color: Colors.black,
           child: Stack(
             children: [
               Column(
@@ -62,7 +63,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 children: [
                   state.images.isEmpty == true
                       ? _renderMemberInfoTop("empty", memberState)
-                      : _renderMemberInfoTop(state.images.last.url, memberState),
+                      : _renderMemberInfoTop(
+                          state.images.last.url, memberState),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
                     child: LinearPercentIndicator(
