@@ -1,17 +1,20 @@
 import 'dart:async';
 import 'package:captone4/chat/message.dart';
 import 'package:captone4/chat/new_message.dart';
+import 'package:captone4/provider/time_provider.dart';
 import 'package:captone4/screen/chat_room_screen.dart';
+import 'package:captone4/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatScreen extends StatefulWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _visibility = true;
   int sec = 60;
   int min = 3;
@@ -24,6 +27,19 @@ class _ChatScreenState extends State<ChatScreen> {
     // TODO: implement initState
     super.initState();
     _handleTimer();
+    if(!ref.read(TimerProvider.notifier).isRun)
+      ref.read(TimerProvider.notifier).start();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    print("dispose");
+
+    ref.read(TimerProvider.notifier).cancel();
+    ref.read(TimerProvider.notifier).pause();
+
   }
 
   void _handleTimer() {
@@ -63,12 +79,11 @@ class _ChatScreenState extends State<ChatScreen> {
             }
           }
         }
-
       });
     });
   }
 
-  AppBar _buildAppBar(){
+  AppBar _buildAppBar(int time){
     return AppBar(
       actions: [
         IconButton(
@@ -102,8 +117,8 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: InkWell(
                 child: SizedBox(
-                  width: 44,
-                  height: 44,
+                  width: getMediaWidth(context)*0.1,
+                  height: getMediaHeight(context)*0.1,
                   child: CircleAvatar(
                     backgroundImage:
                     AssetImage('assets/images/test_img/조유리.jpg'),
@@ -112,13 +127,13 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ), // 채팅창 앱바 프로필 사진 파트
             Container(
-              width: 200,
+              width: getMediaWidth(context)*0.5,
               padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: Row(
                 children: [
                   SizedBox(
-                    width: 80,
-                    height: 30,
+                    width: getMediaWidth(context)*0.2,
+                    height: getMediaHeight(context)*0.04,
                     child: GestureDetector(
                       onTap: () {},
                       child: Column(
@@ -136,15 +151,15 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                   SizedBox(
-                    width: 70,
+                    width: getMediaWidth(context) * 0.1,
                   ),
                   Text(
-                    minText,
+                    "${(time / 60).toInt()}",
                     style: TextStyle(
                         fontFamily: 'Avenir',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        fontSize: 16),
+                        fontSize: 15),
                   ),
                   Text(
                     ':',
@@ -152,15 +167,15 @@ class _ChatScreenState extends State<ChatScreen> {
                         fontFamily: 'Avenir',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        fontSize: 16),
+                        fontSize: 15),
                   ),
                   Text(
-                    secText,
+                    "${time % 60}",
                     style: TextStyle(
                         fontFamily: 'Avenir',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        fontSize: 16),
+                        fontSize: 15),
                   )
                 ],
               ),
@@ -174,8 +189,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final time = ref.watch(TimerProvider);
+    print(time);
+
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(time),
       body: Container(
         child: Column(
           children: [
