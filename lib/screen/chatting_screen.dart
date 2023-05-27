@@ -4,6 +4,8 @@ import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/utils.dart';
+
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
 
@@ -102,8 +104,8 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: InkWell(
                 child: SizedBox(
-                  width: 44,
-                  height: 44,
+                  width: getMediaWidth(context)*0.1,
+                  height: getMediaHeight(context)*0.1,
                   child: CircleAvatar(
                     backgroundImage:
                     AssetImage('assets/images/test_img/조유리.jpg'),
@@ -112,13 +114,13 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ), // 채팅창 앱바 프로필 사진 파트
             Container(
-              width: 200,
+              width: getMediaWidth(context)*0.5,
               padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: Row(
                 children: [
                   SizedBox(
-                    width: 80,
-                    height: 30,
+                    width: getMediaWidth(context)*0.2,
+                    height: getMediaHeight(context)*0.04,
                     child: GestureDetector(
                       onTap: () {},
                       child: Column(
@@ -136,7 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                   SizedBox(
-                    width: 70,
+                    width: getMediaWidth(context)*0.1,
                   ),
                   Text(
                     minText,
