@@ -87,7 +87,7 @@ class ChatBubbles extends StatelessWidget {
             right: isMe ? 5 : null,
             left: isMe ? null : 5,
             child: CircleAvatar(
-              backgroundImage: NetworkImage(userImage),
+              backgroundImage: AssetImage(userImage),
             ),
           ),
         ]
