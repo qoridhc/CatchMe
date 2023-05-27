@@ -3,7 +3,6 @@ import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 
@@ -131,20 +130,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),/*AppBar(
-        title: Text('Chat screen'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.exit_to_app_sharp,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              _authentication.signOut();
-            },
-          )
-        ],
-      ),*/
+      appBar: _buildAppBar(),
       body: Container(
         child: Column(
           children: [
