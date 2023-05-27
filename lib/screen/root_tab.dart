@@ -7,12 +7,17 @@ import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:captone4/Token.dart'; //토큰 클래스
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
   final Token? token;
-  const RootTab({Key? key,@required this.token}) : super(key: key);
+
+  const RootTab({
+    Key? key,
+    @required this.token,
+  }) : super(key: key);
 
   @override
   State<RootTab> createState() => _RootTabState();
@@ -27,7 +32,6 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     controller = TabController(length: 4, vsync: this);
-
     controller.addListener(tabListener);
   }
 
@@ -62,7 +66,6 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     "My Page",
   ];
 
-
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
@@ -74,7 +77,9 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
           MainPageScreen(),
           ChatRoomScreen(),
           FavoriteListScreen(token: widget.token),
-          MyPageScreen(),
+          MyPageScreen(
+            token: widget.token!,
+          ),
         ],
       ),
       bottomNavigationBar: AnimatedBottomNavigationBar.builder(
@@ -93,23 +98,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               iconList[index],
-              // Icon(
-              //   ImageIcon(AssetImage("assets/")),
-              //   // iconList[index],
-              //   size: 24,
-              //   color: Colors.black,
-              // ),
               const SizedBox(height: 4),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 8),
-              //   child: AutoSizeText(
-              //     iconText[index],
-              //     maxLines: 2,
-              //     style: TextStyle(color: Colors.grey, fontSize: 10),
-              //     textAlign: TextAlign.center,
-              //     group: autoSizeGroup,
-              //   ),
-              // )
             ],
           );
         },

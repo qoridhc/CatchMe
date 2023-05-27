@@ -12,10 +12,10 @@ class LikeListModel{
   }) {
     return LikeListModel(
         count: json['count'],
-        likeList: json['likeList']
+        likeList: json["data"]
             .map<LikeModel>(
             (x) => LikeModel.fromJson(json: x),
-        )
+        ).toList(),
     );
   }
 }
@@ -25,7 +25,7 @@ class LikeModel{
   final String nickname;
   final List<String> imgUrls;
   final String gender;
-  final String time;
+  final DateTime time;
 
   LikeModel({
     required this.id,
@@ -39,11 +39,11 @@ class LikeModel{
     required Map<String, dynamic> json,
   }) {
     return LikeModel(
-        id: json['id'],
+        id: json['memberId'],
         nickname: json['nickname'],
-        imgUrls: json['imgUrls'],
+        imgUrls: json['imageUrls'],
         gender: json['gender'],
-        time: json['time'].toString(),
+        time: json['time'],
     );
   }
 }

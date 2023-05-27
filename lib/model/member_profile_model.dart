@@ -1,5 +1,3 @@
-import '../const/data.dart';
-
 class MemberProfileModel {
   final count;
   final List<MemberProfileImage> images;
@@ -24,12 +22,12 @@ class MemberProfileModel {
 }
 
 class MemberProfileImage {
-  final imageId;
-  final url;
+  final int imageId;
+  final String url;
 
   MemberProfileImage({
-    required this.imageId,
-    required this.url,
+     required this.imageId,
+     required this.url,
   });
 
   factory MemberProfileImage.fromJson({
@@ -37,7 +35,7 @@ class MemberProfileImage {
   }) {
     return MemberProfileImage(
       imageId: json['imageId'],
-      url: "http://$ip/"+json['url'],
+      url: json['url'],
     );
   }
 }

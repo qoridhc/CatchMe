@@ -27,26 +27,16 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
 
   late int _memberId;
   late String _memberToken;
-  late LikeModel _sendModel;
-  late LikeModel _receivedModel;
-
-  late final _sendImage;
-  late final _sendNickName;
-
-  late final _receivedImage;
-  late final _receivedNickName;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-    // _memberId = widget.token!.id!;
-    // _memberToken = widget.token!.accessToken!;
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //
-    // });
+    _memberId = widget.token!.id!;
+    _memberToken = widget.token!.accessToken!;
+    print(_memberId);
+    print(_memberToken);
   }
 
   @override
@@ -168,16 +158,16 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
 
   //사용자가 보낸 like
   Future<LikeListModel> getSendLike() async {
-    print("getFavoriteTargetID 실행");
+    print("getSendLike 실행");
     final dio = Dio();
     final List<String> ls;
 
     try{
       final resp = await dio.get(
-        'http://$ip/api/v1/members/classifications?memberId=$_memberId&status=true',
+        'http://$ip/api/v1/classifications?memberId=${_memberId}&status=true',
         options: Options(
           headers: {
-            'authorization': 'Bearer $_memberToken'
+            'authorization': 'Bearer ${_memberToken}'
           },
         ),
       );
@@ -191,16 +181,16 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
 
   //사용자 받은 like
   Future<LikeListModel> getReceivedLike() async {
-    print("getFavoriteTargetID 실행");
+    print("getReceivedLike 실행");
     final dio = Dio();
-    final List<String> ls;
 
     try{
       final resp = await dio.get(
-        'http://$ip/api/v1/members/classifications?targetId=$_memberId&status=true',
+        'http://$ip/api/v1/classifications?targetId=${_memberId}&status=true',
+
         options: Options(
           headers: {
-            'authorization': 'Bearer $_memberToken'
+            'authorization': 'Bearer ${_memberToken}'
           },
         ),
       );
@@ -211,92 +201,6 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       rethrow;
     }
   }
-
-  _getUserInfoFromServer() async {
-    print("");
-  }
-
-  // Widget sendListviewBuilder(){
-  //
-  //   final _sw = MediaQuery.of(context).size.width;
-  //   final _sh = MediaQuery.of(context).size.height;
-  //
-  //   final List<String> _img = <String>[
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //   ];
-  //
-  //   final List<String> _name = <String>[
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //   ];
-  //
-  //   return ListView.builder(
-  //     // scrollDirection: Axis.vertical,
-  //     itemCount: _img.length,
-  //     padding: EdgeInsets.symmetric(vertical: 0),
-  //     itemBuilder: (BuildContext context, int index){
-  //       return Column(
-  //         children: [
-  //           Container(
-  //             width:  _sw * 0.94,
-  //             height: _sw * 0.2,
-  //             decoration: BoxDecoration(
-  //               color: Colors.white,
-  //               borderRadius: BorderRadius.all(Radius.circular(10)),
-  //               boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.7),
-  //                 blurRadius: 5.0,
-  //                 spreadRadius: 0.0,
-  //                 offset: const Offset(0,7),)]
-  //             ),
-  //             child: Row(
-  //               children: [
-  //                 SizedBox(width: _sw * 0.015,),
-  //                 Container(
-  //                   height: _sw * 0.15,
-  //                   width: _sw * 0.15,
-  //                   decoration: BoxDecoration(
-  //                     borderRadius: BorderRadius.circular(50),
-  //                     image: DecorationImage(image: AssetImage(_img[index]), fit: BoxFit.fill)
-  //                   ),
-  //                 ),
-  //                 SizedBox(
-  //                   width: _sw * 0.08,
-  //                 ),
-  //                 Container(
-  //                   child: Text(
-  //                     _name[index] + '님에게 하트를 보냈습니다.'
-  //                   ),
-  //                 ),
-  //               ],
-  //             )
-  //           ),
-  //           Container(height: _sw*0.05,)
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   Widget sendListviewBuilder() {
     return Container(
@@ -323,7 +227,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                     });
               }
               else {
-                return Container(child: Text('없음'),);
+                return Center(child: Container(child: Text('Like를 보낸 정보가 없습니다.'),));
               }
             }
         )
@@ -399,7 +303,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                     });
               }
               else {
-                return Container(child: Text('없음'),);
+                return Center(child: Container(child: Text('Like를 받은 정보가 없습니다.'),));
               }
             }
         )
@@ -449,82 +353,4 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       ],
     );
   }
-
-  // Widget receivedListviewBuilder(){
-  //
-  //   final _sw = MediaQuery.of(context).size.width;
-  //   final _sh = MediaQuery.of(context).size.height;
-  //
-  //   final List<String> _img = <String>[
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //     'assets/images/test_img/1.jpg',
-  //     'assets/images/test_img/2.jpg',
-  //     'assets/images/test_img/3.jpg',
-  //   ];
-  //
-  //   final List<String> _name = <String>[
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //     '아이유',
-  //     '차은우',
-  //     '배수지',
-  //   ];
-  //   return ListView.builder(
-  //     // scrollDirection: Axis.vertical,
-  //     itemCount: _img.length,
-  //     padding: EdgeInsets.symmetric(vertical: 0),
-  //     itemBuilder: (BuildContext context, int index){
-  //       return Column(
-  //         children: [
-  //           Container(
-  //               width:  _sw * 0.94,
-  //               height: _sw * 0.2,
-  //               decoration: BoxDecoration(
-  //                 color: Colors.white,
-  //                 borderRadius: BorderRadius.all(Radius.circular(10)),
-  //                 border: Border.all(color: Colors.black38),
-  //               ),
-  //               child: Row(
-  //                 children: [
-  //                   SizedBox(width: _sw * 0.015,),
-  //                   Container(
-  //                     height: _sw * 0.15,
-  //                     width: _sw * 0.15,
-  //                     decoration: BoxDecoration(
-  //                         borderRadius: BorderRadius.circular(50),
-  //                         image: DecorationImage(image: AssetImage(_img[index]), fit: BoxFit.fill)
-  //                     ),
-  //                   ),
-  //                   SizedBox(
-  //                     width: _sw * 0.15,
-  //                   ),
-  //                   Container(
-  //                     child: Text(
-  //                         _name[index] + '님에게 하트를 받았습니다.'
-  //                     ),
-  //                   ),
-  //                 ],
-  //               )
-  //           ),
-  //           Container(height: _sw*0.03,)
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 }
