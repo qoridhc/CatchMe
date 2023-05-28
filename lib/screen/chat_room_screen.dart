@@ -23,7 +23,13 @@ class ChatRoomScreen extends StatefulWidget {
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
+class Msg{
+  String content;
 
+  Msg({
+    required this.content
+});
+}
 
 
 
@@ -34,7 +40,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late StompClient stompClient;
   TextEditingController messageController = TextEditingController();
   late WebSocketChannel channel;
-
+  List<Msg> receivedMessages = []; // 수신한 메시지를 저장하는 리스트
 
 
   @override
@@ -43,7 +49,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
     print("웹 소캣 연결");
     connectToStomp();
-
   }
   void connectToStomp() {
     stompClient = StompClient(
@@ -64,9 +69,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     stompClient.subscribe(
       destination: '/topic/message', // 구독할 주제 경로
       callback: (StompFrame frame) {
+        if (frame.body != null) {
+          Map<String, dynamic> obj = json.decode(frame.body!);
+          Msg message = Msg(content: obj['content']);
+          setState(() {
+            receivedMessages.add(message);
+
+          });
+          print(receivedMessages);
+        }
         // 메시지 처리
-        final message = frame.body;
-        // TODO: 메시지 처리 로직 작성
+
       },
     );
   }
