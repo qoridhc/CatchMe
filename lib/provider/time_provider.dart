@@ -9,9 +9,6 @@ final TimerProvider = StateNotifierProvider<TimerNotifier, int>((ref) {
 class TimerNotifier extends StateNotifier<int> {
   TimerNotifier() : super(0);
 
-  bool isRun = false;
-  int defaultTime = 900;
-
   late StreamSubscription<int> _stream;
 
   @override
@@ -20,20 +17,16 @@ class TimerNotifier extends StateNotifier<int> {
   }
 
   void start() {
-    isRun = true;
-
-    _stream = Stream.periodic(Duration(seconds: 1), (x) => x).listen(
-      (x) {
-        if (mounted) {
-          state = defaultTime - x;
-        }
-      },
+    _stream = Stream.periodic(Duration(seconds: 1), (x) => x).listen((x) {
+      if (mounted) {
+        state = x;
+      }
+    }
     );
   }
 
   void pause() {
     _stream.pause();
-    isRun = false;
   }
 
   void restart() {
@@ -43,6 +36,5 @@ class TimerNotifier extends StateNotifier<int> {
   void cancel() {
     _stream.cancel();
     state = 0;
-    isRun = false;
   }
 }

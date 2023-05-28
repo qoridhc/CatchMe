@@ -8,7 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({Key? key}) : super(key: key);
+  DateTime? createTime;
+
+  ChatScreen({
+    required this.createTime,
+    Key? key,
+  }) : super(key: key);
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -20,70 +25,54 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   int min = 3;
   String secText = '00';
   String minText = '3';
-  Timer? _timer;
+  late Timer _timer;
+  Duration? timeDiff = null;
+  int time = 900;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    print("creatTime : ${widget.createTime}");
+
+    if (widget.createTime != null) {
+      timeDiff = DateTime.now().difference(widget.createTime!);
+      print("now : ${DateTime.now()}");
+      print("timeDiff : $timeDiff");
+      setState(() {
+        time = time - timeDiff!.inSeconds;
+      });
+    }
+
     _handleTimer();
-    if(!ref.read(TimerProvider.notifier).isRun)
-      ref.read(TimerProvider.notifier).start();
+    // if(!ref.read(TimerProvider.notifier).isRun)
+    //   ref.read(TimerProvider.notifier).start();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+    _timer.cancel();
     print("dispose");
 
-    ref.read(TimerProvider.notifier).cancel();
-    ref.read(TimerProvider.notifier).pause();
-
+    // ref.read(TimerProvider.notifier).cancel();
+    // ref.read(TimerProvider.notifier).pause();
   }
 
   void _handleTimer() {
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      setState(() {
-        if(min >= 3){
-          min--;
-          sec--;
-        }else{
-          if(sec == 60){
-            min--;
-          }
-          sec--;
-        }
-
-        if(sec > 9){
-          secText = '$sec';
-        }else{
-          if(sec > 0){
-            secText = '0$sec';
-          } else {
-            sec = 60;
-            secText = '00';
-          }
-        }
-
-        if(min > 9){
-          minText = '$min';
-        }else{
-          if(min > 0){
-            minText = '0$min';
-          } else {
-            minText = '00';
-            if(sec == 60){
-              _timer?.cancel();
-              _visibility = false;
-            }
-          }
-        }
-      });
-    });
+    _timer = Timer.periodic(
+      Duration(seconds: 1),
+      (timer) {
+        setState(() {
+          time = time - 1;
+        });
+      },
+    );
   }
 
-  AppBar _buildAppBar(int time){
+  AppBar _buildAppBar() {
     return AppBar(
       actions: [
         IconButton(
@@ -100,14 +89,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       elevation: 0,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [
-              Color(0xffFF6961),
-              Color(0xffFF6961),
-              Color(0xffFF6961),
-              Color(0xffFF6961),
-            ],
-            )
-        ),
+            gradient: LinearGradient(
+          colors: [
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+          ],
+        )),
       ),
       title: Container(
         padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
@@ -117,23 +106,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: InkWell(
                 child: SizedBox(
-                  width: getMediaWidth(context)*0.1,
-                  height: getMediaHeight(context)*0.1,
+                  width: getMediaWidth(context) * 0.1,
+                  height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                    AssetImage('assets/images/test_img/조유리.jpg'),
+                        AssetImage('assets/images/test_img/조유리.jpg'),
                   ),
                 ),
               ),
             ), // 채팅창 앱바 프로필 사진 파트
             Container(
-              width: getMediaWidth(context)*0.5,
+              width: getMediaWidth(context) * 0.5,
               padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: Row(
                 children: [
                   SizedBox(
-                    width: getMediaWidth(context)*0.2,
-                    height: getMediaHeight(context)*0.04,
+                    width: getMediaWidth(context) * 0.2,
+                    height: getMediaHeight(context) * 0.04,
                     child: GestureDetector(
                       onTap: () {},
                       child: Column(
@@ -170,7 +159,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         fontSize: 15),
                   ),
                   Text(
-                    "${time % 60}",
+                    (time % 60).toString().padLeft(2,'0'),
                     style: TextStyle(
                         fontFamily: 'Avenir',
                         fontWeight: FontWeight.bold,
@@ -186,24 +175,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-
-    final time = ref.watch(TimerProvider);
-    print(time);
+    //
+    // final time = ref.watch(TimerProvider);
+    // print(time);
 
     return Scaffold(
-      appBar: _buildAppBar(time),
+      appBar: _buildAppBar(),
       body: Container(
         child: Column(
           children: [
             Expanded(
               child: Messages(),
             ),
-            Visibility(child: NewMessage(),
-            visible: _visibility,)
-            ,
+            Visibility(
+              child: NewMessage(),
+              visible: _visibility,
+            ),
           ],
         ),
       ),
