@@ -197,7 +197,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                           TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                     ),
               Text(
-                "@" + member.memberId.toString(),
+                member.email,
                 style: TextStyle(fontSize: 15, color: Colors.grey),
               ),
             ],

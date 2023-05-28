@@ -18,10 +18,11 @@ class _MainPageScreenState extends State<MainPageScreen> {
       imageUrls: ['assets/images/test_img/4.jpg'],
       birthYear: '1994',
       introduction:
-      '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
+          '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
       gender: 'female',
       mbti: 'ISFP',
       averageScore: 100.0,
+      email: "test@naver.com",
     ),
     MemberModel(
       memberId: '2',
@@ -29,10 +30,11 @@ class _MainPageScreenState extends State<MainPageScreen> {
       imageUrls: ['assets/images/test_img/5.jpg'],
       birthYear: '1997',
       introduction:
-      '모험을 즐기는 여행자이자 음식 애호가입니다.\n함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. \n새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. \n다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. \n즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
+          '모험을 즐기는 여행자이자 음식 애호가입니다.\n함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. \n새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. \n다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. \n즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
       gender: 'male',
       mbti: 'ISFP',
       averageScore: 1.0,
+      email: "test@naver.com",
     ),
     MemberModel(
       memberId: '2',
@@ -40,13 +42,16 @@ class _MainPageScreenState extends State<MainPageScreen> {
       imageUrls: ['assets/images/test_img/5.jpg'],
       birthYear: '19970330',
       introduction:
-      '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
+          '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
       gender: 'male',
       mbti: 'ISFP',
       averageScore: 1.0,
+      email: "test@naver.com",
     ),
   ];
+
   int currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     List<MemberModel> users = [
@@ -60,6 +65,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
         gender: 'female',
         mbti: 'ISFP',
         averageScore: 100.0,
+        email: "test@naver.com",
       ),
       MemberModel(
         memberId: '2',
@@ -71,6 +77,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
         gender: 'male',
         mbti: 'ISFP',
         averageScore: 1.0,
+        email: "test@naver.com",
       ),
       MemberModel(
         memberId: '2',
@@ -82,6 +89,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
         gender: 'male',
         mbti: 'ISFP',
         averageScore: 1.0,
+        email: "test@naver.com",
       ),
     ];
 
@@ -133,20 +141,18 @@ class _MainPageScreenState extends State<MainPageScreen> {
             ),
           ),
           onDismissed: (direction) {
-            if(direction == DismissDirection.endToStart)
-              {
-                setState(() {
+            if (direction == DismissDirection.endToStart) {
+              setState(
+                () {
                   if (currentIndex < users.length) {
                     currentIndex += 1;
                     print("다음");
-                  }
-                  else if (currentIndex >= users.length) {
+                  } else if (currentIndex >= users.length) {
                     currentIndex = 0;
                   }
-
-                });
-              }
-
+                },
+              );
+            }
           },
           child: Card(
             child: ListView(

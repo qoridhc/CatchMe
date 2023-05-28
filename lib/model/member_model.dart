@@ -7,6 +7,7 @@ class MemberModel {
   final String gender;
   final String mbti;
   final double averageScore;
+  final String email;
 
   MemberModel({
     required this.memberId,
@@ -17,6 +18,7 @@ class MemberModel {
     required this.gender,
     required this.mbti,
     required this.averageScore,
+    required this.email,
   });
 
   factory MemberModel.fromJson({
@@ -31,6 +33,7 @@ class MemberModel {
       gender: json['gender'],
       mbti: json['mbti'],
       averageScore: json['averageScore'],
+      email: json['email'],
     );
   }
 
@@ -46,6 +49,7 @@ class MemberModel {
       gender: json['gender'] ?? this.gender,
       mbti: json['mbti'] ?? this.mbti,
       averageScore: json['averageScore'] ?? this.averageScore,
+      email : json['email'] ?? this.email,
     );
   }
 }

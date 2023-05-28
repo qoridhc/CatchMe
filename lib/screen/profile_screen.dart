@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:captone4/const/colors.dart';
+import 'package:captone4/const/mbti.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:dio/dio.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +33,14 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ImagePicker picker = ImagePicker();
   XFile? _pickedFile;
+
+  List<String> mbti = Mbti.values.map((e) => e.name).toList();
+  String? selectedMbti;
+
+  final List<String> genderItems = [
+    'Male',
+    'Female',
+  ];
 
   final TextStyle ts = TextStyle(
     fontSize: 25,
@@ -75,7 +85,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     nicknameController.text = memberState.nickname;
 
-    mbtiController.text = memberState.mbti;
+    selectedMbti = ref.read(memberNotifierProvider).mbti;
   }
 
   @override
@@ -146,10 +156,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               Row(
                                 children: [
                                   Container(
-                                    // color: Colors.black,
                                     width: getMediaWidth(context) * 0.2,
                                     child: TextFormField(
-                                      // maxLength: 4,
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
                                       ),
@@ -163,21 +171,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                 ],
                               ),
-                              // Text(
-                              //   "${memberState.nickname.substring(0,3)} / ${DateTime.now().year - int.parse(memberState.birthYear)}",
-                              //   style: ts,
-                              // ),
                               Container(
                                 // color: Colors.black,
-                                width: getMediaWidth(context) * 0.2,
-                                child: TextFormField(
-                                  // maxLength: 4,
+                                width: getMediaWidth(context) * 0.28,
+                                child: DropdownButtonFormField2(
                                   decoration: InputDecoration(
-                                    border: InputBorder.none,
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.zero,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    //Add more decoration as you want here
+                                    //Add label If you want but add hint outside the decoration to be aligned in the button perfectly.
                                   ),
-                                  style: ts,
-                                  controller: mbtiController,
+                                  isExpanded: true,
+                                  items: mbti
+                                      .map((item) => DropdownMenuItem<String>(
+                                    value: item,
+                                    child: Container(
+                                      // color: Colors.black,
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ))
+                                      .toList(),
+                                  value: selectedMbti,
+                                  validator: (value) {
+                                    if (value == null) {
+                                      return 'Please select gender.';
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (value) {
+                                    selectedMbti = value;
+                                  },
+                                  buttonStyleData: ButtonStyleData(
+                                    height: getMediaHeight(context) * 0.05,
+                                    width: getMediaWidth(context) * 0.2,
+                                    padding: EdgeInsets.only(left: 20, right: 10),
+                                  ),
+                                  iconStyleData: const IconStyleData(
+                                    icon: Icon(
+                                      Icons.arrow_drop_down,
+                                      color: Colors.black45,
+                                    ),
+                                    iconSize: 30,
+                                  ),
+                                  dropdownStyleData: DropdownStyleData(
+                                    maxHeight: getMediaHeight(context) / 5,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
                                 ),
+                                // TextFormField(
+                                //   // maxLength: 4,
+                                //   decoration: InputDecoration(
+                                //     border: InputBorder.none,
+                                //   ),
+                                //   style: ts,
+                                //   controller: mbtiController,
+                                // ),
                               ),
                             ],
                           ),
@@ -214,8 +272,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             .postMemberInfoUpdate(
                               nicknameController.text,
                               introduceController.text,
-                              mbtiController.text,
+                              selectedMbti,
                             );
+                        Navigator.of(context).pop();
                       },
                     ),
                   ),
