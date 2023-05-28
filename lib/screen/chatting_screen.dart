@@ -54,7 +54,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _timer.cancel();
+    if(_timer.isActive)
+      _timer.cancel();
     print("dispose");
 
     // ref.read(TimerProvider.notifier).cancel();
@@ -67,6 +68,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       (timer) {
         setState(() {
           time = time - 1;
+          if(time == 0){
+            _visibility = false;
+            _timer.cancel();
+          }
         });
       },
     );
@@ -130,10 +135,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           Text(
                             '채팅방',
                             style: TextStyle(
-                                fontFamily: 'Avenir',
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 16),
+                              fontFamily: 'Avenir',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       ),
@@ -145,27 +151,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Text(
                     "${(time / 60).toInt()}",
                     style: TextStyle(
-                        fontFamily: 'Avenir',
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 15),
+                      fontFamily: 'Avenir',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
                   ),
                   Text(
                     ':',
                     style: TextStyle(
-                        fontFamily: 'Avenir',
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 15),
+                      fontFamily: 'Avenir',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
                   ),
                   Text(
-                    (time % 60).toString().padLeft(2,'0'),
+                    (time % 60).toString().padLeft(2, '0'),
                     style: TextStyle(
-                        fontFamily: 'Avenir',
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 15),
-                  )
+                      fontFamily: 'Avenir',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  ),
                 ],
               ),
             )
