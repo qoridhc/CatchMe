@@ -32,8 +32,6 @@ class Msg{
 });
 }
 
-
-
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _pageChanged = 0;
 
@@ -42,14 +40,21 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   TextEditingController messageController = TextEditingController();
   //late WebSocketChannel channel;
 
+  List<DateTime> roomCreateTimeList = [];
 
   @override
   void initState() {
     super.initState();
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
+
+    DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
+    roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
+
+    //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
     print("웹 소캣 연결");
     connectToStomp();
   }
+
   void connectToStomp() {
     stompClient = StompClient(
       config: StompConfig(
@@ -60,6 +65,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     stompClient.activate();
   }
+
   void onConnectCallback(StompFrame connectFrame) {
     stompClient.subscribe(
       destination: '/topic/message', // 구독할 주제 경로
@@ -93,7 +99,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     messageController.clear();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final _sw = MediaQuery.of(context).size.width;
@@ -107,8 +112,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       initialPage: 0,
     );
 
-
-
     return DefaultLayout(
       // backgroundColor: BACKGROUND_COLOR,
       title: 'Chat',
@@ -120,7 +123,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               height: _sh * 0.005,
             ),
             Container(
-                width:  _sw,
+                width: _sw,
                 height: _sw * 0.1,
                 child: Center(
                   child: Container(
@@ -147,7 +150,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             height: _sw * 0.08,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                              color: _chatsOrGroups ? Colors.white : Colors.transparent,
+                              color: _chatsOrGroups
+                                  ? Colors.white
+                                  : Colors.transparent,
                             ),
                             child: Center(child: Text('chats')),
                             //버튼
@@ -170,7 +175,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             height: _sw * 0.08,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                              color: _chatsOrGroups ? Colors.transparent : Colors.white,
+                              color: _chatsOrGroups
+                                  ? Colors.transparent
+                                  : Colors.white,
                             ),
                             child: Center(child: Text('Groups')),
                             //버튼
@@ -179,8 +186,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       ],
                     ),
                   ),
-                )
-            ),
+                )),
             SizedBox(
               height: _sw * 0.01,
             ),
@@ -191,18 +197,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 child: PageView(
                   pageSnapping: true,
                   controller: _pageController,
-                  onPageChanged: (index){
+                  onPageChanged: (index) {
                     setState(() {
                       _pageChanged = index;
                       print(_pageChanged);
-                      if(_pageChanged == 0) _chatsOrGroups = true;
-                      else _chatsOrGroups = false;
+                      if (_pageChanged == 0)
+                        _chatsOrGroups = true;
+                      else
+                        _chatsOrGroups = false;
                     });
                   },
-                  children: [
-                    chatsListviewBuilder(),
-                    GroupsListviewBuilder()
-                  ],
+                  children: [chatsListviewBuilder(), GroupsListviewBuilder()],
                 ),
               ),
             ),
@@ -232,7 +237,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  Widget chatsListviewBuilder(){
+  Widget chatsListviewBuilder() {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
@@ -252,24 +257,24 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       // scrollDirection: Axis.vertical,
       itemCount: _img.length,
       padding: EdgeInsets.symmetric(vertical: 0),
-      itemBuilder: (BuildContext context, int index){
+      itemBuilder: (BuildContext context, int index) {
         return Container(
           width: double.infinity,
-          height: 62*fem,
-          padding: EdgeInsets.fromLTRB(40*fem, 0*fem, 0*fem, 0*fem),
-          margin: EdgeInsets.fromLTRB(0,10,0,10),
-          decoration: BoxDecoration (
-            borderRadius: BorderRadius.circular(31*fem),
+          height: 62 * fem,
+          padding: EdgeInsets.fromLTRB(40 * fem, 0 * fem, 0 * fem, 0 * fem),
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(31 * fem),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 // image40kgV (1:81)
-                width: 62.49*fem,
-                height: 62*fem,
+                width: 62.49 * fem,
+                height: 62 * fem,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(31*fem),
+                  borderRadius: BorderRadius.circular(31 * fem),
                   child: Image.asset(
                     _img[index],
                     fit: BoxFit.cover,
@@ -277,38 +282,46 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.fromLTRB(10*fem, 6*fem, 3*fem, 6*fem),
+                padding:
+                    EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
                 height: double.infinity,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
-                      margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 80*fem, 0*fem),
-                      width: 80*fem,
-                      height: 42*fem,
+                      margin: EdgeInsets.fromLTRB(
+                          0 * fem, 0 * fem, 80 * fem, 0 * fem),
+                      width: 80 * fem,
+                      height: 42 * fem,
                       child: GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           Navigator.push(
-                          context,MaterialPageRoute(builder: (context)=>const ChatScreen()),
-                        );},
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                createTime: roomCreateTimeList[0], // 0번째 채팅방 생성시간
+                              ),
+                            ),
+                          );
+                        },
                         child: Stack(
                           children: [
                             Positioned(
                               // message5MP (9:155)
-                              left: 5*fem,
-                              top: 20*fem,
+                              left: 5 * fem,
+                              top: 20 * fem,
                               child: Align(
                                 child: SizedBox(
-                                  width: 77*fem,
-                                  height: 22*fem,
+                                  width: 77 * fem,
+                                  height: 22 * fem,
                                   child: Text(
                                     'message',
-                                    style: SafeGoogleFont (
+                                    style: SafeGoogleFont(
                                       'Inter',
-                                      fontSize: 18*ffem,
+                                      fontSize: 18 * ffem,
                                       fontWeight: FontWeight.w400,
-                                      height: 1.2222222222*ffem/fem,
+                                      height: 1.2222222222 * ffem / fem,
                                       color: Color(0xff808080),
                                     ),
                                   ),
@@ -317,19 +330,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             ),
                             Positioned(
                               // Adj (9:156)
-                              left: 5*fem,
-                              top: 0*fem,
+                              left: 5 * fem,
+                              top: 0 * fem,
                               child: Align(
                                 child: SizedBox(
-                                  width: 60*fem,
-                                  height: 25*fem,
+                                  width: 60 * fem,
+                                  height: 25 * fem,
                                   child: Text(
                                     _name[index],
-                                    style: SafeGoogleFont (
+                                    style: SafeGoogleFont(
                                       'Estonia',
-                                      fontSize: 20*ffem,
+                                      fontSize: 20 * ffem,
                                       fontWeight: FontWeight.w400,
-                                      height: 1.24*ffem/fem,
+                                      height: 1.24 * ffem / fem,
                                       color: Color(0xff000000),
                                     ),
                                   ),
@@ -343,11 +356,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     Text(
                       // 2vq (9:157)
                       '12:00',
-                      style: SafeGoogleFont (
+                      style: SafeGoogleFont(
                         'Estonia',
-                        fontSize: 20*ffem,
+                        fontSize: 20 * ffem,
                         fontWeight: FontWeight.w400,
-                        height: 1.24*ffem/fem,
+                        height: 1.24 * ffem / fem,
                         color: Color(0xff000000),
                       ),
                     ),
@@ -360,7 +373,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
-  Widget GroupsListviewBuilder(){
+
+  Widget GroupsListviewBuilder() {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
@@ -380,24 +394,24 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       // scrollDirection: Axis.vertical,
       itemCount: _img.length,
       padding: EdgeInsets.symmetric(vertical: 0),
-      itemBuilder: (BuildContext context, int index){
+      itemBuilder: (BuildContext context, int index) {
         return Container(
           width: double.infinity,
-          height: 62*fem,
-          padding: EdgeInsets.fromLTRB(40*fem, 0*fem, 0*fem, 0*fem),
-          margin: EdgeInsets.fromLTRB(0,10,0,10),
-          decoration: BoxDecoration (
-            borderRadius: BorderRadius.circular(31*fem),
+          height: 62 * fem,
+          padding: EdgeInsets.fromLTRB(40 * fem, 0 * fem, 0 * fem, 0 * fem),
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(31 * fem),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 // image40kgV (1:81)
-                width: 62.49*fem,
-                height: 62*fem,
+                width: 62.49 * fem,
+                height: 62 * fem,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(31*fem),
+                  borderRadius: BorderRadius.circular(31 * fem),
                   child: Image.asset(
                     _img[index],
                     fit: BoxFit.cover,
@@ -405,33 +419,35 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.fromLTRB(10*fem, 6*fem, 3*fem, 6*fem),
+                padding:
+                    EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
                 height: double.infinity,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
-                      margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 80*fem, 0*fem),
-                      width: 80*fem,
-                      height: 42*fem,
+                      margin: EdgeInsets.fromLTRB(
+                          0 * fem, 0 * fem, 80 * fem, 0 * fem),
+                      width: 80 * fem,
+                      height: 42 * fem,
                       child: Stack(
                         children: [
                           Positioned(
                             // message5MP (9:155)
-                            left: 5*fem,
-                            top: 20*fem,
+                            left: 5 * fem,
+                            top: 20 * fem,
                             child: Align(
                               child: SizedBox(
-                                width: 77*fem,
-                                height: 22*fem,
+                                width: 77 * fem,
+                                height: 22 * fem,
                                 child: Text(
                                   'message',
-                                  style: SafeGoogleFont (
+                                  style: SafeGoogleFont(
                                     'Inter',
-                                    fontSize: 18*ffem,
+                                    fontSize: 18 * ffem,
                                     fontWeight: FontWeight.w400,
-                                    height: 1.2222222222*ffem/fem,
+                                    height: 1.2222222222 * ffem / fem,
                                     color: Color(0xff808080),
                                   ),
                                 ),
@@ -440,19 +456,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           ),
                           Positioned(
                             // Adj (9:156)
-                            left: 5*fem,
-                            top: 0*fem,
+                            left: 5 * fem,
+                            top: 0 * fem,
                             child: Align(
                               child: SizedBox(
-                                width: 60*fem,
-                                height: 25*fem,
+                                width: 60 * fem,
+                                height: 25 * fem,
                                 child: Text(
                                   _name[index],
-                                  style: SafeGoogleFont (
+                                  style: SafeGoogleFont(
                                     'Estonia',
-                                    fontSize: 20*ffem,
+                                    fontSize: 20 * ffem,
                                     fontWeight: FontWeight.w400,
-                                    height: 1.24*ffem/fem,
+                                    height: 1.24 * ffem / fem,
                                     color: Color(0xff000000),
                                   ),
                                 ),
@@ -465,11 +481,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     Text(
                       // 2vq (9:157)
                       '12:00',
-                      style: SafeGoogleFont (
+                      style: SafeGoogleFont(
                         'Estonia',
-                        fontSize: 20*ffem,
+                        fontSize: 20 * ffem,
                         fontWeight: FontWeight.w400,
-                        height: 1.24*fem/fem,
+                        height: 1.24 * fem / fem,
                         color: Color(0xff000000),
                       ),
                     ),
@@ -482,8 +498,4 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
-
-
-
-
 }
