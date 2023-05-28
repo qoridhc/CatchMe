@@ -27,7 +27,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String minText = '3';
   late Timer _timer;
   Duration? timeDiff = null;
-  int time = 900;
+  int time = 0;
+  int defaultTime = 900;
 
   @override
   void initState() {
@@ -40,9 +41,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       timeDiff = DateTime.now().difference(widget.createTime!);
       print("now : ${DateTime.now()}");
       print("timeDiff : $timeDiff");
-      setState(() {
-        time = time - timeDiff!.inSeconds;
-      });
+      setState(
+        () {
+          if ((defaultTime - timeDiff!.inSeconds) > 0) {
+            time = defaultTime - timeDiff!.inSeconds;
+          } else {
+            _visibility = false;
+          }
+        },
+      );
     }
 
     _handleTimer();
@@ -54,8 +61,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    if(_timer.isActive)
-      _timer.cancel();
+    if (_timer.isActive) _timer.cancel();
     print("dispose");
 
     // ref.read(TimerProvider.notifier).cancel();
@@ -67,10 +73,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       Duration(seconds: 1),
       (timer) {
         setState(() {
-          time = time - 1;
-          if(time == 0){
+          if (time <= 0) {
             _visibility = false;
             _timer.cancel();
+          } else {
+            time = time - 1;
           }
         });
       },
