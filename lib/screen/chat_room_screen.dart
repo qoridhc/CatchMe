@@ -23,6 +23,7 @@ class ChatRoomScreen extends StatefulWidget {
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
+
 class Msg{
   String content;
 
@@ -39,14 +40,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _chatsOrGroups = true;
   late StompClient stompClient;
   TextEditingController messageController = TextEditingController();
-  late WebSocketChannel channel;
-  List<Msg> receivedMessages = []; // 수신한 메시지를 저장하는 리스트
+  //late WebSocketChannel channel;
 
 
   @override
   void initState() {
     super.initState();
-    channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
+    //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
     print("웹 소캣 연결");
     connectToStomp();
   }
@@ -61,33 +61,25 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     stompClient.activate();
   }
   void onConnectCallback(StompFrame connectFrame) {
+    stompClient.subscribe(
+      destination: '/topic/message', // 구독할 주제 경로
+      callback: (connectFrame){
+
+        print(connectFrame.body);
+        // 메시지 처리
+      },
+    );
     // 연결이 성공하면 메시지를 보내는 예제
     stompClient.send(
       destination: '/app/sendMessage', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로
       body: 'Hello, server!', // 보낼 메시지
-    );
-    stompClient.subscribe(
-      destination: '/topic/message', // 구독할 주제 경로
-      callback: (StompFrame frame) {
-        if (frame.body != null) {
-          Map<String, dynamic> obj = json.decode(frame.body!);
-          Msg message = Msg(content: obj['content']);
-          setState(() {
-            receivedMessages.add(message);
-
-          });
-          print(receivedMessages);
-        }
-        // 메시지 처리
-
-      },
     );
   }
 
   @override
   void dispose() {
     stompClient?.deactivate();
-    channel.sink.close();
+   // channel.sink.close();
     super.dispose();
   }
 
@@ -108,7 +100,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final _sh = MediaQuery.of(context).size.height;
 
     stompClient.activate();
-
 
 
 
