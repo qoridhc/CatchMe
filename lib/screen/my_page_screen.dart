@@ -1,5 +1,6 @@
 import 'package:captone4/const/colors.dart';
 import 'package:captone4/model/member_model.dart';
+import 'package:captone4/provider/follow_provider.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
 import 'package:captone4/screen/profile_screen.dart';
@@ -11,6 +12,7 @@ import 'package:image_network/image_network.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import '../Token.dart';
+import '../model/like_list_model.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
   final Token token;
@@ -42,12 +44,15 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
     ref.read(memberProfileNotifierProvider.notifier).getProfileImage();
     ref.read(memberNotifierProvider.notifier).getMemberInfoFromServer();
+    ref.read(followNotifierProvider.notifier).getSendLike();
+    ref.read(followNotifierProvider.notifier).getReceivedLike();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(memberProfileNotifierProvider);
     final memberState = ref.watch(memberNotifierProvider);
+    final followState = ref.watch(followNotifierProvider);
 
     return DefaultLayout(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -62,9 +67,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   state.images.isEmpty == true
-                      ? _renderMemberInfoTop("empty", memberState)
+                      ? _renderMemberInfoTop("empty", memberState, followState)
                       : _renderMemberInfoTop(
-                          state.images.last.url, memberState),
+                          state.images.last.url, memberState, followState),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
                     child: LinearPercentIndicator(
@@ -134,7 +139,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  Widget _renderMemberInfoTop(String images, MemberModel member) {
+  Widget _renderMemberInfoTop(String images, MemberModel member, List<LikeListModel> follow) {
     return SizedBox(
       height: getMediaHeight(context) * 0.3,
       child: Column(
@@ -206,9 +211,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _generateMemberInfoIcon(3, "Tickets"),
-              _generateMemberInfoIcon(23, "Followings"),
-              _generateMemberInfoIcon(3, "Followers"),
+              _generateMemberInfoIcon(0, "Tickets", ),
+              _generateMemberInfoIcon(follow.first.count, "Followings"),
+              _generateMemberInfoIcon(follow.last.count, "Followers"),
             ],
           ),
         ],
