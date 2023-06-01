@@ -16,6 +16,7 @@ import 'package:stomp_dart_client/stomp_exception.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 import 'package:stomp_dart_client/stomp_handler.dart';
 import 'package:stomp_dart_client/stomp_parser.dart';
+import "package:dart_amqp/dart_amqp.dart";
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
@@ -24,33 +25,39 @@ class ChatRoomScreen extends StatefulWidget {
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
 
-class Msg {
+class Msg{
   String content;
 
-  Msg({required this.content});
+  Msg({
+    required this.content
+});
 }
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _pageChanged = 0;
 
   bool _chatsOrGroups = true;
+
   late StompClient stompClient;
   TextEditingController messageController = TextEditingController();
-  late WebSocketChannel channel;
-  List<Msg> receivedMessages = []; // 수신한 메시지를 저장하는 리스트
+  //late WebSocketChannel channel;
 
   List<DateTime> roomCreateTimeList = [];
+
+
+
 
   @override
   void initState() {
     super.initState();
+    //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
 
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
 
-    channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
+    //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
     print("웹 소캣 연결");
-    connectToStomp();
+    connectToStomp();  //stomp 연결
   }
 
   void connectToStomp() {
@@ -65,38 +72,28 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void onConnectCallback(StompFrame connectFrame) {
-    // 연결이 성공하면 메시지를 보내는 예제
-    stompClient.send(
-      destination: '/app/sendMessage', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로
-      body: 'Hello, server!', // 보낼 메시지
-    );
     stompClient.subscribe(
-      destination: '/topic/message', // 구독할 주제 경로
-      callback: (StompFrame frame) {
-        if (frame.body != null) {
-          Map<String, dynamic> obj = json.decode(frame.body!);
-          Msg message = Msg(content: obj['content']);
-          setState(() {
-            receivedMessages.add(message);
-          });
-          print(receivedMessages);
-        }
+      destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
+      callback: (connectFrame){
+        print(connectFrame.body);  //메시지를 받았을때!
         // 메시지 처리
       },
     );
+
+
   }
 
   @override
   void dispose() {
     stompClient?.deactivate();
-    channel.sink.close();
+   // channel.sink.close();
     super.dispose();
   }
 
   void sendMessage() {
     String message = messageController.text;
     stompClient.send(
-      destination: '/app/sendMessage', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로
+      destination: '/app/chat.enter.abc', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: message,
     );
     print("전송!");
@@ -108,7 +105,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final _sw = MediaQuery.of(context).size.width;
     final _sh = MediaQuery.of(context).size.height;
 
-    stompClient.activate();
+
+
+
 
     final PageController _pageController = PageController(
       initialPage: 0,
