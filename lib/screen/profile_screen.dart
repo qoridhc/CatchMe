@@ -35,7 +35,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   XFile? _pickedFile;
 
   List<String> mbti = Mbti.values.map((e) => e.name).toList();
-  String? selectedMbti;
+  String selectedMbti = "NONE";
 
   final List<String> genderItems = [
     'Male',
@@ -78,6 +78,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void renderMemberInfo() {
     final memberState = ref.read(memberNotifierProvider);
+
+    print("#########");
+    print(memberState);
 
     if (memberState.introduction != null) {
       introduceController.text = memberState.introduction!;
@@ -175,6 +178,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 // color: Colors.black,
                                 width: getMediaWidth(context) * 0.28,
                                 child: DropdownButtonFormField2(
+                                  value: selectedMbti.isNotEmpty ? selectedMbti : null,
                                   decoration: InputDecoration(
                                     isDense: true,
                                     contentPadding: EdgeInsets.zero,
@@ -199,7 +203,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                                   ))
                                       .toList(),
-                                  value: selectedMbti,
                                   validator: (value) {
                                     if (value == null) {
                                       return 'Please select gender.';
@@ -207,7 +210,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     return null;
                                   },
                                   onChanged: (value) {
-                                    selectedMbti = value;
+                                    selectedMbti = value!;
                                   },
                                   buttonStyleData: ButtonStyleData(
                                     height: getMediaHeight(context) * 0.05,
@@ -267,6 +270,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       child: Text("save"),
                       onPressed: () {
+
                         ref
                             .read(memberNotifierProvider.notifier)
                             .postMemberInfoUpdate(
@@ -274,6 +278,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               introduceController.text,
                               selectedMbti,
                             );
+
                         Navigator.of(context).pop();
                       },
                     ),
@@ -446,18 +451,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<dynamic> uploadUserProfileImage(dynamic file) async {
     print("프로필 사진을 서버에 업로드 합니다.");
 
-    final List<XFile?> selectedImages = [];
+    final XFile? selectedImage = file;
 
-    selectedImages.add(file);
+    // selectedImages.add(file);
 
-    final List<MultipartFile> files = selectedImages
-        .map(
-          (e) => MultipartFile.fromFileSync(
-            e!.path,
-            contentType: MediaType("image", "jpeg"),
-          ),
-        )
-        .toList();
+    final MultipartFile files = MultipartFile.fromFileSync(
+      selectedImage!.path,
+      contentType: MediaType("image", "jpeg"),
+    );
+
+    //
+    // selectedImages
+    //     .map(
+    //       (e) => MultipartFile.fromFileSync(
+    //         e!.path,
+    //         contentType: MediaType("image", "jpeg"),
+    //       ),
+    //     )
+    //     .toList();
+
 
     var formData = FormData.fromMap({"images": files});
 
