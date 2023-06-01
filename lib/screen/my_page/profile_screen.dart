@@ -5,6 +5,7 @@ import 'package:captone4/const/colors.dart';
 import 'package:captone4/const/mbti.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
+import 'package:captone4/screen/root_tab.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -15,14 +16,16 @@ import 'package:image_network/image_network.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
 
-import '../Token.dart';
-import '../const/data.dart';
+import '../../Token.dart';
+import '../../const/data.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final Token token;
+  bool? fromLogin = false;
 
   ProfileScreen({
     required this.token,
+    this.fromLogin,
     Key? key,
   }) : super(key: key);
 
@@ -58,6 +61,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+
+    print("widget.fromLogin : ${widget.fromLogin}");
+
+    print("ProfileScreen 진입");
     introduceController = TextEditingController();
     nicknameController = TextEditingController();
     mbtiController = TextEditingController();
@@ -76,20 +83,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.dispose();
   }
 
-  void renderMemberInfo() {
-    final memberState = ref.read(memberNotifierProvider);
+  void renderMemberInfo() async {
+    final memberInfo = await ref
+        .read(memberNotifierProvider.notifier)
+        .getMemberInfoFromServer();
 
-    print("#########");
-    print(memberState);
-
-    if (memberState.introduction != null) {
-      introduceController.text = memberState.introduction!;
+    if (memberInfo.introduction != null) {
+      introduceController.text = memberInfo.introduction!;
     }
 
-    nicknameController.text = memberState.nickname;
+    nicknameController.text = memberInfo.nickname;
 
-    selectedMbti = ref.read(memberNotifierProvider).mbti;
+    selectedMbti = memberInfo.mbti;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +116,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     //     setState(() {});
     //   },
     // );
+    print("memberBirth : ");
+
+    print(memberState.birthYear);
 
     return Scaffold(
       body: SafeArea(
@@ -144,7 +154,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => _renderDialog(),
+                          builder: (context) => _renderImageDialog(),
                         );
                       },
                     ),
@@ -168,17 +178,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       controller: nicknameController,
                                     ),
                                   ),
-                                  Text(
-                                    "/ ${DateTime.now().year - int.parse(memberState.birthYear)}",
-                                    style: ts,
-                                  ),
+                                  if (memberState.birthYear.isNotEmpty)
+                                    Text(
+                                      "/ ${DateTime.now().year - int.parse(memberState.birthYear)}",
+                                      style: ts,
+                                    ),
                                 ],
                               ),
                               Container(
                                 // color: Colors.black,
                                 width: getMediaWidth(context) * 0.28,
                                 child: DropdownButtonFormField2(
-                                  value: selectedMbti.isNotEmpty ? selectedMbti : null,
+                                  value: selectedMbti.isNotEmpty
+                                      ? selectedMbti
+                                      : null,
                                   decoration: InputDecoration(
                                     isDense: true,
                                     contentPadding: EdgeInsets.zero,
@@ -191,17 +204,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   isExpanded: true,
                                   items: mbti
                                       .map((item) => DropdownMenuItem<String>(
-                                    value: item,
-                                    child: Container(
-                                      // color: Colors.black,
-                                      child: Text(
-                                        item,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ))
+                                            value: item,
+                                            child: Container(
+                                              // color: Colors.black,
+                                              child: Text(
+                                                item,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          ))
                                       .toList(),
                                   validator: (value) {
                                     if (value == null) {
@@ -215,7 +228,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   buttonStyleData: ButtonStyleData(
                                     height: getMediaHeight(context) * 0.05,
                                     width: getMediaWidth(context) * 0.2,
-                                    padding: EdgeInsets.only(left: 20, right: 10),
+                                    padding:
+                                        EdgeInsets.only(left: 20, right: 10),
                                   ),
                                   iconStyleData: const IconStyleData(
                                     icon: Icon(
@@ -231,14 +245,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                                   ),
                                 ),
-                                // TextFormField(
-                                //   // maxLength: 4,
-                                //   decoration: InputDecoration(
-                                //     border: InputBorder.none,
-                                //   ),
-                                //   style: ts,
-                                //   controller: mbtiController,
-                                // ),
                               ),
                             ],
                           ),
@@ -271,6 +277,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Text("save"),
                       onPressed: () {
 
+                        if(state.images.isEmpty){
+                          print("memberState.imageUrls.isEmpty");
+
+                          showDialog(
+                            context: context,
+                            builder: (context) => _renderSaveDialog(),
+                          );
+
+                          return;
+                        }
+
                         ref
                             .read(memberNotifierProvider.notifier)
                             .postMemberInfoUpdate(
@@ -279,7 +296,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               selectedMbti,
                             );
 
-                        Navigator.of(context).pop();
+                        // 로그인 스크린에서 프로필 설정을 위해 강제로 넘긴경우 프로필 설정이 완료되면 pop하고 RootTab으로
+                        if (widget.fromLogin == true) {
+                          print("widget.fromLogin : ${widget.fromLogin}");
+
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RootTab(
+                                token: widget.token,
+                              ),
+                            ),
+                          );
+                        } else {
+                          Navigator.pop(context);
+                        }
                       },
                     ),
                   ),
@@ -292,7 +324,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  _renderDialog() {
+  _renderImageDialog() {
     return Dialog(
       elevation: 0,
       backgroundColor: Color(0xffffffff),
@@ -319,15 +351,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ],
           ),
-          SizedBox(height: 15),
+          SizedBox(height: 10),
           Text("변경하실 방법을 선택해주세요"),
-          SizedBox(height: 20),
-          Divider(
-            height: 1,
-          ),
           Container(
             width: MediaQuery.of(context).size.width,
-            height: 50,
+            height: getMediaHeight(context) * 0.07,
             child: InkWell(
               highlightColor: Colors.grey[200],
               onTap: () {
@@ -376,6 +404,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
+
+
+  _renderSaveDialog() {
+    return Dialog(
+      elevation: 0,
+      backgroundColor: Color(0xffffffff),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 15),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                // color: Colors.red,
+                child: Text(
+                  "알림",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 15),
+          Text("프로필 이미지 등록은 필수입니다."),
+          Container(
+            width: getMediaWidth(context),
+            height: getMediaHeight(context) * 0.07,
+            child: InkWell(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(15.0),
+                bottomRight: Radius.circular(15.0),
+              ),
+              highlightColor: Colors.grey[200],
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Center(
+                child: Text(
+                  "확인",
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: PRIMARY_COLOR,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   // Widget _renderProfileFormfield()
 
@@ -460,17 +548,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       contentType: MediaType("image", "jpeg"),
     );
 
-    //
-    // selectedImages
-    //     .map(
-    //       (e) => MultipartFile.fromFileSync(
-    //         e!.path,
-    //         contentType: MediaType("image", "jpeg"),
-    //       ),
-    //     )
-    //     .toList();
-
-
     var formData = FormData.fromMap({"images": files});
 
     Dio dio = Dio();
@@ -488,12 +565,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         data: formData,
       );
-      //      state.imageId = res.data["data"].last["url"];
+
       print("이미지 전송 성공");
       ref.read(memberProfileNotifierProvider.notifier).getProfileImage();
-      // final state = ref.read(imagePro.notifier).state;
-      // state.imageId = res.data["data"].last["imageId"];
-      // state.url = res.data["data"].last["url"];
+
     } on DioError catch (e) {
       print(e);
     }

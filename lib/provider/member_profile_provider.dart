@@ -41,7 +41,7 @@ class MemberProfileNotifier extends StateNotifier<MemberProfileModel> {
     );
   }
 
-  void getProfileImage() async {
+  Future<MemberProfileModel> getProfileImage() async {
     print("_getProfileImageFromServer 실행");
 
     try {
@@ -56,6 +56,7 @@ class MemberProfileNotifier extends StateNotifier<MemberProfileModel> {
 
       state = MemberProfileModel.fromJson(json: resp.data);
       print("프로필 이미지 가져오기 성공");
+      return state;
     } on DioError catch (e) {
       print("에러발생");
       print(e);

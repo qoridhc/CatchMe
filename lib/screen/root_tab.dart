@@ -2,7 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:captone4/screen/favorite_list_screen.dart';
 import 'package:captone4/screen/main_page_screen.dart';
-import 'package:captone4/screen/my_page_screen.dart';
+import 'package:captone4/screen/my_page/my_page_screen.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:captone4/Token.dart'; //토큰 클래스
