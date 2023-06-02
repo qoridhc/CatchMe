@@ -1,223 +1,339 @@
+import 'dart:convert';
+
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
-
+import '../Token.dart';
 import '../model/member_model.dart';
+import 'package:dio/dio.dart';
+import '../const/data.dart';
+import 'package:http/http.dart' as http;
 
 class MainPageScreen extends StatefulWidget {
-  const MainPageScreen({Key? key}) : super(key: key);
+  final Token? token;
+  const MainPageScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
   State<MainPageScreen> createState() => _MainPageScreenState();
 }
 
 class _MainPageScreenState extends State<MainPageScreen> {
-  List<MemberModel> users = [
-    MemberModel(
-      memberId: '1',
-      nickname: 'suzy',
-      imageUrls: ['assets/images/test_img/4.jpg'],
-      birthYear: '1994',
-      introduction:
-          '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
-      gender: 'female',
-      mbti: 'ISFP',
-      averageScore: 100.0,
-      email: "test@naver.com",
-    ),
-    MemberModel(
-      memberId: '2',
-      nickname: '차은우',
-      imageUrls: ['assets/images/test_img/5.jpg'],
-      birthYear: '1997',
-      introduction:
-          '모험을 즐기는 여행자이자 음식 애호가입니다.\n함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. \n새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. \n다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. \n즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
-      gender: 'male',
-      mbti: 'ISFP',
-      averageScore: 1.0,
-      email: "test@naver.com",
-    ),
-    MemberModel(
-      memberId: '2',
-      nickname: '차은우',
-      imageUrls: ['assets/images/test_img/5.jpg'],
-      birthYear: '19970330',
-      introduction:
-          '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
-      gender: 'male',
-      mbti: 'ISFP',
-      averageScore: 1.0,
-      email: "test@naver.com",
-    ),
-  ];
-
   int currentIndex = 0;
+  late int _memberId;
+  late String _memberToken;
+  late String userGender;
+  // late String userGender;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _memberId = widget.token!.id!;
+    _memberToken = widget.token!.accessToken!;
+    print(_memberId);
+    print(_memberToken);
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<MemberModel> users = [
-      MemberModel(
-        memberId: '1',
-        nickname: 'suzy',
-        imageUrls: ['assets/images/test_img/4.jpg'],
-        birthYear: '1994',
-        introduction:
-            '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
-        gender: 'female',
-        mbti: 'ISFP',
-        averageScore: 100.0,
-        email: "test@naver.com",
-      ),
-      MemberModel(
-        memberId: '2',
-        nickname: '차은우',
-        imageUrls: ['assets/images/test_img/5.jpg'],
-        birthYear: '1997',
-        introduction:
-            '모험을 즐기는 여행자이자 음식 애호가입니다.\n함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. \n새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. \n다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. \n즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
-        gender: 'male',
-        mbti: 'ISFP',
-        averageScore: 1.0,
-        email: "test@naver.com",
-      ),
-      MemberModel(
-        memberId: '2',
-        nickname: '차은우',
-        imageUrls: ['assets/images/test_img/5.jpg'],
-        birthYear: '19970330',
-        introduction:
-            '모험을 즐기는 여행자이자 음식 애호가입니다. 함께 새로운 여정을 떠나고 다양한 음식을 맛보며 함께할 파트너를 찾고 있어요. 새로운 문화를 경험하고 독특한 요리를 시도하며 잊지 못할 추억을 만들어나가는 것에 열정을 가지고 있어요. 다음 여행 계획을 세우느라 바쁘지 않을 때에는 자연에서 하이킹을 즐기거나 요가를 하거나 좋은 책과 함께한 시간을 즐기곤 해요. 즉흥적이고 웃음이 넘치며 좋은 대화를 나눌 수 있는 분을 찾고 있습니다. 함께 세상을 탐험해보는 건 어떠세요?',
-        gender: 'male',
-        mbti: 'ISFP',
-        averageScore: 1.0,
-        email: "test@naver.com",
-      ),
-    ];
-
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     double appBarHeight = AppBar().preferredSize.height;
     double availableHeight = screenHeight - appBarHeight;
-    int userAge = 2023 - int.parse(users[currentIndex].birthYear);
 
     return DefaultLayout(
       title: "Main",
       child: Center(
-        child: Dismissible(
-          key: ValueKey(currentIndex >= 0 && currentIndex <= users.length
-              ? users[currentIndex]
-              : null),
-          direction: DismissDirection.horizontal,
-          background: Container(
-            color: Colors.blue,
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                children: const [
-                  Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                  Text(
-                    '  Nope',
-                    style: TextStyle(color: Colors.white, fontSize: 30),
-                  ),
-                ],
+        child: renderUserGenderBuild(),
+      ),
+      // child: Image.asset(users[currentIndex].imageUrls),
+    );
+  }
+
+  //  사용자 성별 설정 
+  Future<MemberModel> getUserGender() async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getGender = await dio.get(
+        'http://$ip/api/v1/members/${_memberId}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      return MemberModel.fromJson(json: getGender.data);
+    } on DioError catch (e) {
+      print('error');
+      print(e);
+      rethrow;
+    }
+  }
+  // 사용자 성별 정보 얻고 반대 성별 설정
+  Widget renderUserGenderBuild() {
+    return Container(
+      child: FutureBuilder<MemberModel>(
+        future: getUserGender(),
+        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
               ),
-            ),
-          ),
-          secondaryBackground: Container(
-            color: Theme.of(context).primaryColor,
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Icon(Icons.favorite, color: Colors.white, size: 30),
-                  Text('  Like',
-                      style: TextStyle(color: Colors.white, fontSize: 30)),
-                ],
-              ),
-            ),
-          ),
-          onDismissed: (direction) {
-            if (direction == DismissDirection.endToStart) {
-              setState(
-                () {
-                  if (currentIndex < users.length) {
-                    currentIndex += 1;
-                    print("다음");
-                  } else if (currentIndex >= users.length) {
-                    currentIndex = 0;
-                  }
-                },
-              );
+            );
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.data! != 0) {
+            if (snapshot.data!.gender != 'F') {
+              print(snapshot.data!.gender);
+              userGender = 'M';
+              return renderMemberListViewBuilder(userGender);
+            } else {
+              userGender = 'F';
+              return renderMemberListViewBuilder(userGender);
             }
-          },
-          child: Card(
-            child: ListView(
-              children: [
-                Column(
-                  children: [
-                    Image.asset(
-                      users[currentIndex].imageUrls.last,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          width: screenWidth / 4,
-                          padding: EdgeInsets.only(left: 10),
-                          child: Text(
-                            users[currentIndex].nickname,
-                            textAlign: TextAlign.left,
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: screenWidth / 3,
-                          child: Text(
-                            userAge.toString(),
-                            textAlign: TextAlign.left,
-                            style: TextStyle(fontSize: 25),
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.only(right: 10),
-                          width: screenWidth / 3,
-                          child: Text(
-                            users[currentIndex].mbti,
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                                fontSize: 17),
-                          ),
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Container(
-                      width: screenWidth,
-                      padding: EdgeInsets.only(left: 10),
-                      child: Text(
-                        users[currentIndex].introduction!,
-                        textAlign: TextAlign.left,
-                        style: TextStyle(fontSize: 17),
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                  ],
-                ),
-              ],
-            ),
+          } else {
+            return const Center(
+              child: Text("There's no such information."),
+            );
+          }
+        },
+      ),
+    );
+  }
+  // 성별에 맞게 멤버 리스트 구하기
+  Future<MemberListModel> getMemberList(String userGender) async {
+    print("Get user's information");
+    print(this.userGender);
+    final dio = Dio();
+
+    try {
+      final resp = await dio.get(
+        'http://$ip/api/v1/search?gender=${userGender}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      return MemberListModel.fromJson(json: resp.data);
+    } on DioError catch (e) {
+      print('error');
+      print(e);
+      rethrow;
+    }
+  }
+  // 멤버 리스트 가져오기
+  Widget renderMemberListViewBuilder(String userGender) {
+    return Container(
+      child: FutureBuilder<MemberListModel>(
+        future: getMemberList(userGender),
+        builder: (_, AsyncSnapshot<MemberListModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+              ),
+            );
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.data!.count != 0) {
+            var userLength = snapshot.data!.count - 1;
+            return _renderMemberList(
+                snapshot.data!.memberList[currentIndex], userLength);
+          } else {
+            return Center(
+              child: Text("해당 정보가 없습니다."),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  // 하트 보내거나 거절하기
+  Future<void> sendHeart(MemberModel l, String status) async {
+    print("마음 보내기");
+    final dio = Dio();
+    var url = 'http://$ip/api/v1/classifications';
+
+    try {
+      Map data = {
+        "memberId": _memberId,
+        "targetId": l.memberId,
+        "status": status
+      };
+
+      var body = json.encode(data);
+
+      final resp = await http.post(
+        Uri.parse(url),
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          'Authorization': "Bearer $_memberToken"
+        },
+        body: body,
+      );
+      print('resp status code');
+      print(resp.statusCode);
+      if (resp.statusCode == 200) {
+        if (status == 'false') {
+          print('거절');
+        } else {
+          print('하트 보내기');
+        }
+      }
+    } on DioError catch (e) {
+      print('error');
+      print(e);
+      rethrow;
+    }
+  }
+
+  Widget _renderMemberList(MemberModel l, int userLength) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    int birthYear = int.parse(l.birthYear);
+    String userAge = (2023 - birthYear).toString();
+    late String status;
+    return Dismissible(
+      key: UniqueKey(),
+      direction: DismissDirection.horizontal,
+      // 스와이프 할 때 효과
+      background: Container(
+        // 왼쪽으로 스와이프 = no
+        color: Colors.blue,
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            children: const [
+              Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 30,
+              ),
+              Text(
+                '  Nope',
+                style: TextStyle(color: Colors.white, fontSize: 30),
+              ),
+            ],
           ),
         ),
       ),
-      // child: Image.asset(users[currentIndex].imageUrls),
+      // 오른쪽으로 스와이프 = yes
+      secondaryBackground: Container(
+        color: Theme.of(context).primaryColor,
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: const [
+              Icon(Icons.favorite, color: Colors.white, size: 30),
+              Text('  Like',
+                  style: TextStyle(color: Colors.white, fontSize: 30)),
+            ],
+          ),
+        ),
+      ),
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          setState(
+            () {
+              if (currentIndex < userLength) {
+                currentIndex += 1;
+                print("오른쪽");
+                status = 'true';
+                sendHeart(l, status);
+              } else if (currentIndex >= userLength) {
+                currentIndex = 0;
+              }
+            },
+          );
+        } else if (direction == DismissDirection.startToEnd) {
+          setState(
+            () {
+              if (currentIndex < userLength) {
+                currentIndex += 1;
+                print("왼쪽");
+                status = 'false';
+                sendHeart(l, status);
+              } else if (currentIndex >= userLength) {
+                currentIndex = 0;
+              }
+            },
+          );
+        }
+      },
+      child: Container(
+        height: screenHeight,
+        child: Card(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Column(
+                children: [
+                  // (l.imageUrls.isEmpty == true)
+                  //     ? Container()
+                  //     : Image.asset(
+                  //         l.imageUrls.join(),
+                  //         fit: BoxFit.cover,
+                  //         alignment: Alignment.center,
+                  //       ),
+                  Row(
+                    children: [
+                      Container(
+                        width: screenWidth / 4,
+                        padding: EdgeInsets.only(left: 10),
+                        child: Text(
+                          l.nickname,
+                          textAlign: TextAlign.left,
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: screenWidth / 3,
+                        child: Text(
+                          userAge as String,
+                          textAlign: TextAlign.left,
+                          style: TextStyle(fontSize: 25),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(right: 10),
+                        width: screenWidth / 3,
+                        child: Text(
+                          l.mbti,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 17),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  (l.introduction == null)
+                      ? Container()
+                      : Container(
+                          width: screenWidth,
+                          padding: EdgeInsets.only(left: 10),
+                          child: Text(
+                            l.introduction!,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(fontSize: 17),
+                          ),
+                        ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
