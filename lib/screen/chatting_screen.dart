@@ -6,6 +6,12 @@ import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+
+import '../chat/chat_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   DateTime? createTime;
@@ -20,22 +26,57 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
+  var _userEnterMessage = '';
+
   bool _visibility = true;
-  int sec = 60;
-  int min = 3;
-  String secText = '00';
-  String minText = '3';
   late Timer _timer;
   Duration? timeDiff = null;
   int time = 0;
-  int defaultTime = 900;
+  int defaultTime = 3000;
+
+  late StompClient stompClient;
+  TextEditingController messageController = TextEditingController();
+  List<DateTime> roomCreateTimeList = [];
+
+  String userID = "test";
+  final List<String> _img = <String>[
+    'assets/images/test_img/1.jpg',
+    'assets/images/test_img/2.jpg',
+    'assets/images/test_img/3.jpg',
+    'assets/images/test_img/김민주.jpg',
+    'assets/images/test_img/조유리.jpg',
+    'assets/images/test_img/5.jpg',
+  ];
+  final List<String> _name = <String>[
+    '아이유',
+    '차은우',
+    '배수지',
+    '김민주',
+    '조유리',
+    'tester'
+  ];
+  final List<String> _userID = <String>[
+    '아이유',
+    '차은우',
+    '배수지',
+    '김민주',
+    '조유리',
+    'test'
+  ];
+  final List<String> _text = <String>[
+    '안녕하세요 아이입니다',
+    '안녕하세요 차은우입니다',
+      '안녕하세요 배수지입니다',
+      '안녕하세요 김민주입니다',
+      '안녕하세요 조유리입니다',
+      '안녕하세요 테스터입니다',
+  ];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-    print("creatTime : ${widget.createTime}");
 
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
@@ -55,11 +96,53 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _handleTimer();
     // if(!ref.read(TimerProvider.notifier).isRun)
     //   ref.read(TimerProvider.notifier).start();
+    DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
+    roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
+
+    //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
+    print("웹 소캣 연결");
+    connectToStomp();  //stomp 연결
+  }
+  void connectToStomp() {
+    stompClient = StompClient(
+      config: StompConfig(
+        url: 'ws://10.0.2.2:9081/chat', // Spring Boot 서버의 WebSocket URL
+        onConnect: onConnectCallback, // 연결 성공 시 호출되는 콜백 함수
+      ),
+    );
+    stompClient.activate();
+  }
+
+  void onConnectCallback(StompFrame connectFrame) {
+    stompClient.subscribe(  //메세지 서버에서 받고 rabbitmq로 전송
+      destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
+      callback: (connectFrame){
+        print(connectFrame.body);  //메시지를 받았을때!
+        _text.add(connectFrame.body!.toString());
+        _name.add("테스터");
+        _userID.add("test");
+        _img.add('assets/images/test_img/조유리.jpg');
+        // 메시지 처리
+      },
+    );
+  }
+
+  void sendMessage() {
+    FocusScope.of(context).unfocus();
+    String message = messageController.text;
+    stompClient.send(
+      destination: '/app/chat.enter.abc', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
+      body: message,
+    );
+    print("전송!");
+    messageController.clear();
+    _userEnterMessage = '';
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
+    stompClient?.deactivate();
     super.dispose();
     if (_timer.isActive) _timer.cancel();
     print("dispose");
@@ -193,9 +276,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //
-    // final time = ref.watch(TimerProvider);
-    // print(time);
 
     return Scaffold(
       appBar: _buildAppBar(),
@@ -203,11 +283,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           children: [
             Expanded(
-              child: Messages(),
+              child: ListView.builder(
+                itemCount: _name.length, // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
+                itemBuilder: (context, index) {
+                  return ChatBubbles(_text[index],
+                      _userID[index] == userID,
+                      _name[index],
+                      _img[index]
+                  ); // chat bubble 안에 메세지들을 넣어준다
+                },
+              ),
             ),
             Visibility(
-              child: NewMessage(),
               visible: _visibility,
+              child: Container(
+                margin: EdgeInsets.only(top: 8),
+                padding: EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        maxLines: null,
+                        controller: messageController,
+                        decoration: InputDecoration(
+                            labelText: 'Send a message...'
+                        ),
+                        onChanged: (value){
+                          setState(() { // 이렇게 설정하면 변수에다가 입력된 값이 바로바로 들어가기 때문에 send 버튼 활성화,비활성화 설정가능
+                            _userEnterMessage = value;
+                          });
+                        },
+                      ),
+                    ),
+                    IconButton( // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
+                      onPressed: _userEnterMessage.trim().isEmpty ? null : sendMessage,  // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
+                      icon: Icon(Icons.send), // 보내기 버튼
+                      color: Colors.blue,
+                    )
+                  ],
+                ),
+              ),
             ),
           ],
         ),

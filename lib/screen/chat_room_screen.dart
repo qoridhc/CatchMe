@@ -35,7 +35,6 @@ class Msg{
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _pageChanged = 0;
-
   bool _chatsOrGroups = true;
 
   late StompClient stompClient;
@@ -43,8 +42,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   //late WebSocketChannel channel;
 
   List<DateTime> roomCreateTimeList = [];
-
-
 
 
   @override
@@ -72,15 +69,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void onConnectCallback(StompFrame connectFrame) {
-    stompClient.subscribe(
+    stompClient.subscribe(  //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame){
-        print(connectFrame.body);  //메시지를 받았을때!
+        //print(connectFrame.body);  //메시지를 받았을때!
         // 메시지 처리
       },
     );
-
-
   }
 
   @override
@@ -104,10 +99,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget build(BuildContext context) {
     final _sw = MediaQuery.of(context).size.width;
     final _sh = MediaQuery.of(context).size.height;
-
-
-
-
 
     final PageController _pageController = PageController(
       initialPage: 0,

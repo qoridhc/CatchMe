@@ -25,7 +25,7 @@ class _NewMessageState extends State<NewMessage> {
       'userImage' : userData['picked_image']
     });
     _controller.clear();
-  }
+  } // firebase 코드
 
   @override
   Widget build(BuildContext context) {
