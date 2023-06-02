@@ -1,3 +1,4 @@
+import 'package:captone4/const/colors.dart';
 import 'package:captone4/model/member_model.dart';
 import 'package:captone4/screen/join_screen.dart';
 import 'package:captone4/screen/my_page/profile_screen.dart';
@@ -34,6 +35,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? tokenType;
   String? nickName;
   String? refreshToken;
+
+  bool passwordInvisible = true;
 
   Token? token;
 
@@ -89,7 +92,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProfileScreen(token: token!, fromLogin: true,),
+                builder: (context) => ProfileScreen(
+                  token: token!,
+                  fromLogin: true,
+                ),
               ),
             );
           } else {
@@ -105,7 +111,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
           // ID,PWD 입력 칸에 Focus 된거 풀어서 자연스럽게 만들기
           FocusScope.of(context).unfocus();
-
         } else {
           //아이디 비밀번호 확인해달라
           //회원가입하기?
@@ -145,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       //화면 그리기
-      backgroundColor: Color(0xffEEDDD6),
+      backgroundColor: BACKGROUND_COLOR,
       body: SafeArea(
         child: Stack(
           children: [
@@ -156,69 +161,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 image: AssetImage('assets/images/login_back.png'),
               )),
             ),
-            Container(
-              decoration: BoxDecoration(
+            Padding(
+              padding: EdgeInsets.only(bottom: 50),
+              child: Container(
+                decoration: BoxDecoration(
                   image: DecorationImage(
-                fit: BoxFit.none,
-                image: AssetImage('assets/images/Main_logo.png'),
-              )),
+                    fit: BoxFit.none,
+                    image: AssetImage('assets/images/Main_logo.png'),
+                  ),
+                ),
+              ),
             ),
             Container(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Container(
-                    height: getMediaHeight(context) * 0.42,
+                    height: getMediaHeight(context) * 0.45,
                     width: MediaQuery.of(context).size.width,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(50),
                         topRight: Radius.circular(50),
                       ),
-                      color: Color(0xffFF6961),
+                      color: Color(0xffFF6961).withOpacity(0.96),
                     ),
                     child: Container(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text(
-                            "로그인",
+                            "Sign In",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 25.0,
+                              fontFamily: 'Pacifico',
                             ),
                           ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 2 / 3,
-                            child: OutlinedButton(
-                              onPressed: signInWithNaver, //로그인 함수 실행
-                              child: Text(
-                                "Naver Login",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                ),
-                              ),
-                              style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all(Colors.white),
-                                  shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(18.0),
-                                          side:
-                                              BorderSide(color: Colors.red)))),
-                            ),
-                          ),
+                          // SizedBox(
+                          //   width: MediaQuery.of(context).size.width * 2 / 3,
+                          //   child: OutlinedButton(
+                          //     onPressed: signInWithNaver, //로그인 함수 실행
+                          //     child: Text(
+                          //       "Naver Login",
+                          //       style: TextStyle(
+                          //         color: Colors.black,
+                          //       ),
+                          //     ),
+                          //     style: ButtonStyle(
+                          //         backgroundColor:
+                          //             MaterialStateProperty.all(Colors.white),
+                          //         shape: MaterialStateProperty.all<
+                          //                 RoundedRectangleBorder>(
+                          //             RoundedRectangleBorder(
+                          //                 borderRadius:
+                          //                     BorderRadius.circular(18.0),
+                          //                 side:
+                          //                     BorderSide(color: Colors.red)))),
+                          //   ),
+                          // ),
                           SizedBox(
                             //ID입력
                             width: MediaQuery.of(context).size.width * 2 / 3,
-                            height: getMediaHeight(context) * 0.07,
+                            height: getMediaHeight(context) * 0.06,
                             child: OutlinedButton(
                               onPressed: buttonLoginPressed,
                               child: TextField(
                                 controller: idController,
-                                decoration: InputDecoration(labelText: 'ID'),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  icon: Icon(
+                                    Icons.person,
+                                    color: PRIMARY_COLOR,
+                                  ),
+                                  hintText: 'ID',
+                                ),
                                 style: TextStyle(
                                   color: Colors.black,
                                 ),
@@ -237,18 +254,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(top:4.0),
+                            padding: const EdgeInsets.only(top: 4),
                             child: SizedBox(
                               //password입력
                               width: MediaQuery.of(context).size.width * 2 / 3,
-                              height: getMediaHeight(context) * 0.07,
+                              height: getMediaHeight(context) * 0.06,
                               child: OutlinedButton(
                                 onPressed: buttonLoginPressed,
                                 child: TextField(
-                                  obscureText: true,
+                                  obscureText: passwordInvisible,
                                   controller: pwController,
-                                  decoration:
-                                      InputDecoration(labelText: 'Password'),
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    icon: Icon(
+                                      Icons.lock,
+                                      color: PRIMARY_COLOR,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      splashColor: Colors.transparent,
+                                      icon: passwordInvisible
+                                          ? Icon(
+                                              Icons.visibility,
+                                              color: PRIMARY_COLOR,
+                                            )
+                                          : Icon(
+                                              Icons.visibility_off,
+                                              color: PRIMARY_COLOR,
+                                            ),
+                                      onPressed: () {
+                                        setState(() {
+                                          passwordInvisible =
+                                              !passwordInvisible;
+                                        });
+                                      },
+                                    ),
+                                    hintText: 'Password',
+                                  ),
                                   style: TextStyle(
                                     color: Colors.black,
                                   ),
@@ -261,8 +302,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
-                                            side:
-                                                BorderSide(color: Colors.red)))),
+                                            side: BorderSide(
+                                                color: Colors.red)))),
                               ),
                             ),
                           ),
@@ -289,44 +330,105 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              ElevatedButton(
-                                onPressed:
-                                    buttonNaverLogoutAndDeleteTokenPressed,
-                                child: const Text("로그아웃"),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "가입해둔 계정이 없으신가요 ? ",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
                               ),
-                              SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width * 1 / 4,
-                                child: OutlinedButton(
-                                  onPressed: memberJoin,
-                                  child: Text(
-                                    "회원가입",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  style: ButtonStyle(
-                                    backgroundColor:
-                                        MaterialStateProperty.all(Colors.white),
-                                    shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                        side: BorderSide(color: Colors.red),
-                                      ),
-                                    ),
+                              InkWell(
+                                onTap: () {
+                                  memberJoin();
+                                },
+                                child: Text(
+                                  "회원가입",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               )
                             ],
                           ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: Color(0xFFD9D9D9),
+                                  height: 1.5,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  "OR",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: Color(0xFFD9D9D9),
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () {
+                              signInWithNaver();
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                      'assets/images/icons/naver_icon.png'),
+                                ),
+                                color: Colors.white,
+                                border: Border.all(
+                                  width: 2,
+                                  // color: Color(0xFF1EC800),
+                                  color: Colors.white,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                          // SizedBox(
+                          //   width:
+                          //   MediaQuery.of(context).size.width * 1 / 4,
+                          //   child: OutlinedButton(
+                          //     onPressed: memberJoin,
+                          //     child: Text(
+                          //       "회원가입",
+                          //       style: TextStyle(
+                          //         color: Colors.black,
+                          //       ),
+                          //     ),
+                          //     style: ButtonStyle(
+                          //       backgroundColor:
+                          //       MaterialStateProperty.all(Colors.white),
+                          //       shape: MaterialStateProperty.all<
+                          //           RoundedRectangleBorder>(
+                          //         RoundedRectangleBorder(
+                          //           borderRadius:
+                          //           BorderRadius.circular(18.0),
+                          //           side: BorderSide(color: Colors.red),
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ),
+                          // )
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             )
@@ -425,7 +527,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProfileScreen(token: token!, fromLogin: true,),
+            builder: (context) => ProfileScreen(
+              token: token!,
+              fromLogin: true,
+            ),
           ),
         );
       } else {
@@ -441,7 +546,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       // ID,PWD 입력 칸에 Focus 된거 풀어서 자연스럽게 만들기
       FocusScope.of(context).unfocus();
-
     } else {}
   }
 

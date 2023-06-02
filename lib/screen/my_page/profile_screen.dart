@@ -277,6 +277,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Text("save"),
                       onPressed: () {
 
+                        FocusScope.of(context).unfocus();
+
                         if(state.images.isEmpty){
                           print("memberState.imageUrls.isEmpty");
 
