@@ -39,7 +39,7 @@ class MemberNotifier extends StateNotifier<MemberModel> {
           ),
         );
 
-  void getMemberInfoFromServer() async {
+  Future<MemberModel> getMemberInfoFromServer() async {
     print("_getMemberInfoFromServer 실행");
     final dio = Dio();
 
@@ -55,9 +55,11 @@ class MemberNotifier extends StateNotifier<MemberModel> {
       print("성공");
       print(resp.data["memberId"].runtimeType);
       state = MemberModel.fromJson(json: resp.data);
+      return state;
       print("멤버 정보 가져오기 성공");
     } on DioError catch (e) {
       print(e);
+      throw e.error.toString();
     }
   }
 

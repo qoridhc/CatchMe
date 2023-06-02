@@ -3,7 +3,7 @@ import 'package:captone4/model/member_model.dart';
 import 'package:captone4/provider/follow_provider.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
-import 'package:captone4/screen/profile_screen.dart';
+import 'package:captone4/screen/my_page/profile_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_network/image_network.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
-import '../Token.dart';
-import '../model/like_list_model.dart';
+import '../../Token.dart';
+import '../../model/like_list_model.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
   final Token token;
@@ -101,9 +101,14 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             const Icon(Icons.info_rounded),
                             "information",
                           ),
-                          _generateCategoryIcon(
-                            const Icon(Icons.logout),
-                            "logout",
+                          InkWell(
+                            child: _generateCategoryIcon(
+                              const Icon(Icons.logout),
+                              "logout",
+                            ),
+                            onTap: (){
+
+                            },
                           ),
                         ],
                       ),

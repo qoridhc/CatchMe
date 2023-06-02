@@ -1,5 +1,8 @@
+import 'package:captone4/model/member_model.dart';
 import 'package:captone4/screen/join_screen.dart';
+import 'package:captone4/screen/my_page/profile_screen.dart';
 import 'package:captone4/screen/root_tab.dart';
+import 'package:captone4/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:captone4/login_platform.dart';
@@ -11,12 +14,15 @@ import 'package:captone4/Token.dart';
 import 'package:captone4/utils/alert.dart';
 
 import '../const/data.dart';
+import '../provider/member_profile_provider.dart';
+import '../provider/member_provider.dart';
 
 final GlobalKey<ScaffoldMessengerState> snackbarKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
+
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
@@ -29,7 +35,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? nickName;
   String? refreshToken;
 
-
   Token? token;
 
   LoginPlatform _loginPlatform = LoginPlatform.none;
@@ -37,10 +42,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final idController = TextEditingController();
   final pwController = TextEditingController();
 
-  void signInWithNaver() async {   //네이버 로그인 관리
+  void signInWithNaver() async {
+    //네이버 로그인 관리
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
-      NaverAccessToken accessTokenRes = await FlutterNaverLogin.currentAccessToken;
+      NaverAccessToken accessTokenRes =
+          await FlutterNaverLogin.currentAccessToken;
       //NaverAccessToken res = await FlutterNaverLogin.currentAccessToken;
 
       if (result.status == NaverLoginStatus.loggedIn) {
@@ -48,41 +55,69 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         setState(() {
           _loginPlatform = LoginPlatform.naver;
-          accesToken  = accessTokenRes.accessToken;
-          expiresAt  = accessTokenRes.expiresAt;
-          tokenType  = accessTokenRes.tokenType;
-          refreshToken  = accessTokenRes.refreshToken;
+          accesToken = accessTokenRes.accessToken;
+          expiresAt = accessTokenRes.expiresAt;
+          tokenType = accessTokenRes.tokenType;
+          refreshToken = accessTokenRes.refreshToken;
           print(accessTokenRes);
           print(result.accessToken.tokenType);
         });
-        if(_loginPlatform == LoginPlatform.naver)
-          {
-            await naverloginPost("naver");
-          }
+        if (_loginPlatform == LoginPlatform.naver) {
+          await naverloginPost("naver");
+        }
 
-        if(isLogin == true)
-        {
+        if (isLogin == true) {
           await Future.delayed(const Duration(seconds: 1));
           if (!mounted) return;
 
           // 로그인 성공하면 provider로 토큰 넘김
           ref.read(tokenProvider.notifier).state = token!;
 
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
-        }
-        else{
+          // 로그인한 유저 프로필정보 받아오기
+          final memberProfile = await ref
+              .read(memberProfileNotifierProvider.notifier)
+              .getProfileImage();
+
+          print("memberProfile");
+          print(memberProfile);
+
+          // 만약 프로필이 설정되지 않은 유저라면 -> 신규 유저라고 판단 -> 프로필 및 개인 정보 설정 하도록 ProfileScreen()으로 라우팅
+          if (memberProfile.images.isEmpty) {
+            print("memberProfile.isEmpty : " +
+                memberProfile.images.isEmpty.toString());
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(token: token!, fromLogin: true,),
+              ),
+            );
+          } else {
+            // 프로필이 설정되어있는 기존 유저라면 정상적으로 RootTab으로 라우팅
+            print("실행");
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => RootTab(token: token)));
+          }
+
+          // 로그인 성공하면 아아디 패스워드 입력해둔거 지우기
+          idController.clear();
+          pwController.clear();
+
+          // ID,PWD 입력 칸에 Focus 된거 풀어서 자연스럽게 만들기
+          FocusScope.of(context).unfocus();
+
+        } else {
           //아이디 비밀번호 확인해달라
           //회원가입하기?
-
         }
-
       }
     } catch (error) {
       print(error.toString());
     }
   }
 
-  void signOut() async {  //여러 로그인 방식 관리
+  void signOut() async {
+    //여러 로그인 방식 관리
     switch (_loginPlatform) {
       case LoginPlatform.facebook:
         break;
@@ -108,7 +143,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     //화면 제작
 
-    return Scaffold(  //화면 그리기
+    return Scaffold(
+      //화면 그리기
       backgroundColor: Color(0xffEEDDD6),
       body: SafeArea(
         child: Stack(
@@ -121,19 +157,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               )),
             ),
             Container(
-
               decoration: BoxDecoration(
                   image: DecorationImage(
-                    fit: BoxFit.none,
-                    image: AssetImage('assets/images/Main_logo.png'),
-                  )),
+                fit: BoxFit.none,
+                image: AssetImage('assets/images/Main_logo.png'),
+              )),
             ),
             Container(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Container(
-                    height: 300.0,
+                    height: getMediaHeight(context) * 0.42,
                     width: MediaQuery.of(context).size.width,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(
@@ -154,9 +189,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 2/3,
+                            width: MediaQuery.of(context).size.width * 2 / 3,
                             child: OutlinedButton(
-                              onPressed: signInWithNaver,  //로그인 함수 실행
+                              onPressed: signInWithNaver, //로그인 함수 실행
                               child: Text(
                                 "Naver Login",
                                 style: TextStyle(
@@ -175,60 +210,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               BorderSide(color: Colors.red)))),
                             ),
                           ),
-                          SizedBox(   //ID입력
-                            width: MediaQuery.of(context).size.width * 2/3,
-                            height: 40,
+                          SizedBox(
+                            //ID입력
+                            width: MediaQuery.of(context).size.width * 2 / 3,
+                            height: getMediaHeight(context) * 0.07,
                             child: OutlinedButton(
                               onPressed: buttonLoginPressed,
                               child: TextField(
                                 controller: idController,
-                                decoration: InputDecoration(
-                                  labelText: 'ID'
-                                ),
+                                decoration: InputDecoration(labelText: 'ID'),
                                 style: TextStyle(
                                   color: Colors.black,
                                 ),
                               ),
                               style: ButtonStyle(
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Colors.white),
-                                  shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(18.0),
-                                          side:
-                                          BorderSide(color: Colors.red)))),
+                                backgroundColor:
+                                    MaterialStateProperty.all(Colors.white),
+                                shape: MaterialStateProperty.all<
+                                    RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18.0),
+                                    side: BorderSide(color: Colors.red),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                          SizedBox(  //password입력
-                            width: MediaQuery.of(context).size.width * 2/3,
-                            height: 40,
-                            child: OutlinedButton(
-                              onPressed: buttonLoginPressed,
-                              child: TextField(
-                                controller: pwController,
-                                decoration: InputDecoration(
-                                    labelText: 'Password'
+                          Padding(
+                            padding: const EdgeInsets.only(top:4.0),
+                            child: SizedBox(
+                              //password입력
+                              width: MediaQuery.of(context).size.width * 2 / 3,
+                              height: getMediaHeight(context) * 0.07,
+                              child: OutlinedButton(
+                                onPressed: buttonLoginPressed,
+                                child: TextField(
+                                  obscureText: true,
+                                  controller: pwController,
+                                  decoration:
+                                      InputDecoration(labelText: 'Password'),
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                  ),
                                 ),
-                                style: TextStyle(
-                                  color: Colors.black,
-                                ),
+                                style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all(Colors.white),
+                                    shape: MaterialStateProperty.all<
+                                            RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(18.0),
+                                            side:
+                                                BorderSide(color: Colors.red)))),
                               ),
-                              style: ButtonStyle(
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Colors.white),
-                                  shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(18.0),
-                                          side:
-                                          BorderSide(color: Colors.red)))),
                             ),
                           ),
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 2/3,
+                            width: MediaQuery.of(context).size.width * 2 / 3,
                             child: OutlinedButton(
                               onPressed: buttonLoginPressed,
                               child: Text(
@@ -252,34 +291,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
-                            ElevatedButton(
-                              onPressed: buttonNaverLogoutAndDeleteTokenPressed,
-                              child: const Text("로그아웃"),
-                            ),
-
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 1/4,
-                              child: OutlinedButton(
-                                onPressed: memberJoin,
-                                child: Text(
-                                  "회원가입",
-                                  style: TextStyle(
-                                    color: Colors.black,
+                              ElevatedButton(
+                                onPressed:
+                                    buttonNaverLogoutAndDeleteTokenPressed,
+                                child: const Text("로그아웃"),
+                              ),
+                              SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width * 1 / 4,
+                                child: OutlinedButton(
+                                  onPressed: memberJoin,
+                                  child: Text(
+                                    "회원가입",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                ),
-                                style: ButtonStyle(
+                                  style: ButtonStyle(
                                     backgroundColor:
-                                    MaterialStateProperty.all(Colors.white),
+                                        MaterialStateProperty.all(Colors.white),
                                     shape: MaterialStateProperty.all<
                                         RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
+                                      RoundedRectangleBorder(
+                                        borderRadius:
                                             BorderRadius.circular(18.0),
-                                            side:
-                                            BorderSide(color: Colors.red)))),
-                              ),
-                            )
-                          ],
+                                        side: BorderSide(color: Colors.red),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
                         ],
                       ),
@@ -294,92 +336,114 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Future<void> loginPost(String userId,String password) async
-  {
+  Future<void> loginPost(String userId, String password) async {
     var url = "http://$ip/api/v1/login";
-    try{
-      Map data = {"userId": userId, "password" : password};
+    try {
+      Map data = {"userId": userId, "password": password};
 
       var body = json.encode(data);
 
-      final response = await http.post(Uri.parse(url),headers:  <String, String>{"Content-Type": "application/json"}, body: body);
-      if(response.statusCode == 200)
-      {
+      final response = await http.post(Uri.parse(url),
+          headers: <String, String>{"Content-Type": "application/json"},
+          body: body);
+      if (response.statusCode == 200) {
         print('일반 로그인 토큰 발행');
-        token =  Token.fromJson(json.decode(response.body));
+        token = Token.fromJson(json.decode(response.body));
         print(token);
-        if(token !=null)
-          {
-            isLogin = true;
-          }
-      }
-      else{
-        await Future.delayed(const Duration(seconds: 1));
-        if (!mounted) return;
-        Alert.showAlert(context, "로그인 오류","아이디 혹은 비밀번호를 확인해 주세요");
-        throw Exception('로그인 오류');
-      }
-    }
-    catch(e){
-      print(e);
-      rethrow;
-    }
-  }
-
-  Future<void> naverloginPost( String type) async
-  {
-    var url = "http://$ip/api/v1/oauth/login";
-    try{
-      Map data = {"accessToken": accesToken, "type" : type};
-
-      var body = json.encode(data);
-
-      final response = await http.post(Uri.parse(url),headers:  <String, String>{"Content-Type": "application/json"}, body: body);
-      if(response.statusCode == 200)
-      {
-        print('네이버 로그인 토큰 발행');
-        token =  Token.fromJson(json.decode(response.body));
-        print(token);
-        if(token !=null)
-        {
+        if (token != null) {
           isLogin = true;
         }
-      }
-      else{
+      } else {
+        await Future.delayed(const Duration(seconds: 1));
+        if (!mounted) return;
+        Alert.showAlert(context, "로그인 오류", "아이디 혹은 비밀번호를 확인해 주세요");
         throw Exception('로그인 오류');
-
       }
-    }
-    catch(e){
+    } catch (e) {
       print(e);
       rethrow;
     }
   }
- Future<void> buttonLoginPressed() async//일반 로그인 실행 - 서버 요청 토큰 받아와 return token
+
+  Future<void> naverloginPost(String type) async {
+    var url = "http://$ip/api/v1/oauth/login";
+    try {
+      Map data = {"accessToken": accesToken, "type": type};
+
+      var body = json.encode(data);
+
+      final response = await http.post(Uri.parse(url),
+          headers: <String, String>{"Content-Type": "application/json"},
+          body: body);
+      if (response.statusCode == 200) {
+        print('네이버 로그인 토큰 발행');
+        token = Token.fromJson(json.decode(response.body));
+        print(token);
+        if (token != null) {
+          isLogin = true;
+        }
+      } else {
+        throw Exception('로그인 오류');
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<void>
+      buttonLoginPressed() async //일반 로그인 실행 - 서버 요청 토큰 받아와 return token
   {
     String userId = idController.text;
     String password = pwController.text;
 
-
     print(userId);
     print(password);
 
-    await loginPost(userId,password);
-    if(isLogin == true)
-      {
-        await Future.delayed(const Duration(seconds: 1));
-        if (!mounted) return;
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>  RootTab(token: token)));
+    await loginPost(userId, password);
+
+    if (isLogin == true) {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
+
+      // 로그인 성공하면 provider로 토큰 넘김
+      ref.read(tokenProvider.notifier).state = token!;
+
+      // 로그인한 유저 프로필정보 받아오기
+      final memberProfile = await ref
+          .read(memberProfileNotifierProvider.notifier)
+          .getProfileImage();
+
+      print("memberProfile");
+      print(memberProfile);
+
+      // 만약 프로필이 설정되지 않은 유저라면 -> 신규 유저라고 판단 -> 프로필 및 개인 정보 설정 하도록 ProfileScreen()으로 라우팅
+      if (memberProfile.images.isEmpty) {
+        print("memberProfile.isEmpty : " +
+            memberProfile.images.isEmpty.toString());
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProfileScreen(token: token!, fromLogin: true,),
+          ),
+        );
+      } else {
+        // 프로필이 설정되어있는 기존 유저라면 정상적으로 RootTab으로 라우팅
+        print("실행");
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => RootTab(token: token)));
       }
-    else{
 
+      // 로그인 성공하면 아아디 패스워드 입력해둔거 지우기
+      idController.clear();
+      pwController.clear();
 
-    }
+      // ID,PWD 입력 칸에 Focus 된거 풀어서 자연스럽게 만들기
+      FocusScope.of(context).unfocus();
 
-
+    } else {}
   }
-
-
 
   Future<void> buttonNaverLoginPressed() async //로그인 눌렀을때 동작
   {
@@ -432,8 +496,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-
-  Future<void> buttonNaverLogoutAndDeleteTokenPressed() async {  //로그아웃 및 토큰 제거
+  Future<void> buttonNaverLogoutAndDeleteTokenPressed() async {
+    //로그아웃 및 토큰 제거
     try {
       await FlutterNaverLogin.logOutAndDeleteToken();
       setState(() {
@@ -447,7 +511,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> buttonLogoutPressed() async {  //로그아웃만
+  Future<void> buttonLogoutPressed() async {
+    //로그아웃만
     try {
       await FlutterNaverLogin.logOut();
       setState(() {
@@ -462,7 +527,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void memberJoin() {
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>  const joinScreen()));
-
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const joinScreen()));
   }
 }
