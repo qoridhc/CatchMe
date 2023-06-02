@@ -74,7 +74,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         physics: NeverScrollableScrollPhysics(),
         controller: controller,
         children: [
-          MainPageScreen(),
+          MainPageScreen(token:widget.token!),
           ChatRoomScreen(),
           FavoriteListScreen(token: widget.token),
           MyPageScreen(
