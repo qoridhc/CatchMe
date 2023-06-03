@@ -3,6 +3,7 @@ import 'package:captone4/model/member_model.dart';
 import 'package:captone4/provider/follow_provider.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
+import 'package:captone4/screen/my_page/faq_screen.dart';
 import 'package:captone4/screen/my_page/profile_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:captone4/widget/default_layout.dart';
@@ -39,6 +40,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   void initState() {
     super.initState();
 
+    print("===== 마이페이지 init =====");
     memberId = widget.token.id!;
     accessToken = widget.token.accessToken!;
 
@@ -53,6 +55,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final state = ref.watch(memberProfileNotifierProvider);
     final memberState = ref.watch(memberNotifierProvider);
     final followState = ref.watch(followNotifierProvider);
+
+    print(followState.last.count);
 
     return DefaultLayout(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -93,9 +97,19 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             const Icon(Icons.settings),
                             "settings",
                           ),
-                          _generateCategoryIcon(
-                            const Icon(Icons.question_mark),
-                            "FAQ",
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FAQScreen(),
+                                ),
+                              );
+                            },
+                            child: _generateCategoryIcon(
+                              const Icon(Icons.question_mark),
+                              "FAQ",
+                            ),
                           ),
                           _generateCategoryIcon(
                             const Icon(Icons.info_rounded),
@@ -106,9 +120,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                               const Icon(Icons.logout),
                               "logout",
                             ),
-                            onTap: (){
-
-                            },
+                            onTap: () {},
                           ),
                         ],
                       ),
@@ -144,7 +156,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  Widget _renderMemberInfoTop(String images, MemberModel member, List<LikeListModel> follow) {
+  Widget _renderMemberInfoTop(
+      String images, MemberModel member, List<LikeListModel> follow) {
     return SizedBox(
       height: getMediaHeight(context) * 0.3,
       child: Column(
@@ -216,7 +229,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _generateMemberInfoIcon(0, "Tickets", ),
+              _generateMemberInfoIcon(
+                0,
+                "Tickets",
+              ),
               _generateMemberInfoIcon(follow.first.count, "Followings"),
               _generateMemberInfoIcon(follow.last.count, "Followers"),
             ],

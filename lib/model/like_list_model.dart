@@ -23,9 +23,9 @@ class LikeListModel{
 class LikeModel{
   final int id;
   final String nickname;
-  final List<String> imgUrls;
+  final List<dynamic> imgUrls;
   final String gender;
-  final DateTime time;
+  final DateTime? time;
 
   LikeModel({
     required this.id,

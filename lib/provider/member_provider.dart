@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:captone4/exception/HasNotNicknameChangeCouponException.dart';
 import 'package:captone4/model/member_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,7 +64,7 @@ class MemberNotifier extends StateNotifier<MemberModel> {
     }
   }
 
-  void postMemberInfoUpdate(
+  dynamic postMemberInfoUpdate(
       String? nickname, String? introduction, String? mbti) async {
     print(" postMemberInfoUpdate 실행");
     final dio = Dio();
@@ -100,9 +101,14 @@ class MemberNotifier extends StateNotifier<MemberModel> {
 
       print("resp.data : ${resp.data}");
       state = state.copyWith(json: resp.data);
+      return "Update Complete";
     } on DioError catch (e) {
-      if (e.response!.data['code'] == "DuplicateNicknameException") {
-        throw Exception("DuplicateNicknameException");
+
+      // print(e.response!.data['code']);
+
+      if (e.response!.data['code'] == "HasNotNicknameChangeCouponException") {
+        // return "HasNotNicknameChangeCouponException";
+        throw HasNotNicknameChangeCouponException("닉네임 변경 권한 없음 (한번 이상 변경 불가)");
       }
     }
   }
