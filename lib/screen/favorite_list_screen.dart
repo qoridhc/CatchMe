@@ -256,10 +256,11 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                child: Container(
                  height: _sw * 0.15,
                  width: _sw * 0.15,
-                  child: Image.network(
+                  child: l.imgUrls.length > 0 ? Image.network(
                     l.imgUrls[0],
                     fit: BoxFit.fill,
-                  ),
+                  ):
+                      Center(child: Text("NoImg")),
                ),
              ),
              SizedBox(
@@ -267,7 +268,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
              ),
              Container(
                child: Text(
-                  l.nickname + '님에게 하트를 받았습니다.'
+                  l.nickname + '님에게 하트를 보냈습니다.'
                ),
               ),
             ],
@@ -332,10 +333,11 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                   child: Container(
                     height: _sw * 0.15,
                     width: _sw * 0.15,
-                    child: Image.network(
+                    child: l.imgUrls.length > 0 ? Image.network(
                       l.imgUrls[0],
                       fit: BoxFit.fill,
-                    ),
+                    ):
+                    Center(child: Text("NoImg")),
                   ),
                 ),
                 SizedBox(
