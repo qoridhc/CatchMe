@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 import '../Token.dart';
@@ -6,9 +7,6 @@ import '../model/member_model.dart';
 import 'package:dio/dio.dart';
 import '../const/data.dart';
 import 'package:http/http.dart' as http;
-
-// 스와이프 한 사람 뜨게 하면 안 됨
-// 스와이프 할 사람 없으면 빈 화면~
 
 class MainPageScreen extends StatefulWidget {
   final Token? token;
@@ -19,7 +17,6 @@ class MainPageScreen extends StatefulWidget {
 }
 
 class _MainPageScreenState extends State<MainPageScreen> {
-  int currentIndex = 0;
   late int _memberId;
   late String _memberToken;
   late String userGender;
@@ -47,7 +44,6 @@ class _MainPageScreenState extends State<MainPageScreen> {
       child: Center(
         child: renderUserGenderBuild(),
       ),
-      // child: Image.asset(users[currentIndex].imageUrls),
     );
   }
 
@@ -65,8 +61,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
       );
       return MemberModel.fromJson(json: getGender.data);
     } on DioError catch (e) {
-      print('error');
-      print(e);
+      print('error: $e');
       emptyScreen();
       rethrow;
     }
@@ -89,12 +84,15 @@ class _MainPageScreenState extends State<MainPageScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.data! != 0) {
-            if (snapshot.data!.gender == 'F') {
-              print(snapshot.data!.gender);
-              userGender = 'M';
+            if (snapshot.data!.gender == 'W') {
+              //유저가 여자일때
+              userGender = 'M'; //남자ㅏ를 보여주고
+              print('Opposite userGender information $userGender');
               return renderMemberListViewBuilder(userGender);
             } else {
-              userGender = 'F';
+              //유저가 남자일때
+              userGender = 'W'; //여자를 보여준다
+              print('Opposite userGender information $userGender');
               return renderMemberListViewBuilder(userGender);
             }
           } else {
@@ -109,8 +107,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
 
   // 성별에 맞게 멤버 리스트 구하기
   Future<MemberListModel> getMemberList(String userGender) async {
-    print("Get user's information");
-    print(this.userGender);
+    print("Get user's information: $userGender");
     final dio = Dio();
 
     try {
@@ -122,8 +119,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
       );
       return MemberListModel.fromJson(json: resp.data);
     } on DioError catch (e) {
-      print('error');
-      print(e);
+      print('error: $e');
       emptyScreen();
       rethrow;
     }
@@ -147,8 +143,9 @@ class _MainPageScreenState extends State<MainPageScreen> {
           }
           if (snapshot.data!.count != 0) {
             var userLength = snapshot.data!.count - 1;
+            print('유저 목록 길이 $userLength');
             return _renderMemberList(
-                snapshot.data!.memberList[currentIndex], userLength);
+                snapshot.data!.memberList[0], userLength);
           } else {
             return Center(
               child: Text("해당 정보가 없습니다."),
@@ -159,7 +156,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
     );
   }
 
-  // 하트 보내거나 거절하기
+  // 분류하기
   Future<void> sendHeart(MemberModel l, String status) async {
     print("마음 보내기");
     final dio = Dio();
@@ -182,8 +179,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
         },
         body: body,
       );
-      print('resp status code');
-      print(resp.statusCode);
+      print('resp status code ${resp.statusCode}');
       if (resp.statusCode == 200) {
         if (status == 'false') {
           print('거절');
@@ -192,8 +188,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
         }
       }
     } on DioError catch (e) {
-      print('error');
-      print(e);
+      print('error $e');
       emptyScreen();
       rethrow;
     }
@@ -259,38 +254,36 @@ class _MainPageScreenState extends State<MainPageScreen> {
           if (direction == DismissDirection.endToStart) {
             setState(
               () {
-                if (currentIndex <= userLength) {
-                  currentIndex += 1;
-                  print("오른쪽");
-                  print(l.nickname);
-                  print(currentIndex);
+                if (userLength >= 0) {
                   status = 'true';
-                  sendHeart(l, status);
-                } else if (currentIndex > userLength) {
-                  emptyScreen();
+                  print('오른쪽으로 스와이프. 유저 이름 ${l.nickname}');
+                  if (userLength == 0) {
+                    sendHeart(l, status);
+                  } else {
+                    sendHeart(l, status);
+                  }
                 }
               },
             );
           } else if (direction == DismissDirection.startToEnd) {
             setState(
               () {
-                if (currentIndex <= userLength) {
-                  currentIndex += 1;
-                  print("왼쪽");
-                  print(l.nickname);
-                  print(currentIndex);
-                  status = 'false';
-                  sendHeart(l, status);
-                } else if (currentIndex > userLength) {
-                  emptyScreen();
-                } 
+                print('왼쪽으로 스와이프. 유저 이름 ${l.nickname}');
+                status = 'false';
+                if (userLength >= 0) {
+                  if (userLength == 0) {
+                    sendHeart(l, status);
+                  } else {
+                    sendHeart(l, status);
+                  }
+                }
               },
             );
           }
         },
-        child: (currentIndex > userLength)
-            ? Container(
-        // child: Container(
+        child: Container(
+          // ? Container(
+          // child: Container(
           height: screenHeight,
           child: Card(
             child: ListView(
@@ -300,11 +293,12 @@ class _MainPageScreenState extends State<MainPageScreen> {
                   children: [
                     (l.imageUrls.isEmpty == true)
                         ? Container()
-                        : Image.network(
-                            l.imageUrls[0],
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                          ),
+                        // : Image.network(
+                        //     l.imageUrls[0],
+                        //     fit: BoxFit.cover,
+                        //     alignment: Alignment.center,
+                        //   ),
+                        : CachedNetworkImage(imageUrl: l.imageUrls[0]),
                     Row(
                       children: [
                         Container(
@@ -359,7 +353,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
             ),
           ),
         )
-        : emptyScreen(),
+        // : emptyScreen(),
         );
   }
 }
