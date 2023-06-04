@@ -118,7 +118,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame){
         print(connectFrame.body);  //메시지를 받았을때!
-        _text.add(connectFrame.body!.toString());
+        String text = connectFrame.body!.substring(1,connectFrame.body!.length - 1);
+        _text.add(text);
         _name.add("테스터");
         _userID.add("test");
         _img.add('assets/images/test_img/조유리.jpg');
