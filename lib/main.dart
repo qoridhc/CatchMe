@@ -23,6 +23,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      builder: (context, child) {
+        return MediaQuery(
+          child: child!,
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+        );
+      },
+      debugShowCheckedModeBanner: false,
+      theme: lightThemeDataCustom,
+      home: LoginScreen(),
+    );
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: lightThemeDataCustom,
       home: LoginScreen(),

@@ -1,3 +1,5 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:captone4/const/colors.dart';
 import 'package:captone4/model/member_model.dart';
 import 'package:captone4/provider/follow_provider.dart';
@@ -63,92 +65,198 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       title: "My Page",
       child: SafeArea(
         child: Container(
-          padding: EdgeInsets.only(top: 20),
-          // color: Colors.black,
-          child: Stack(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            padding: EdgeInsets.only(top: 20),
+            // color: Colors.black,
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  state.images.isEmpty == true
-                      ? _renderMemberInfoTop("empty", memberState, followState)
-                      : _renderMemberInfoTop(
-                          state.images.last.url, memberState, followState),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
-                    child: LinearPercentIndicator(
-                      percent: memberState.averageScore / 100,
-                      // trailing: Text("${memberState.averageScore}"),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFFFFFF),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(40),
-                          topRight: Radius.circular(40),
-                        ),
-                      ),
-                      child: Column(
+                  Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _generateCategoryIcon(
-                            const Icon(Icons.settings),
-                            "settings",
-                          ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FAQScreen(),
-                                ),
-                              );
-                            },
-                            child: _generateCategoryIcon(
-                              const Icon(Icons.question_mark),
-                              "FAQ",
+                          state.images.isEmpty == true
+                              ? _renderMemberInfoTop(
+                                  "empty", memberState, followState)
+                              : _renderMemberInfoTop(state.images.last.url,
+                                  memberState, followState),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
+                            child: LinearPercentIndicator(
+                              percent: memberState.averageScore / 100,
+                              // trailing: Text("${memberState.averageScore}"),
                             ),
-                          ),
-                          _generateCategoryIcon(
-                            const Icon(Icons.info_rounded),
-                            "information",
-                          ),
-                          InkWell(
-                            child: _generateCategoryIcon(
-                              const Icon(Icons.logout),
-                              "logout",
-                            ),
-                            onTap: () {},
                           ),
                         ],
                       ),
+                      Positioned(
+                        top: getMediaHeight(context) * 0.31,
+                        left: getMediaWidth(context) *
+                            (1 - 0.11) *
+                            (memberState.averageScore / 100),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: PRIMARY_COLOR,
+                              borderRadius: BorderRadius.circular(20)),
+                          width: getMediaWidth(context) * 0.07,
+                          height: getMediaHeight(context) * 0.03,
+                          child: Center(
+                            child: Text(
+                              memberState.averageScore.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFFFFF),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        _generateCategoryIcon(
+                          const Icon(Icons.settings),
+                          "settings",
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FAQScreen(),
+                              ),
+                            );
+                          },
+                          child: _generateCategoryIcon(
+                            const Icon(Icons.question_mark),
+                            "FAQ",
+                          ),
+                        ),
+                        _generateCategoryIcon(
+                          const Icon(Icons.info_rounded),
+                          "information",
+                        ),
+                        InkWell(
+                          child: _generateCategoryIcon(
+                            const Icon(Icons.logout),
+                            "logout",
+                          ),
+                          onTap: () {},
+                        ),
+                      ],
                     ),
                   )
                 ],
               ),
-              Positioned(
-                top: getMediaHeight(context) * 0.31,
-                left: getMediaWidth(context) *
-                    (1 - 0.11) *
-                    (memberState.averageScore / 100),
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: PRIMARY_COLOR,
-                      borderRadius: BorderRadius.circular(20)),
-                  width: getMediaWidth(context) * 0.07,
-                  height: getMediaHeight(context) * 0.03,
-                  child: Center(
-                    child: Text(
-                      memberState.averageScore.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
+            )),
+      ),
+    );
+
+    return DefaultLayout(
+      backgroundColor: const Color(0xFFFAFAFA),
+      title: "My Page",
+      child: SafeArea(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          // color: Colors.black,
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      state.images.isEmpty == true
+                          ? _renderMemberInfoTop(
+                              "empty", memberState, followState)
+                          : _renderMemberInfoTop(
+                              state.images.last.url, memberState, followState),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
+                        child: LinearPercentIndicator(
+                          percent: memberState.averageScore / 100,
+                          // trailing: Text("${memberState.averageScore}"),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Positioned(
+                    top: getMediaHeight(context) * 0.31,
+                    left: getMediaWidth(context) *
+                        (1 - 0.11) *
+                        (memberState.averageScore / 100),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: PRIMARY_COLOR,
+                          borderRadius: BorderRadius.circular(20)),
+                      width: getMediaWidth(context) * 0.07,
+                      height: getMediaHeight(context) * 0.03,
+                      child: Center(
+                        child: Text(
+                          memberState.averageScore.toString(),
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFFFFF),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _generateCategoryIcon(
+                        const Icon(Icons.settings),
+                        "settings",
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FAQScreen(),
+                            ),
+                          );
+                        },
+                        child: _generateCategoryIcon(
+                          const Icon(Icons.question_mark),
+                          "FAQ",
+                        ),
+                      ),
+                      _generateCategoryIcon(
+                        const Icon(Icons.info_rounded),
+                        "information",
+                      ),
+                      InkWell(
+                        child: _generateCategoryIcon(
+                          const Icon(Icons.logout),
+                          "logout",
+                        ),
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ),
@@ -164,64 +272,59 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProfileScreen(
-                    token: widget.token,
-                  ),
-                ),
-              );
-            },
-            child: images == "empty"
-                ? Container(
-                    child: const Center(
-                      child: Text("프로필 이미지를 선택해주세요"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(
+                      token: widget.token,
                     ),
-                  )
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(180),
-                    child:
-                        // Image.file("C:\Users\LSH\Desktop\images.jfif")
-                        ImageNetwork(
-                      image: images,
-                      height: getMediaHeight(context) * 0.15,
-                      width: getMediaWidth(context) * 0.3,
-                      debugPrint: true,
-                      onError: const Icon(
-                        Icons.error,
-                        color: Colors.red,
+                  ),
+                );
+              },
+              child: images == "empty"
+                  ? Container(
+                      child: const Center(
+                        child: Text("프로필 이미지를 선택해주세요"),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfileScreen(
-                              token: widget.token,
+                    )
+                  : Container(
+                      // color: Colors.black,
+                      child: CachedNetworkImage(
+                        imageUrl: images,
+                        imageBuilder: (context, imageProvider) => Container(
+                          width: getMediaWidth(context) * 0.35,
+                          height: getMediaHeight(context) * 0.15,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-          ),
+                        ),
+                      ),
+                    )),
           Column(
             children: [
               member.nickname != ""
                   ? Text(
                       member.nickname,
+                      textScaleFactor: 1.18,
                       style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w700),
+                        fontWeight: FontWeight.w700,
+                      ),
                     )
                   : const Text(
                       "",
+                      textScaleFactor: 1.0,
                       style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                          TextStyle( fontWeight: FontWeight.w700),
                     ),
               Text(
                 member.email,
-                style: TextStyle(fontSize: 15, color: Colors.grey),
+                textScaleFactor: 1.0,
+                style: TextStyle(color: Colors.grey),
               ),
             ],
           ),
@@ -229,10 +332,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _generateMemberInfoIcon(
-                0,
-                "Tickets",
-              ),
+              _generateMemberInfoIcon(0, "Tickets"),
               _generateMemberInfoIcon(follow.first.count, "Followings"),
               _generateMemberInfoIcon(follow.last.count, "Followers"),
             ],
@@ -274,8 +374,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     padding: const EdgeInsets.only(left: 15.0),
                     child: Text(
                       categoryName,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      textScaleFactor: 1.0,
+                      style: TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],
@@ -293,11 +393,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       children: [
         Text(
           value.toString(),
-          style: TextStyle(fontSize: 20),
+          textScaleFactor: 1.2,
+          // style: TextStyle(fontSize: 20),
         ),
         Text(
           key,
-          style: TextStyle(fontSize: 15, color: Colors.grey),
+          textScaleFactor: 1.0,
+          style: TextStyle(color: Colors.grey),
         ),
       ],
     );
