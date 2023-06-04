@@ -33,10 +33,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Duration? timeDiff = null;
   int time = 0;
   int defaultTime = 3000;
+  bool scrollMax = false;
 
   late StompClient stompClient;
   TextEditingController messageController = TextEditingController();
   List<DateTime> roomCreateTimeList = [];
+  late ScrollController _scrollController;
 
   String userID = "test";
   final List<String> _img = <String>[
@@ -53,7 +55,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     '배수지',
     '김민주',
     '조유리',
-    'tester'
+    'tester',
   ];
   final List<String> _userID = <String>[
     '아이유',
@@ -61,22 +63,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     '배수지',
     '김민주',
     '조유리',
-    'test'
+    'test',
+
   ];
   final List<String> _text = <String>[
     '안녕하세요 아이입니다',
     '안녕하세요 차은우입니다',
-      '안녕하세요 배수지입니다',
-      '안녕하세요 김민주입니다',
-      '안녕하세요 조유리입니다',
-      '안녕하세요 테스터입니다',
+    '안녕하세요 배수지입니다',
+    '안녕하세요 김민주입니다',
+    '안녕하세요 조유리입니다',
+    '안녕하세요 테스터입니다',
   ];
 
   @override
   void initState() {
     // TODO: implement initState
+    _scrollController = ScrollController();
     super.initState();
-
 
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
@@ -101,8 +104,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
     print("웹 소캣 연결");
-    connectToStomp();  //stomp 연결
+    connectToStomp(); //stomp 연결
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
   }
+
   void connectToStomp() {
     stompClient = StompClient(
       config: StompConfig(
@@ -114,14 +122,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void onConnectCallback(StompFrame connectFrame) {
-    stompClient.subscribe(  //메세지 서버에서 받고 rabbitmq로 전송
+    stompClient.subscribe(
+      //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
-      callback: (connectFrame){
-        print(connectFrame.body);  //메시지를 받았을때!
-        String text = connectFrame.body!.substring(1,connectFrame.body!.length - 1);
+      callback: (connectFrame) {
+        print(connectFrame.body); //메시지를 받았을때!
+        String text =
+            connectFrame.body!.substring(1, connectFrame.body!.length - 1);
         _text.add(text);
-        _name.add("테스터");
-        _userID.add("test");
+        _name.add("sss");
+        _userID.add("sss");
         _img.add('assets/images/test_img/조유리.jpg');
         // 메시지 처리
       },
@@ -132,12 +142,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     FocusScope.of(context).unfocus();
     String message = messageController.text;
     stompClient.send(
-      destination: '/app/chat.enter.abc', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
+      destination: '/app/chat.enter.abc',
+      // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: message,
     );
     print("전송!");
+    scrollMax = true;
+    scrollListToEnd();
     messageController.clear();
     _userEnterMessage = '';
+  }
+
+  void scrollListToEnd() {
+    if(scrollMax){
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+          duration: const Duration(seconds: 2), curve: Curves.easeOut);
+    }
   }
 
   @override
@@ -237,7 +257,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ),
                   SizedBox(
-                    width: getMediaWidth(context)*0.1,
+                    width: getMediaWidth(context) * 0.1,
                   ),
                   Text(
                     "${(time / 60).toInt()}",
@@ -277,7 +297,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
@@ -285,15 +304,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             Expanded(
               child: ListView.builder(
-                itemCount: _name.length, // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
+                controller: _scrollController,
+                itemCount: _name.length,
+                // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
                 itemBuilder: (context, index) {
-                  return ChatBubbles(_text[index],
-                      _userID[index] == userID,
-                      _name[index],
-                      _img[index]
-                  ); // chat bubble 안에 메세지들을 넣어준다
+                  scrollListToEnd();
+                  scrollMax = false;
+                  return ChatBubbles(_text[index], _userID[index] == userID,
+                      _name[index], _img[index]);
+                  // chat bubble 안에 메세지들을 넣어준다
                 },
               ),
+
             ),
             Visibility(
               visible: _visibility,
@@ -306,19 +328,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       child: TextField(
                         maxLines: null,
                         controller: messageController,
-                        decoration: InputDecoration(
-                            labelText: 'Send a message...'
-                        ),
-                        onChanged: (value){
-                          setState(() { // 이렇게 설정하면 변수에다가 입력된 값이 바로바로 들어가기 때문에 send 버튼 활성화,비활성화 설정가능
+                        decoration:
+                            InputDecoration(labelText: 'Send a message...'),
+                        onChanged: (value) {
+                          setState(() {
+                            // 이렇게 설정하면 변수에다가 입력된 값이 바로바로 들어가기 때문에 send 버튼 활성화,비활성화 설정가능
                             _userEnterMessage = value;
                           });
                         },
                       ),
                     ),
-                    IconButton( // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
-                      onPressed: _userEnterMessage.trim().isEmpty ? null : sendMessage,  // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
-                      icon: Icon(Icons.send), // 보내기 버튼
+                    IconButton(
+                      // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
+                      onPressed:
+                          _userEnterMessage.trim().isEmpty ? null : sendMessage,
+                      // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
+                      icon: Icon(Icons.send),
+                      // 보내기 버튼
                       color: Colors.blue,
                     )
                   ],
