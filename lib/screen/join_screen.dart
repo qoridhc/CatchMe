@@ -295,6 +295,9 @@ class _joinScreenState extends State<joinScreen> {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const LoginScreen()));
       } else {
+        print(response);
+        print(data);
+
         throw Exception('로그인 오류');
       }
     } catch (e) {
