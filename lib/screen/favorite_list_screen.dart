@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:image_network/image_network.dart';
@@ -267,8 +268,8 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                width: _sw * 0.15,
              ),
              Container(
-               child: Text(
-                  l.nickname + '님에게 하트를 보냈습니다.'
+               child:Text(
+                   l.nickname.length >= 7 ? l.nickname.substring(0, 7) + "..."+ '님에게 하트를 보냈습니다.' : l.nickname + '님에게 하트를 보냈습니다.',
                ),
               ),
             ],
