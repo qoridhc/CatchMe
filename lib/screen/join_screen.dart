@@ -245,7 +245,7 @@ class _joinScreenState extends State<joinScreen> {
                   ElevatedButton(
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        String gender = _gender == Gender.male ? "M" : "F";
+                        String gender = _gender == Gender.male ? "M" : "W";
 
                         joinPost(
                           idController.text,
