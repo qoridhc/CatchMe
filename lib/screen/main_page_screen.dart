@@ -273,13 +273,13 @@ class _MainPageScreenState extends State<MainPageScreen> {
             children: [
               Column(
                 children: [
-                  // (l.imageUrls.isEmpty == true)
-                  //     ? Container()
-                  //     : Image.asset(
-                  //         l.imageUrls.join(),
-                  //         fit: BoxFit.cover,
-                  //         alignment: Alignment.center,
-                  //       ),
+                  (l.imageUrls.isEmpty == true)
+                      ? Container()
+                      : Image.network(
+                          l.imageUrls.join(),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                        ),
                   Row(
                     children: [
                       Container(

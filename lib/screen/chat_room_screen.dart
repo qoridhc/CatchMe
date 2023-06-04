@@ -206,22 +206,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             SizedBox(
               height: _sw * 0.02,
             ),
-            Column(
-              children: [
-                TextField(
-                  controller: messageController,
-                  decoration: InputDecoration(
-                    labelText: 'Message',
-                  ),
-                ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: sendMessage,
-                  child: Text('Send'),
-                ),
-              ],
-            ),
-
             //listview_builder(_index),
           ],
         ),
