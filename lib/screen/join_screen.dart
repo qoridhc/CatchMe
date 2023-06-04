@@ -245,7 +245,7 @@ class _joinScreenState extends State<joinScreen> {
                   ElevatedButton(
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        String gender = _gender == Gender.male ? "M" : "W";
+                        String gender = _gender == Gender.male ? "M" : "F";
 
                         joinPost(
                           idController.text,
@@ -295,6 +295,9 @@ class _joinScreenState extends State<joinScreen> {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const LoginScreen()));
       } else {
+        print(response);
+        print(data);
+
         throw Exception('로그인 오류');
       }
     } catch (e) {
