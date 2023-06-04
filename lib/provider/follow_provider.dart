@@ -51,7 +51,6 @@ class FollowNotifier extends StateNotifier<List<LikeListModel>> {
   void getSendLike() async {
     print("getSendLike 실행");
     final dio = Dio();
-    final List<String> ls;
 
     try {
       final resp = await dio.get(
@@ -60,7 +59,11 @@ class FollowNotifier extends StateNotifier<List<LikeListModel>> {
           headers: {'authorization': 'Bearer ${token.accessToken}'},
         ),
       );
-      state.first = LikeListModel.fromJson(json: resp.data);
+      state = [
+        LikeListModel.fromJson(json: resp.data),
+        state.last,
+      ];
+      // state.first = LikeListModel.fromJson(json: resp.data);
     } on DioError catch (e) {
       print("에러 발생");
       print(e);
@@ -80,7 +83,11 @@ class FollowNotifier extends StateNotifier<List<LikeListModel>> {
           headers: {'authorization': 'Bearer ${token.accessToken}'},
         ),
       );
-      state.last = LikeListModel.fromJson(json: resp.data);
+      state = [
+        state.first,
+        LikeListModel.fromJson(json: resp.data),
+      ];
+      // state.last = LikeListModel.fromJson(json: resp.data);
     } on DioError catch (e) {
       print("에러 발생");
       print(e);

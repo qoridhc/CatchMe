@@ -1,3 +1,25 @@
+class MemberListModel {
+  final count;
+  final List<MemberModel> memberList;
+
+  MemberListModel({
+    required this.count,
+    required this.memberList,
+  });
+
+  factory MemberListModel.fromJson({
+    required Map<String, dynamic> json,
+  }) {
+    return MemberListModel(
+      count: json['count'],
+      memberList: json['data']
+          .map<MemberModel>(
+            (x) => MemberModel.fromJson(json: x),
+          )
+          .toList(),
+    );
+  }
+}
 class MemberModel {
   final String memberId;
   final String nickname;

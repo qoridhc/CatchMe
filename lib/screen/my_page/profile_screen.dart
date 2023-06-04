@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:captone4/const/colors.dart';
 import 'package:captone4/const/mbti.dart';
+import 'package:captone4/exception/HasNotNicknameChangeCouponException.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
 import 'package:captone4/screen/root_tab.dart';
@@ -275,26 +276,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                       child: Text("save"),
-                      onPressed: () {
+                      onPressed: () async {
+
+                        FocusScope.of(context).unfocus();
 
                         if(state.images.isEmpty){
                           print("memberState.imageUrls.isEmpty");
 
                           showDialog(
                             context: context,
-                            builder: (context) => _renderSaveDialog(),
+                            builder: (context) => _renderDefaultDialog("프로필 이미지 등록은 필수입니다."),
                           );
 
                           return;
                         }
 
-                        ref
-                            .read(memberNotifierProvider.notifier)
-                            .postMemberInfoUpdate(
-                              nicknameController.text,
-                              introduceController.text,
-                              selectedMbti,
+                        try {
+                          final resp = await ref
+                              .read(memberNotifierProvider.notifier)
+                              .postMemberInfoUpdate(
+                            nicknameController.text,
+                            introduceController.text,
+                            selectedMbti,
+                          );
+
+                        } on HasNotNicknameChangeCouponException catch (e){
+                            // 닉네임 권한이 없는 상태에서 (이미 닉네임 변경을 한 경우) 다시 닉네임 변경을 시도한 경우
+                            showDialog(
+                              context: context,
+                              builder: (context) => _renderDefaultDialog("닉네임은 한번 이상 변경 불가능합니다."),
                             );
+
+                            return;
+                        }
 
                         // 로그인 스크린에서 프로필 설정을 위해 강제로 넘긴경우 프로필 설정이 완료되면 pop하고 RootTab으로
                         if (widget.fromLogin == true) {
@@ -406,7 +420,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
 
-  _renderSaveDialog() {
+  _renderDefaultDialog(String content) {
     return Dialog(
       elevation: 0,
       backgroundColor: Color(0xffffffff),
@@ -434,7 +448,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           SizedBox(height: 15),
-          Text("프로필 이미지 등록은 필수입니다."),
+          Text(content),
           Container(
             width: getMediaWidth(context),
             height: getMediaHeight(context) * 0.07,

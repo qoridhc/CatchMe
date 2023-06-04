@@ -30,6 +30,8 @@ class DefaultLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 키보드 overflow 방지
+      resizeToAvoidBottomInset: false,
       backgroundColor: backgroundColor,
       extendBodyBehindAppBar: true,
       // AppBar 뒤쪽에 화면 보일 수 있게 함.

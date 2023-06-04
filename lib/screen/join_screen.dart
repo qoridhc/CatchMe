@@ -43,6 +43,7 @@ class _joinScreenState extends State<joinScreen> {
   Widget build(BuildContext context) {
     return DefaultLayout(
         title: "Sign Up",
+        backgroundColor: BACKGROUND_COLOR,
         child: SafeArea(
           child: SingleChildScrollView(
               child: Form(
