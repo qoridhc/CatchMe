@@ -43,6 +43,15 @@
     <key>naverServiceAppName</key>
     <string>catch_me</string>
 
+    <key>NSCameraUsageDescription</key>
+	<string>Used to demonstrate image picker plugin</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Used to capture audio for image picker plugin</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Used to demonstrate image picker plugin</string>
+
     <!-- http allows configurations -->
     <key>NSAppTransportSecurity</key>
     <dict>
@@ -95,6 +104,8 @@
 <string>마이크 사용에 필요합니다.</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>사진라이브러리 사용에 필요합니다.</string>
+
+
 
    <key>UILaunchStoryboardName</key>
    <string>LaunchScreen</string>
