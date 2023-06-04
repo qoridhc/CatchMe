@@ -23,7 +23,7 @@ class MemberListModel {
 class MemberModel {
   final String memberId;
   final String nickname;
-  final List<dynamic> imageUrls;
+  late final List<dynamic> imageUrls;
   final String birthYear;
   final String? introduction;
   final String gender;

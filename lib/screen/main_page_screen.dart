@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
 import '../Token.dart';
@@ -7,6 +6,9 @@ import '../model/member_model.dart';
 import 'package:dio/dio.dart';
 import '../const/data.dart';
 import 'package:http/http.dart' as http;
+
+// 스와이프 한 사람 뜨게 하면 안 됨
+// 스와이프 할 사람 없으면 빈 화면~
 
 class MainPageScreen extends StatefulWidget {
   final Token? token;
@@ -49,7 +51,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
     );
   }
 
-  //  사용자 성별 설정 
+  //  사용자 성별 설정
   Future<MemberModel> getUserGender() async {
     print("Get user's information");
     final dio = Dio();
@@ -65,9 +67,11 @@ class _MainPageScreenState extends State<MainPageScreen> {
     } on DioError catch (e) {
       print('error');
       print(e);
+      emptyScreen();
       rethrow;
     }
   }
+
   // 사용자 성별 정보 얻고 반대 성별 설정
   Widget renderUserGenderBuild() {
     return Container(
@@ -85,7 +89,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.data! != 0) {
-            if (snapshot.data!.gender != 'F') {
+            if (snapshot.data!.gender == 'F') {
               print(snapshot.data!.gender);
               userGender = 'M';
               return renderMemberListViewBuilder(userGender);
@@ -102,6 +106,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
       ),
     );
   }
+
   // 성별에 맞게 멤버 리스트 구하기
   Future<MemberListModel> getMemberList(String userGender) async {
     print("Get user's information");
@@ -119,9 +124,11 @@ class _MainPageScreenState extends State<MainPageScreen> {
     } on DioError catch (e) {
       print('error');
       print(e);
+      emptyScreen();
       rethrow;
     }
   }
+
   // 멤버 리스트 가져오기
   Widget renderMemberListViewBuilder(String userGender) {
     return Container(
@@ -187,8 +194,20 @@ class _MainPageScreenState extends State<MainPageScreen> {
     } on DioError catch (e) {
       print('error');
       print(e);
+      emptyScreen();
       rethrow;
     }
+  }
+
+  Widget emptyScreen() {
+    return const Card(
+      child: Center(
+        child: Text(
+          '더 이상 선택할 유저가 존재하지 않습니다.',
+          style: TextStyle(fontSize: 20),
+        ),
+      ),
+    );
   }
 
   Widget _renderMemberList(MemberModel l, int userLength) {
@@ -198,142 +217,149 @@ class _MainPageScreenState extends State<MainPageScreen> {
     String userAge = (2023 - birthYear).toString();
     late String status;
     return Dismissible(
-      key: UniqueKey(),
-      direction: DismissDirection.horizontal,
-      // 스와이프 할 때 효과
-      background: Container(
-        // 왼쪽으로 스와이프 = no
-        color: Colors.blue,
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Row(
-            children: const [
-              Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 30,
-              ),
-              Text(
-                '  Nope',
-                style: TextStyle(color: Colors.white, fontSize: 30),
-              ),
-            ],
+        key: UniqueKey(),
+        direction: DismissDirection.horizontal,
+        // 스와이프 할 때 효과
+        background: Container(
+          // 왼쪽으로 스와이프 = no
+          color: Colors.blue,
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              children: const [
+                Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                Text(
+                  '  Nope',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      // 오른쪽으로 스와이프 = yes
-      secondaryBackground: Container(
-        color: Theme.of(context).primaryColor,
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
-              Icon(Icons.favorite, color: Colors.white, size: 30),
-              Text('  Like',
-                  style: TextStyle(color: Colors.white, fontSize: 30)),
-            ],
+        // 오른쪽으로 스와이프 = yes
+        secondaryBackground: Container(
+          color: Theme.of(context).primaryColor,
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: const [
+                Icon(Icons.favorite, color: Colors.white, size: 30),
+                Text('  Like',
+                    style: TextStyle(color: Colors.white, fontSize: 30)),
+              ],
+            ),
           ),
         ),
-      ),
-      onDismissed: (direction) {
-        if (direction == DismissDirection.endToStart) {
-          setState(
-            () {
-              if (currentIndex < userLength) {
-                currentIndex += 1;
-                print("오른쪽");
-                status = 'true';
-                sendHeart(l, status);
-              } else if (currentIndex >= userLength) {
-                currentIndex = 0;
-              }
-            },
-          );
-        } else if (direction == DismissDirection.startToEnd) {
-          setState(
-            () {
-              if (currentIndex < userLength) {
-                currentIndex += 1;
-                print("왼쪽");
-                status = 'false';
-                sendHeart(l, status);
-              } else if (currentIndex >= userLength) {
-                currentIndex = 0;
-              }
-            },
-          );
-        }
-      },
-      child: Container(
-        height: screenHeight,
-        child: Card(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Column(
-                children: [
-                  (l.imageUrls.isEmpty == true)
-                      ? Container()
-                      : Image.network(
-                          l.imageUrls.join(),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                        ),
-                  Row(
-                    children: [
-                      Container(
-                        width: screenWidth / 4,
-                        padding: EdgeInsets.only(left: 10),
-                        child: Text(
-                          l.nickname,
-                          textAlign: TextAlign.left,
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
+        onDismissed: (direction) {
+          if (direction == DismissDirection.endToStart) {
+            setState(
+              () {
+                if (currentIndex <= userLength) {
+                  currentIndex += 1;
+                  print("오른쪽");
+                  print(l.nickname);
+                  print(currentIndex);
+                  status = 'true';
+                  sendHeart(l, status);
+                } else if (currentIndex > userLength) {
+                  emptyScreen();
+                }
+              },
+            );
+          } else if (direction == DismissDirection.startToEnd) {
+            setState(
+              () {
+                if (currentIndex <= userLength) {
+                  currentIndex += 1;
+                  print("왼쪽");
+                  print(l.nickname);
+                  print(currentIndex);
+                  status = 'false';
+                  sendHeart(l, status);
+                } else if (currentIndex > userLength) {
+                  emptyScreen();
+                } 
+              },
+            );
+          }
+        },
+        child: (currentIndex > userLength)
+            ? Container(
+        // child: Container(
+          height: screenHeight,
+          child: Card(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Column(
+                  children: [
+                    (l.imageUrls.isEmpty == true)
+                        ? Container()
+                        : Image.network(
+                            l.imageUrls[0],
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
                           ),
-                        ),
-                      ),
-                      Container(
-                        width: screenWidth / 3,
-                        child: Text(
-                          userAge as String,
-                          textAlign: TextAlign.left,
-                          style: TextStyle(fontSize: 25),
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(right: 10),
-                        width: screenWidth / 3,
-                        child: Text(
-                          l.mbti,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontSize: 17),
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  (l.introduction == null)
-                      ? Container()
-                      : Container(
-                          width: screenWidth,
+                    Row(
+                      children: [
+                        Container(
+                          width: screenWidth / 4,
                           padding: EdgeInsets.only(left: 10),
                           child: Text(
-                            l.introduction!,
+                            l.nickname,
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontSize: 17),
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ],
+                        Container(
+                          width: screenWidth / 3,
+                          child: Text(
+                            userAge as String,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(fontSize: 25),
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(right: 10),
+                          width: screenWidth / 3,
+                          child: Text(
+                            l.mbti,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontSize: 17),
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    (l.introduction == null)
+                        ? Container()
+                        : Container(
+                            width: screenWidth,
+                            padding: EdgeInsets.only(left: 10),
+                            child: Text(
+                              l.introduction!,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(fontSize: 17),
+                            ),
+                          ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-    );
+        )
+        : emptyScreen(),
+        );
   }
 }
