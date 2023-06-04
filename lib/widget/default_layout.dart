@@ -8,6 +8,17 @@ class DefaultLayout extends StatelessWidget {
   final Widget? bottomNavigationBar;
   final Color? backgroundColor;
 
+  void _showDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
   const DefaultLayout({
     required this.child,
     this.title,
@@ -29,7 +40,10 @@ class DefaultLayout extends StatelessWidget {
           ? FloatingActionButton(
               backgroundColor: PRIMARY_COLOR,
               child: Icon(Icons.favorite_border_outlined),
-              onPressed: () {},
+              onPressed: () {
+                _showDialog(context);
+                print("버튼 눌림");
+              },
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
