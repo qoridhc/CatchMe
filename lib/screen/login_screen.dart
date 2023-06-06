@@ -383,22 +383,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onTap: () {
                               signInWithNaver();
                             },
-                            child: Container(
-                              padding: EdgeInsets.all(20),
+                            child:Container(
+                              height: getMediaHeight(context) * 0.052,
+                              width: getMediaWidth(context) * 0.45,
                               decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
                                 image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/images/icons/naver_icon.png'),
-                                ),
-                                color: Colors.white,
-                                border: Border.all(
-                                  width: 2,
-                                  // color: Color(0xFF1EC800),
-                                  color: Colors.white,
-                                ),
-                                shape: BoxShape.circle,
+                                  fit: BoxFit.cover,
+                                  image: AssetImage('assets/images/naver_login_btn.png')
+                                )
                               ),
                             ),
+                            // Container(
+                            //   padding: EdgeInsets.all(20),
+                            //   decoration: BoxDecoration(
+                            //     image: DecorationImage(
+                            //       image: AssetImage(
+                            //           'assets/images/icons/naver_icon.png'),
+                            //     ),
+                            //     color: Colors.white,
+                            //     border: Border.all(
+                            //       width: 2,
+                            //       // color: Color(0xFF1EC800),
+                            //       color: Colors.white,
+                            //     ),
+                            //     shape: BoxShape.circle,
+                            //   ),
+                            // ),
                           ),
                           // SizedBox(
                           //   width:
