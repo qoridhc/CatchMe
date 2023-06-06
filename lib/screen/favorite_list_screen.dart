@@ -168,7 +168,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
         'http://$ip/api/v1/classifications?memberId=${_memberId}&status=true',
         options: Options(
           headers: {
-            'authorization': 'Bearer ${_memberToken}'
+            'authorization': 'Bearer ${_memberToken}' // 없을 겨우 noAuth or NULL
           },
         ),
       );

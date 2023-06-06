@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:captone4/chat/message.dart';
 import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/provider/time_provider.dart';
@@ -11,21 +12,42 @@ import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
+import '../Token.dart';
 import '../chat/chat_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
+  final Token? token;
   DateTime? createTime;
+  int? roomNum;
 
   ChatScreen({
     required this.createTime,
-    Key? key,
+    required this.roomNum,
+    Key? key,@required this.token
   }) : super(key: key);
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
+class ChatMessage{
+  String? type;
+  String? roomId;
+  String? sender;
+  String? message;
+  String? roomType;
+
+  ChatMessage({
+    required this.type,
+    required this.roomId,
+    required this.sender,
+    required this.message,
+    required this.roomType
+  });
+}
+
 class _ChatScreenState extends ConsumerState<ChatScreen> {
+  late int _memberId;
   var _userEnterMessage = '';
 
   bool _visibility = true;
@@ -75,11 +97,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     '안녕하세요 테스터입니다',
   ];
 
+  late Token _token;
+
   @override
   void initState() {
     // TODO: implement initState
     _scrollController = ScrollController();
     super.initState();
+
+    _memberId = widget.token!.id!;
 
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
@@ -121,12 +147,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     stompClient.activate();
   }
 
-  void onConnectCallback(StompFrame connectFrame) {
+  void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
     stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print(connectFrame.body); //메시지를 받았을때!
+        String? talk = connectFrame.body;
+        _token = Token.fromJson(json.decode(talk!));      // 여기 고쳐야함
         String text =
             connectFrame.body!.substring(1, connectFrame.body!.length - 1);
         _text.add(text);
@@ -138,13 +166,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  void sendMessage() {
+  void sendMessage() {  //encoder
     FocusScope.of(context).unfocus();
     String message = messageController.text;
+    var body = json.encode(ChatMessage(type: "TALK", roomId: widget.roomNum.toString(), sender: _memberId.toString(), message: message, roomType: "Single"));
     stompClient.send(
       destination: '/app/chat.enter.abc',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
-      body: message,
+      body: body,
     );
     print("전송!");
     scrollMax = true;
