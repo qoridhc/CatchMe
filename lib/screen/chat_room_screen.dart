@@ -185,12 +185,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final dio = Dio();
 
     try {
-      final getInfo = await dio.get(
-        'http://$ip/api/v1/members/${mid}', // 여기에 mid1이나 mid2값을 넣는 방법은??
+      final getInfo = await dio.get('http://$ip/api/v1/members/${mid}',
         options: Options(
-          headers: {'authorization': 'Bearer ${_memberToken}'},
+          headers: {
+            'authorization': 'Bearer ${_memberToken}'
+          },
         ),
-      );
+      ); // 여기에 mid1이나 mid2값을 넣는 방법은?
       return MemberListModel.fromJson(json: getInfo.data);
     } on DioError catch (e) {
       print('error: $e');
@@ -205,14 +206,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final List<String> ls;
 
     try{
-      final response = await dio.get(
-        'http://$ip/api//api/v1/single_room',
-        options: Options(
-          headers: {
-             //'authorization': 'Bearer ${_memberToken}' // 없을 경우 noAuth or NULL
-          },
-        ),
-      );
+      final response = await dio.get('http://localhost:9081/api/v1/single_room?mid1=$_memberId&mid2=$_memberId');
       return SingleRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");
