@@ -93,17 +93,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       introduceController.text = memberInfo.introduction!;
     }
 
-    nicknameController.text = memberInfo.nickname;
+    nicknameController.text = memberInfo.nickname.length > 4
+        ? memberInfo.nickname.substring(0, 4)
+        : memberInfo.nickname;
 
     selectedMbti = memberInfo.mbti;
   }
-
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(memberProfileNotifierProvider);
     final memberState = ref.watch(memberNotifierProvider);
-    //
+
     // if (memberState.introductionㄴ != null)
     //   introduceController.text = memberState.introduction!;
     // nicknameController.text = memberState.nickname;
@@ -117,6 +118,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     //     setState(() {});
     //   },
     // );
+
     print("memberBirth : ");
 
     print(memberState.birthYear);
@@ -172,11 +174,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   Container(
                                     width: getMediaWidth(context) * 0.2,
                                     child: TextFormField(
+                                      maxLength: 4,
                                       decoration: InputDecoration(
+                                        counterText: "",
                                         border: InputBorder.none,
                                       ),
                                       style: ts,
                                       controller: nicknameController,
+                                      validator: (val){
+                                        print("validate");
+                                        print(val);
+                                      },
                                     ),
                                   ),
                                   if (memberState.birthYear.isNotEmpty)
@@ -267,7 +275,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: Container(
                 child: SizedBox(
                   width: getMediaWidth(context) * 0.7,
-                  height: 40,
+                  height: getMediaHeight(context) * 0.06,
                   child: Container(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -277,15 +285,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       child: Text("save"),
                       onPressed: () async {
-
                         FocusScope.of(context).unfocus();
 
-                        if(state.images.isEmpty){
-                          print("memberState.imageUrls.isEmpty");
+                        if (state.images.isEmpty) {
+                          print("ProfileScreen - 프로필이미지 미등록 상태");
 
                           showDialog(
                             context: context,
-                            builder: (context) => _renderDefaultDialog("프로필 이미지 등록은 필수입니다."),
+                            builder: (context) =>
+                                _renderDefaultDialog("프로필 이미지 등록은 필수입니다."),
                           );
 
                           return;
@@ -295,19 +303,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           final resp = await ref
                               .read(memberNotifierProvider.notifier)
                               .postMemberInfoUpdate(
-                            nicknameController.text,
-                            introduceController.text,
-                            selectedMbti,
+                                nicknameController.text,
+                                introduceController.text,
+                                selectedMbti,
+                              );
+                        } on HasNotNicknameChangeCouponException catch (e) {
+                          // 닉네임 권한이 없는 상태에서 (이미 닉네임 변경을 한 경우) 다시 닉네임 변경을 시도한 경우
+                          showDialog(
+                            context: context,
+                            builder: (context) =>
+                                _renderDefaultDialog("닉네임은 한번 이상 변경 불가능합니다."),
                           );
 
-                        } on HasNotNicknameChangeCouponException catch (e){
-                            // 닉네임 권한이 없는 상태에서 (이미 닉네임 변경을 한 경우) 다시 닉네임 변경을 시도한 경우
-                            showDialog(
-                              context: context,
-                              builder: (context) => _renderDefaultDialog("닉네임은 한번 이상 변경 불가능합니다."),
-                            );
-
-                            return;
+                          return;
                         }
 
                         // 로그인 스크린에서 프로필 설정을 위해 강제로 넘긴경우 프로필 설정이 완료되면 pop하고 RootTab으로
@@ -419,7 +427,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-
   _renderDefaultDialog(String content) {
     return Dialog(
       elevation: 0,
@@ -477,7 +484,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
-
 
   // Widget _renderProfileFormfield()
 
@@ -582,7 +588,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       print("이미지 전송 성공");
       ref.read(memberProfileNotifierProvider.notifier).getProfileImage();
-
     } on DioError catch (e) {
       print(e);
     }

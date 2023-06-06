@@ -113,7 +113,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(25),
                     decoration: const BoxDecoration(
                       color: Color(0xFFFFFFFF),
                       borderRadius: BorderRadius.only(
@@ -150,7 +150,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             const Icon(Icons.logout),
                             "logout",
                           ),
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
                         ),
                       ],
                     ),
@@ -309,7 +311,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             children: [
               member.nickname != ""
                   ? Text(
-                      member.nickname,
+                      member.nickname.length > 4
+                          ? member.nickname.substring(0, 4)
+                          : member.nickname,
                       textScaleFactor: 1.18,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
@@ -318,8 +322,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   : const Text(
                       "",
                       textScaleFactor: 1.0,
-                      style:
-                          TextStyle( fontWeight: FontWeight.w700),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
               Text(
                 member.email,
@@ -332,7 +335,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _generateMemberInfoIcon(0, "Tickets"),
+              _generateMemberInfoIcon(0, "Tickets"), // 추후 api 연동해서 수정
               _generateMemberInfoIcon(follow.first.count, "Followings"),
               _generateMemberInfoIcon(follow.last.count, "Followers"),
             ],
