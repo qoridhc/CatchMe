@@ -83,6 +83,7 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/images/git_profile/
     - assets/images/icons/
     - assets/images/test_img/
 

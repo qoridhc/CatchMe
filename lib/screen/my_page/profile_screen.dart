@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:captone4/const/colors.dart';
 import 'package:captone4/const/mbti.dart';
@@ -13,9 +11,8 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_network/image_network.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../Token.dart';
 import '../../const/data.dart';
