@@ -46,7 +46,7 @@ class MemberProfileNotifier extends StateNotifier<MemberProfileModel> {
 
     try {
       final resp = await dio.get(
-        'http://$ip/api/v1/members/${token.id}/images',
+        CATCHME_URL + '/api/v1/members/${token.id}/images',
         options: Options(
           headers: {
             'authorization': 'Bearer ${token.accessToken}',

@@ -15,24 +15,26 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 import '../Token.dart';
 import '../chat/chat_bubble.dart';
 import '../const/data.dart';
+import '../model/GroupRoomListModel.dart';
 import '../model/member_model.dart';
 
-class ChatScreen extends ConsumerStatefulWidget {
+class GroupChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
-  DateTime? createTime;
-  int? roomNum;
+  final GroupRoomModel? roomData;
 
 
-  ChatScreen(
-      {required this.createTime,
-      required this.roomNum,
+  GroupChattingScreen(
+      {
+      required this.roomData,
       Key? key,
       @required this.token})
       : super(key: key);
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<GroupChattingScreen> createState() => _GroupChattingScreenState();
 }
+
+
 
 class ChatMessage {
   String? type;
@@ -49,10 +51,13 @@ class ChatMessage {
       required this.roomType});
 }
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+
+
+class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late int _memberId;
   late String _memberToken;
   late String senderImage;
+  late GroupRoomModel groupRoomModel;
   var _userEnterMessage = '';
 
   bool _visibility = true;
@@ -103,6 +108,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   ];
 
   late Token _token;
+
+  Future<ChatMessage> searchGroupChatRecord() async{
+    print("Get chat record's information");
+    final dio = Dio();
+
+    try {
+      final getGender = await dio.get(
+        'http://$ip/api/v1/members/${m}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      return MemberModel.fromJson(json: getGender.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      rethrow;
+    }
+  }
 
   @override
   void initState() {
@@ -158,7 +181,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     //     );
     _stompClient = StompClient(
         config:  StompConfig(
-          url: 'ws://localhost:9081/chat', // Spring Boot 서버의 WebSocket URL
+          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
           onConnect: onConnectCallback,
        )// 연결 성공 시 호출되는 콜백 함수
       );
@@ -248,7 +271,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     try {
       final getGender = await dio.get(
-        'http://$ip/api/v1/members/${_memberId}',
+        CATCHME_URL + '/api/v1/members/${_memberId}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),

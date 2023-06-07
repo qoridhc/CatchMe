@@ -17,21 +17,20 @@ import '../chat/chat_bubble.dart';
 import '../const/data.dart';
 import '../model/member_model.dart';
 
-class ChatScreen extends ConsumerStatefulWidget {
+class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
-  DateTime? createTime;
+
   int? roomNum;
 
 
-  ChatScreen(
-      {required this.createTime,
+  SingleChattingScreen({
       required this.roomNum,
       Key? key,
-      @required this.token})
-      : super(key: key);
+      @required this.token
+  }) : super(key: key);
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<SingleChattingScreen> createState() => _SingleChattingScreenState();
 }
 
 class ChatMessage {
@@ -49,7 +48,7 @@ class ChatMessage {
       required this.roomType});
 }
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   late int _memberId;
   late String _memberToken;
   late String senderImage;
@@ -158,7 +157,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     //     );
     _stompClient = StompClient(
         config:  StompConfig(
-          url: 'ws://localhost:9081/chat', // Spring Boot 서버의 WebSocket URL
+          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
           onConnect: onConnectCallback,
        )// 연결 성공 시 호출되는 콜백 함수
       );
@@ -248,7 +247,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     try {
       final getGender = await dio.get(
-        'http://$ip/api/v1/members/${_memberId}',
+        CATCHME_URL + '/api/v1/members/${_memberId}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),

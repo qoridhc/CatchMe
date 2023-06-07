@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
+import 'package:captone4/model/GroupRoomListModel.dart';
+import 'package:captone4/screen/group_chatting_screen.dart';
 import 'package:captone4/screen/single_chatting_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +44,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   //late WebSocketChannel channel;
 
   List<DateTime> roomCreateTimeList = [];
-  List<int> roomNumberList = [];
+  List<int> roomSingleNumberList = [];
 
   @override
   void initState() {
@@ -170,7 +172,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         _chatsOrGroups = false;
                     });
                   },
-                  children: [chatsListviewBuilder(), GroupsListviewBuilder()],
+                  children: [chatsListviewBuilder(), _renderGroupListView()],
                 ),
               ),
             ),
@@ -189,7 +191,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final dio = Dio();
 
     try {
-      final getInfo = await dio.get('http://$ip/api/v1/members/${mid}',
+      final getInfo = await dio.get(CATCHME_URL + '/api/v1/members/${mid}',
         options: Options(
           headers: {
             'authorization': 'Bearer ${_memberToken}'
@@ -204,13 +206,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
-  Future<SingleRoomListModel> getRoomList() async{
+  //싱글 채팅방 리스트 호출
+  Future<SingleRoomListModel> getSingleRoomList() async{
     print("getRoomList 실행");
     final dio = Dio();
     final List<String> ls;
 
     try{
-      final response = await dio.get('http://localhost:9081/api/v1/single_room?mid=$_memberId');
+      final response = await dio.get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
       return SingleRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");
@@ -229,7 +232,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     return Container(
       child: FutureBuilder<SingleRoomListModel>(
-        future: getRoomList(),
+        future: getSingleRoomList(),
         builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -246,15 +249,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 itemCount: snapshot.data!.singleRoomList.length,
                 padding: EdgeInsets.symmetric(vertical: 0),
                 itemBuilder: (context, index) {
-                  // print(snapshot.data!.count);
-                  // print(snapshot.data!.singleRoomList);
                   int _mid = snapshot.data!.singleRoomList[index].mid1 == _memberId
                       ? snapshot.data!.singleRoomList[index].mid2 :
                   snapshot.data!.singleRoomList[index].mid1;
-                  /*_midList.add(snapshot.data!.singleRoomList[index].mid1 == _memberId
-                      ? snapshot.data!.singleRoomList[index].mid2 :
-                        snapshot.data!.singleRoomList[index].mid1);*/
-                  roomNumberList.add(snapshot.data!.singleRoomList[index].id);
+                  roomSingleNumberList.add(snapshot.data!.singleRoomList[index].id);
                   return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
                 });
           }
@@ -346,9 +344,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                            createTime: roomCreateTimeList[indexNum],
-                            roomNum: roomNumberList[indexNum],
+                          builder: (context) => SingleChattingScreen(
+                            roomNum: roomSingleNumberList[indexNum],
                             token: _token,
                             // 0번째 채팅방 생성시간
                           ),
@@ -411,6 +408,76 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
+  //그룹 채팅방 리스트 호출
+  Future<GroupRoomListModel> getGroupRoomList() async{
+    print("getRoomList 실행");
+    final dio = Dio();
+    final List<String> ls;
+
+    try{
+      final response = await dio.get('http://localhost:9081/api/v1/group_room?mid=$_memberId');
+      return GroupRoomListModel.fromJson(json: response.data);
+    } on DioError catch (e) {
+      print("에러 발생");
+      print(e);
+      rethrow;
+    }
+  }
+
+  Widget _renderGroupListView() {
+    return Container(
+      child: FutureBuilder<GroupRoomListModel>(
+        future: getGroupRoomList(),
+          builder: (_, AsyncSnapshot<GroupRoomListModel> snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text(snapshot.error.toString()));
+              }
+              if (!snapshot.hasData) {
+                return Center(child: CircularProgressIndicator(),);
+              }
+              if (snapshot.data!.count != 0) {
+                return ListView.builder(
+                    itemCount: snapshot.data!.groupRoomList.length,
+                    padding: EdgeInsets.symmetric(vertical: 0),
+                  itemBuilder: (context, index){
+                     return _renderGroupListChild(snapshot.data!.groupRoomList[index], index);
+                  });
+              }
+              else{
+                return Center(child: Container(child: Text('생성된 그룹 채팅방이 없습니다.')));
+              }
+          }
+      )
+    );
+  }
+
+  Widget _renderGroupListChild(GroupRoomModel m, int i){
+    double baseWidth = 380;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
+
+
+    return InkWell(
+      onTap: (){
+        Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GroupChattingScreen(
+            roomData: m,
+            token: _token
+            // 0번째 채팅방 생성시간
+          ),
+        ),
+      );},
+      child: Container(
+          width: double.infinity,
+          height: 62 * fem,
+          child: Text("그룹채팅 $i"),
+      ),
+    );
+
+  }
+
+  /*
   Widget GroupsListviewBuilder() {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
@@ -535,4 +602,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
+
+   */
 }

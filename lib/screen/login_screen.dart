@@ -456,7 +456,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> loginPost(String userId, String password) async {
-    var url = "http://$ip/api/v1/login";
+    var url = CATCHME_URL +"/api/v1/login";
     try {
       Map data = {"userId": userId, "password": password};
 
@@ -485,7 +485,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> naverloginPost(String type) async {
-    var url = "http://$ip/api/v1/oauth/login";
+    var url = CATCHME_URL + "/api/v1/oauth/login";
     try {
       Map data = {"accessToken": accesToken, "type": type};
 

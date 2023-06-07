@@ -574,7 +574,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     try {
       final res = await dio.post(
-        'http://$ip/api/v1/members/${widget.token.id}/images',
+        CATCHME_URL + '/api/v1/members/${widget.token.id}/images',
         options: Options(
           headers: {
             'authorization': 'Bearer ${widget.token.accessToken}',
