@@ -1,22 +1,24 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:captone4/provider/follow_provider.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Token.dart';
 import '../model/member_model.dart';
 import 'package:dio/dio.dart';
 import '../const/data.dart';
 import 'package:http/http.dart' as http;
 
-class MainPageScreen extends StatefulWidget {
+class MainPageScreen extends ConsumerStatefulWidget {
   final Token? token;
   const MainPageScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
-  State<MainPageScreen> createState() => _MainPageScreenState();
+  ConsumerState<MainPageScreen> createState() => _MainPageScreenState();
 }
 
-class _MainPageScreenState extends State<MainPageScreen> {
+class _MainPageScreenState extends ConsumerState<MainPageScreen> {
   late int _memberId;
   late String _memberToken;
   late String userGender;
@@ -185,6 +187,7 @@ class _MainPageScreenState extends State<MainPageScreen> {
           print('거절');
         } else {
           print('하트 보내기');
+          ref.read(followNotifierProvider.notifier).getSendLike();
         }
       }
     } on DioError catch (e) {
