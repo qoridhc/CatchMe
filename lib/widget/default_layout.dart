@@ -66,17 +66,19 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
 
   @override
   void initState(){
-    int id =  ref.read(tokenProvider.notifier).state.id!;
-    String gender =  ref.read(tokenProvider.notifier).state.gender!;
-    matchingUser = new MatchingUser(id: id, gender: gender);
-    body = json.encode(matchingUser);
+
 
     super.initState();
   }
   @override
-  void dispoase(){
-
-    stompClient?.deactivate();
+  void dispose(){
+    print("레이아웃 종료");
+    try{
+        stompClient?.deactivate();
+    }
+    catch (e){
+      print("error : $e");
+    }
 
     super.dispose();
   }
@@ -131,22 +133,22 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
   }
 
   void onConnectCallback(StompFrame connectFrame) {
-
+    int id =  ref.read(tokenProvider.notifier).state.id!;
+    String gender =  ref.read(tokenProvider.notifier).state.gender!;
+    matchingUser = new MatchingUser(id: id, gender: gender);
+    body = json.encode(matchingUser);
 
 
     //여기서 멤버 조회로 id값이랑 gender값 가져오기
     //가져온걸 send로 매칭에게 보내기
     stompClient!.send(
         destination: '/pub/matching',body: body);
-
-
-
   }
 
   void connectToStomp(){
     print("매칭 연결");
     stompClient = StompClient(config: StompConfig(
-      url: 'ws://10.0.2.2:9090/ws',
+      url: 'ws://ec2-3-34-216-149.ap-northeast-2.compute.amazonaws.com:9090/ws',
       onConnect: onConnectCallback,
     ));
     stompClient!.activate();
