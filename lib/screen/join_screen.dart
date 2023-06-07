@@ -269,7 +269,7 @@ class _joinScreenState extends State<joinScreen> {
 
   Future<void> joinPost(String userId, String password, String phoneNumber,
       String email, String nickName, String birthYear, String gender) async {
-    var url = "http://$ip/api/v1/join";
+    var url = CATCHME_URL + "/api/v1/join";
     try {
       Map data = {
         "userId": userId,

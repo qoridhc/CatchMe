@@ -191,7 +191,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final dio = Dio();
 
     try {
-      final getInfo = await dio.get('http://$ip/api/v1/members/${mid}',
+      final getInfo = await dio.get(CATCHME_URL + '/api/v1/members/${mid}',
         options: Options(
           headers: {
             'authorization': 'Bearer ${_memberToken}'
@@ -213,7 +213,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final List<String> ls;
 
     try{
-      final response = await dio.get('http://localhost:9081/api/v1/single_room?mid=$_memberId');
+      final response = await dio.get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
       return SingleRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");

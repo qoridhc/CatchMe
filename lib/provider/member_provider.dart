@@ -45,7 +45,7 @@ class MemberNotifier extends StateNotifier<MemberModel> {
 
     try {
       final resp = await dio.get(
-        'http://$ip/api/v1/members/${token.id}',
+        CATCHME_URL + '/api/v1/members/${token.id}',
         options: Options(
           headers: {
             'authorization': 'Bearer ${token.accessToken}',
@@ -89,7 +89,7 @@ class MemberNotifier extends StateNotifier<MemberModel> {
 
     try {
       final resp = await dio.post(
-        'http://$ip/api/v1/members/${token.id}',
+        CATCHME_URL + '/api/v1/members/${token.id}',
         data: json,
         options: Options(
           headers: {

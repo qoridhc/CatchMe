@@ -1,17 +1,24 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:captone4/exception/DuplicateUserEvaluateException.dart';
 import 'package:captone4/provider/follow_provider.dart';
 import 'package:captone4/widget/default_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../Token.dart';
+import '../const/colors.dart';
 import '../model/member_model.dart';
 import 'package:dio/dio.dart';
 import '../const/data.dart';
 import 'package:http/http.dart' as http;
 
+import '../utils/utils.dart';
+
 class MainPageScreen extends ConsumerStatefulWidget {
   final Token? token;
+
   const MainPageScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
@@ -22,6 +29,8 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
   late int _memberId;
   late String _memberToken;
   late String userGender;
+  double _rating = 3;
+
   // late String userGender;
 
   @override
@@ -56,7 +65,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
 
     try {
       final getGender = await dio.get(
-        'http://$ip/api/v1/members/${_memberId}',
+        CATCHME_URL + '/api/v1/members/${_memberId}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
@@ -114,7 +123,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
 
     try {
       final resp = await dio.get(
-        'http://$ip/api/v1/search?gender=${userGender}',
+        CATCHME_URL + '/api/v1/search?gender=${userGender}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
@@ -146,8 +155,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
           if (snapshot.data!.count != 0) {
             var userLength = snapshot.data!.count - 1;
             print('유저 목록 길이 $userLength');
-            return _renderMemberList(
-                snapshot.data!.memberList[0], userLength);
+            return _renderMemberList(snapshot.data!.memberList[0], userLength);
           } else {
             return Center(
               child: Text("해당 정보가 없습니다."),
@@ -162,7 +170,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
   Future<void> sendHeart(MemberModel l, String status) async {
     print("마음 보내기");
     final dio = Dio();
-    var url = 'http://$ip/api/v1/classifications';
+    var url = CATCHME_URL + '/api/v1/classifications';
 
     try {
       Map data = {
@@ -214,7 +222,13 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
     int birthYear = int.parse(l.birthYear);
     String userAge = (2023 - birthYear).toString();
     late String status;
-    return Dismissible(
+    return InkWell(
+      onTap: () {
+        showDialog(
+            context: context,
+            builder: (context) => _renderEvaluationDialog(l.memberId));
+      },
+      child: Dismissible(
         key: UniqueKey(),
         direction: DismissDirection.horizontal,
         // 스와이프 할 때 효과
@@ -301,41 +315,52 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
                         //     fit: BoxFit.cover,
                         //     alignment: Alignment.center,
                         //   ),
-                        : CachedNetworkImage(imageUrl: l.imageUrls[0]),
-                    Row(
-                      children: [
-                        Container(
-                          width: screenWidth / 4,
-                          padding: EdgeInsets.only(left: 10),
-                          child: Text(
-                            l.nickname,
-                            textAlign: TextAlign.left,
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
+                        : CachedNetworkImage(
+                            imageUrl: l.imageUrls[0],
+                            fit: BoxFit.cover,
+                          ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            // color: Colors.blue,
+                            width: screenWidth / 3,
+                            padding: EdgeInsets.only(left: 10),
+                            child: Text(
+                              l.nickname.length > 5
+                                  ? l.nickname.substring(0, 6)
+                                  : l.nickname,
+                              textAlign: TextAlign.left,
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          width: screenWidth / 3,
-                          child: Text(
-                            userAge as String,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(fontSize: 25),
+                          Container(
+                            // color: Colors.black,
+                            width: screenWidth / 3,
+                            child: Text(
+                              userAge as String,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(fontSize: 25),
+                            ),
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.only(right: 10),
-                          width: screenWidth / 3,
-                          child: Text(
-                            l.mbti,
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                                fontSize: 17),
-                          ),
-                        )
-                      ],
+                          Container(
+                            // color: Colors.red,
+                            // padding: EdgeInsets.on/ly(right: 15),
+                            width: screenWidth / 4,
+                            child: Text(
+                              l.mbti,
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 17),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
                     (l.introduction == null)
@@ -355,8 +380,217 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
               ],
             ),
           ),
-        )
+        ),
         // : emptyScreen(),
-        );
+      ),
+    );
+  }
+
+  // 얼굴 평가시 Dialog 띄워주기
+  _renderEvaluationDialog(String targetId) {
+    return Dialog(
+      elevation: 0,
+      backgroundColor: Color(0xffffffff),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Container(
+        height: getMediaHeight(context) * 0.25,
+        child: Column(
+          // mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // SizedBox(height: 15),
+            Container(
+              child: Text(
+                "얼굴 점수 평가",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // SizedBox(height: 10),
+            Text("현재 유저의 얼굴점수를 평가해주세요!"),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              // height: getMediaHeight(context) * 0.07,
+              child: Center(
+                child: RatingBar.builder(
+                  initialRating: _rating,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: PRIMARY_COLOR,
+                  ),
+                  onRatingUpdate: (rating) {
+                    _rating = rating;
+                  },
+                ),
+              ),
+            ),
+            Divider(
+              height: 1,
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        print("_rating = $_rating");
+                        try {
+                          final resp = await postRatingScore(targetId, _rating);
+
+                          Navigator.pop(context);
+
+                          showDialog(
+                            context: context,
+                            builder: (context) => _renderDefaultDialog([
+                              "성공적으로 유저의 점수를",
+                              "평가 완료 하였습니다.",
+                            ]),
+                            //"이미 얼굴을 평가한 유저는\n재평가 할 수 없습니다."
+                          );
+                        } on DuplicateUserEvaluateException catch (e) {
+                          // 두번 이상 같은 유저를 평가하려고 하는 경우
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (context) => _renderDefaultDialog(
+                                ['이미 얼굴을 평가한 유저는', '재평가 할 수 없습니다.']),
+                            //"이미 얼굴을 평가한 유저는\n재평가 할 수 없습니다."
+                          );
+                        }
+                      },
+                      child: Text(
+                        "완료",
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          color: PRIMARY_COLOR,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  VerticalDivider(),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "취소",
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          color: PRIMARY_COLOR,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 알림 Dialog 띄워주기
+  _renderDefaultDialog(List<String> contents) {
+    return Dialog(
+      elevation: 0,
+      backgroundColor: Color(0xffffffff),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: getMediaHeight(context) * 0.02),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                // color: Colors.red,
+                child: Text(
+                  "알림",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: getMediaHeight(context) * 0.02),
+          ...contents.map(
+            (e) => Text(e),
+          ),
+          Container(
+            width: getMediaWidth(context),
+            height: getMediaHeight(context) * 0.07,
+            child: InkWell(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(15.0),
+                bottomRight: Radius.circular(15.0),
+              ),
+              highlightColor: Colors.grey[200],
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Center(
+                child: Text(
+                  "확인",
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: PRIMARY_COLOR,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 얼굴 점수 post 요청
+  dynamic postRatingScore(String targetId, double score) async {
+    print("getReceivedLike 실행");
+    final dio = Dio();
+
+    print("postRatingScore - score : $score");
+
+    try {
+      final resp = await dio.post(
+        'http://$ip/api/v1/members/$targetId/score',
+        data: {'score': score},
+        options: Options(
+          headers: {'authorization': 'Bearer ${widget.token!.accessToken}'},
+        ),
+      );
+
+      print(resp);
+      // state.last = LikeListModel.fromJson(json: resp.data);
+    } on DioError catch (e) {
+      print("에러 발생");
+      print(e.response?.statusCode);
+      if (e.response?.statusCode == 403) {
+        print("403에러발생");
+        throw DuplicateUserEvaluateException();
+      }
+    }
   }
 }

@@ -54,7 +54,7 @@ class FollowNotifier extends StateNotifier<List<LikeListModel>> {
 
     try {
       final resp = await dio.get(
-        'http://$ip/api/v1/classifications?memberId=${token.id}&status=true',
+        CATCHME_URL + '/api/v1/classifications?memberId=${token.id}&status=true',
         options: Options(
           headers: {'authorization': 'Bearer ${token.accessToken}'},
         ),
@@ -78,7 +78,7 @@ class FollowNotifier extends StateNotifier<List<LikeListModel>> {
 
     try {
       final resp = await dio.get(
-        'http://$ip/api/v1/classifications?targetId=${token.id}&status=true',
+        CATCHME_URL + '/api/v1/classifications?targetId=${token.id}&status=true',
         options: Options(
           headers: {'authorization': 'Bearer ${token.accessToken}'},
         ),
