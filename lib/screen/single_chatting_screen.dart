@@ -112,22 +112,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
-    if (widget.createTime != null) {
-      timeDiff = DateTime.now().difference(widget.createTime!);
-      print("now : ${DateTime.now()}");
-      print("timeDiff : $timeDiff");
-      setState(
-        () {
-          if ((defaultTime - timeDiff!.inSeconds) > 0) {
-            time = defaultTime - timeDiff!.inSeconds;
-          } else {
-            _visibility = false;
-          }
-        },
-      );
-    }
 
-    _handleTimer();
     // if(!ref.read(TimerProvider.notifier).isRun)
     //   ref.read(TimerProvider.notifier).start();
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
@@ -222,22 +207,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
     // ref.read(TimerProvider.notifier).cancel();
     // ref.read(TimerProvider.notifier).pause();
-  }
-
-  void _handleTimer() {
-    _timer = Timer.periodic(
-      Duration(seconds: 1),
-      (timer) {
-        setState(() {
-          if (time <= 0) {
-            _visibility = false;
-            _timer.cancel();
-          } else {
-            time = time - 1;
-          }
-        });
-      },
-    );
   }
 
   // sender 정보 얻기
@@ -365,33 +334,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                   ),
                   SizedBox(
                     width: getMediaWidth(context) * 0.1,
-                  ),
-                  Text(
-                    "${(time / 60).toInt()}",
-                    style: const TextStyle(
-                      fontFamily: 'Avenir',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const Text(
-                    ':',
-                    style: TextStyle(
-                      fontFamily: 'Avenir',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 15,
-                    ),
-                  ),
-                  Text(
-                    (time % 60).toString().padLeft(2, '0'),
-                    style: const TextStyle(
-                      fontFamily: 'Avenir',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 15,
-                    ),
                   ),
                 ],
               ),
