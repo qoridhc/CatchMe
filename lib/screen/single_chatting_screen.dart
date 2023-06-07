@@ -38,6 +38,15 @@ class ChatMessage {
   String? message;
   String? roomType;
 
+  Map<String, dynamic> toJson() =>
+      {
+        'type': type,
+        'roomId': roomId,
+        'sender': sender,
+        'message': message,
+        'roomType': roomType,
+      };
+
   ChatMessage(
       {required this.type,
       required this.roomId,

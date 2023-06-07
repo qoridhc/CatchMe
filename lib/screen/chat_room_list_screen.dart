@@ -40,7 +40,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late Token _token;
   late int _memberId;
   late String _memberToken;
-  late int _mid;
   //late WebSocketChannel channel;
 
   List<DateTime> roomCreateTimeList = [];
@@ -394,7 +393,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final List<String> ls;
 
     try{
-      final response = await dio.get('http://localhost:9081/api/v1/group_room?mid=$_memberId');
+      final response = await dio.get(CHATTING_API_URL + '/api/v1/group_room?mid=$_memberId');
       return GroupRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");

@@ -107,7 +107,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
   late Token _token;
 
-  Future<ChatMessage> searchGroupChatRecord() async{
+ /* Future<ChatMessage> searchGroupChatRecord() async{
     print("Get chat record's information");
     final dio = Dio();
 
@@ -123,7 +123,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       print('error: $e');
       rethrow;
     }
-  }
+  }*/
 
   @override
   void initState() {

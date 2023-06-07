@@ -297,6 +297,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
               }
 
               if (snapshot.data!.count != 0) {
+                print(snapshot.data);
                 return ListView.builder(
                     itemCount: snapshot.data!.likeList.length,
                     padding: EdgeInsets.symmetric(vertical: 0),
