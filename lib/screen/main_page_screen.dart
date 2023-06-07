@@ -310,14 +310,13 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
                   children: [
                     (l.imageUrls.isEmpty == true)
                         ? Container()
-                        // : Image.network(
-                        //     l.imageUrls[0],
-                        //     fit: BoxFit.cover,
-                        //     alignment: Alignment.center,
-                        //   ),
-                        : CachedNetworkImage(
-                            imageUrl: l.imageUrls[0],
-                            fit: BoxFit.cover,
+                        : Container(
+                            width: getMediaWidth(context),
+                            height: getMediaHeight(context) * 0.6,
+                            child: CachedNetworkImage(
+                              imageUrl: l.imageUrls[0],
+                              fit: BoxFit.cover,
+                            ),
                           ),
                     Padding(
                       padding: const EdgeInsets.only(top: 12.0),

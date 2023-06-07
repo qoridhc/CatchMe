@@ -159,7 +159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       },
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -171,7 +171,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   Container(
                                     width: getMediaWidth(context) * 0.2,
                                     child: TextFormField(
-                                      maxLength: 4,
                                       decoration: InputDecoration(
                                         counterText: "",
                                         border: InputBorder.none,
@@ -505,6 +504,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: Colors.grey[200],
             ),
             child: TextFormField(
+              maxLines: 3,
               controller: controller,
               decoration: InputDecoration(
                 border: InputBorder.none,
