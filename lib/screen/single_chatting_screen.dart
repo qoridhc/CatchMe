@@ -19,9 +19,7 @@ import '../model/member_model.dart';
 
 class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
-
   int? roomNum;
-
 
   SingleChattingScreen({
       required this.roomNum,
@@ -55,10 +53,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   var _userEnterMessage = '';
 
   bool _visibility = true;
-  late Timer _timer;
-  Duration? timeDiff = null;
-  int time = 0;
-  int defaultTime = 3000;
+
   bool scrollMax = false;
 
   late StompClient _stompClient;
@@ -68,38 +63,10 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   late ScrollController _scrollController;
 
   String userID = "test";
-  final List<String> _img = <String>[
-    'assets/images/test_img/1.jpg',
-    'assets/images/test_img/2.jpg',
-    'assets/images/test_img/3.jpg',
-    'assets/images/test_img/김민주.jpg',
-    'assets/images/test_img/조유리.jpg',
-    'assets/images/test_img/5.jpg',
-  ];
-  final List<String> _name = <String>[
-    '아이유',
-    '차은우',
-    '배수지',
-    '김민주',
-    '조유리',
-    'tester',
-  ];
-  final List<String> _userID = <String>[
-    '아이유',
-    '차은우',
-    '배수지',
-    '김민주',
-    '조유리',
-    'test',
-  ];
-  final List<String> _text = <String>[
-    '안녕하세요 아이입니다',
-    '안녕하세요 차은우입니다',
-    '안녕하세요 배수지입니다',
-    '안녕하세요 김민주입니다',
-    '안녕하세요 조유리입니다',
-    '안녕하세요 테스터입니다',
-  ];
+  final List<String> _img = <String>[];
+  final List<String> _name = <String>[];
+  final List<String> _sender = <String>[];
+  final List<String> _text = <String>[];
 
   late Token _token;
 
@@ -132,14 +99,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   }
 
   void connectToStomp() {
-    // _stompClient.config.onConnect;
-    // _stompClient.subscribe(//메세지 서버에서 받고 rabbitmq로 전송
-    //     destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
-    //     callback: (connectFrame) {
-    //       print(connectFrame.body); //메시지를 받았을때!
-    //       // 메시지 처리
-    //       }
-    //     );
     _stompClient = StompClient(
         config:  StompConfig(
           url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
@@ -152,32 +111,39 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.single' + 1.toString(), // 구독할 주제 경로  abc방을 구독
+      destination: '/topic/room.abc',
+      headers: {"id": "1234","durable" : "true", "auto-delete":"false"},
+      // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print(connectFrame.body); //메시지를 받았을때!
-        String? talk = connectFrame.body;
-        _token = Token.fromJson(json.decode(talk!)); // 여기 고쳐야함
-        String text =
-            connectFrame.body!.substring(1, connectFrame.body!.length - 1);
-        _text.add(text);
-        _name.add("sss");
-        _userID.add("sss");
+        Map<String, dynamic> chat = (json.decode(connectFrame.body.toString()));      // 여기 고쳐야함
+
+        ChatMessage? chatMessage;
+        chatMessage?.type = chat["type"];
+        _text.add(chat["message"]);
+        chatMessage?.roomId = chat["roomId"];
+        _name.add("실험중");
+        _sender.add(chat["sender"]);
         _img.add('assets/images/test_img/조유리.jpg');
+        chatMessage?.roomType = chat["roomType"];
         // 메시지 처리
       },
     );
   }
 
-  void sendMessage() {
-    //encoder
+
+  void sendMessage() {  //encoder
     FocusScope.of(context).unfocus();
     String message = messageController.text;
-    var body = json.encode(ChatMessage(
-        type: "TALK",
-        roomId: widget.roomNum.toString(),
-        sender: _memberId.toString(),
-        message: message,
-        roomType: "Single"));
+    print("body출력");
+    print(widget.roomNum.toString());
+    print(message);
+
+    ChatMessage chatMessage = ChatMessage(type: "TALK", roomId: "aaa", sender: _memberId.toString(), message: message, roomType: "Single");
+    print(chatMessage);
+    var body = json.encode(chatMessage);
+
+    print(body);
     _stompClient.send(
       destination: '/app/chat.enter.abc',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
@@ -188,7 +154,11 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     scrollListToEnd();
     messageController.clear();
     _userEnterMessage = '';
+
+    renderSenderInfoBuild();
+    print(senderImage);
   }
+
 
   void scrollListToEnd() {
     if (scrollMax) {
@@ -202,7 +172,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     // TODO: implement dispose
     _stompClient.deactivate();
     super.dispose();
-    if (_timer.isActive) _timer.cancel();
     print("dispose");
 
     // ref.read(TimerProvider.notifier).cancel();
@@ -360,7 +329,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                 itemBuilder: (context, index) {
                   scrollListToEnd();
                   scrollMax = false;
-                  return ChatBubbles(_text[index], _userID[index] == userID,
+                  return ChatBubbles(_text[index], _sender[index] == _memberId.toString(),
                       _name[index], _img[index]);
                   // chat bubble 안에 메세지들을 넣어준다
                 },
