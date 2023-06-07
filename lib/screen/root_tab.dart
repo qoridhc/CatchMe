@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:captone4/const/data.dart';
 import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/screen/favorite_list_screen.dart';
 import 'package:captone4/screen/main_page_screen.dart';
@@ -44,7 +45,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     print("root_tab 연결");
     stompClient = StompClient(
       config: StompConfig(
-        url: 'ws://localhost:9081/chat', // Spring Boot 서버의 WebSocket URL
+        url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
         onConnect: onConnectCallback, // 연결 성공 시 호출되는 콜백 함수
       ),
     );

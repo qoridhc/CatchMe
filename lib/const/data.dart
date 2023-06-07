@@ -10,4 +10,8 @@ final dioProvider = Provider<Dio>((ref) {
 });
 
 //localhost
-final ip = 'ec2-3-34-216-149.ap-northeast-2.compute.amazonaws.com:8080';
+final ip = '3.34.216.149:8080';
+final CATCHME_URL = 'http://3.34.216.149:8080';
+final MATCHING_WS_URL = 'ws://3.34.216.149:9090';
+final CHATTING_API_URL = 'http://10.0.2.2:9081';
+final CHATTING_WS_URL = 'ws://10.0.2.2:9081/chat';

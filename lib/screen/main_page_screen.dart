@@ -56,7 +56,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
 
     try {
       final getGender = await dio.get(
-        'http://$ip/api/v1/members/${_memberId}',
+        CATCHME_URL + '/api/v1/members/${_memberId}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
@@ -114,7 +114,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
 
     try {
       final resp = await dio.get(
-        'http://$ip/api/v1/search?gender=${userGender}',
+        CATCHME_URL + '/api/v1/search?gender=${userGender}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
@@ -162,7 +162,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
   Future<void> sendHeart(MemberModel l, String status) async {
     print("마음 보내기");
     final dio = Dio();
-    var url = 'http://$ip/api/v1/classifications';
+    var url = CATCHME_URL + '/api/v1/classifications';
 
     try {
       Map data = {

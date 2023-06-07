@@ -165,7 +165,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
 
     try{
       final resp = await dio.get(
-        'http://$ip/api/v1/classifications?memberId=${_memberId}&status=true',
+        CATCHME_URL + '/api/v1/classifications?memberId=${_memberId}&status=true',
         options: Options(
           headers: {
             'authorization': 'Bearer ${_memberToken}' // 없을 겨우 noAuth or NULL
@@ -187,7 +187,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
 
     try{
       final resp = await dio.get(
-        'http://$ip/api/v1/classifications?targetId=${_memberId}&status=true',
+        CATCHME_URL + '/api/v1/classifications?targetId=${_memberId}&status=true',
 
         options: Options(
           headers: {
