@@ -25,7 +25,8 @@ import "package:dart_amqp/dart_amqp.dart";
 
 class ChatRoomScreen extends StatefulWidget {
   final Token? token;
-  const ChatRoomScreen({Key? key, @required this.token}) : super(key: key);
+  final StompClient? stompClient;
+  const ChatRoomScreen({Key? key, @required this.token, @required this.stompClient}) : super(key: key);
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -35,6 +36,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _pageChanged = 0;
   bool _chatsOrGroups = true;
 
+  late Token _token;
+  // late StompClient _stompClient;
   late int _memberId;
   late String _memberToken;
   late int _mid;
@@ -50,6 +53,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
+
+    _token = widget.token!;
+
+    // _stompClient = widget.stompClient!;
 
     _memberId = widget.token!.id!;            // 로그인한 사람
     _memberToken = widget.token!.accessToken!;  // 여기 에러 왜?????????
@@ -180,7 +187,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  Future<MemberListModel> getUserInfo(int mid) async {
+  Future<MemberModel> getUserInfo(int mid) async {
     print("Get user's information");
     final dio = Dio();
 
@@ -192,7 +199,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           },
         ),
       ); // 여기에 mid1이나 mid2값을 넣는 방법은?
-      return MemberListModel.fromJson(json: getInfo.data);
+      return MemberModel.fromJson(json: getInfo.data);
     } on DioError catch (e) {
       print('error: $e');
       print(e);
@@ -206,7 +213,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final List<String> ls;
 
     try{
-      final response = await dio.get('http://localhost:9081/api/v1/single_room?mid1=$_memberId&mid2=$_memberId');
+      final response = await dio.get('http://localhost:9081/api/v1/single_room?mid=$_memberId');
       return SingleRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");
@@ -242,13 +249,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 itemCount: snapshot.data!.singleRoomList.length,
                 padding: EdgeInsets.symmetric(vertical: 0),
                 itemBuilder: (context, index) {
+                  // print(snapshot.data!.count);
+                  // print(snapshot.data!.singleRoomList);
                   int _mid = snapshot.data!.singleRoomList[index].mid1 == _memberId
                       ? snapshot.data!.singleRoomList[index].mid2 :
                   snapshot.data!.singleRoomList[index].mid1;
                   /*_midList.add(snapshot.data!.singleRoomList[index].mid1 == _memberId
                       ? snapshot.data!.singleRoomList[index].mid2 :
                         snapshot.data!.singleRoomList[index].mid1);*/
-                  roomNumberList.add(snapshot.data!.singleRoomList[index].Roomid);
+                  roomNumberList.add(snapshot.data!.singleRoomList[index].id);
                   return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
                 });
           }
@@ -262,9 +271,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   Widget renderMemberLInfo(int mid, int indexNum) {
     return Container(
-      child: FutureBuilder<MemberListModel>(
+      child: FutureBuilder<MemberModel>(
         future: getUserInfo(mid),
-        builder: (_, AsyncSnapshot<MemberListModel> snapshot) {
+        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
           if (snapshot.hasError) {
             return Center(
               child: Text(
@@ -275,9 +284,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.data!.count != 0) {
+          if (snapshot.data! != 0) {
             return _renderSingleRoomListView(
-                snapshot.data!.memberList[0], indexNum);
+                snapshot.data!, indexNum);
           } else {
             return Center(
               child: Text("해당 정보가 없습니다."),
@@ -341,7 +350,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => ChatScreen(
-                            createTime: roomCreateTimeList[indexNum],roomNum: roomNumberList[indexNum], // 0번째 채팅방 생성시간
+                            createTime: roomCreateTimeList[indexNum],
+                            roomNum: roomNumberList[indexNum],
+                            token: _token,
+                            // stompClient: _stompClient,// 0번째 채팅방 생성시간
                           ),
                         ),
                       );

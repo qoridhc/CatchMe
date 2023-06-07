@@ -21,26 +21,26 @@ class SingleRoomListModel{
 }
 
 class SingleRoomModel{
-  final DateTime makeTime;
+  final String createdAt;
   final int mid1;
   final int mid2;
-  final int Roomid;
+  final int id;
 
   SingleRoomModel({
-    required this.makeTime,
+    required this.createdAt,
     required this.mid1,
     required this.mid2,
-    required this.Roomid,
+    required this.id,
   });
 
   factory SingleRoomModel.fromJson({
     required Map<String, dynamic> json,
   }) {
     return SingleRoomModel(
-      makeTime: json['makeTime'],
-      mid1: json['memberID1'],
-      mid2: json['memberID2'],
-      Roomid: json['RoomID'],
+      createdAt: json['created_at'],
+      mid1: json['mid1'],
+      mid2: json['mid2'],
+      id: json['id'],
     );
   }
 }

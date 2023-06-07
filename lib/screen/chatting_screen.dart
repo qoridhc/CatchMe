@@ -19,11 +19,14 @@ class ChatScreen extends ConsumerStatefulWidget {
   final Token? token;
   DateTime? createTime;
   int? roomNum;
+  final StompClient? stompClient;
 
   ChatScreen({
     required this.createTime,
     required this.roomNum,
-    Key? key,@required this.token
+    Key? key,
+    @required this.token,
+    @required this.stompClient
   }) : super(key: key);
 
   @override
@@ -57,7 +60,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   int defaultTime = 3000;
   bool scrollMax = false;
 
-  late StompClient stompClient;
+  late StompClient _stompClient;
+
   TextEditingController messageController = TextEditingController();
   List<DateTime> roomCreateTimeList = [];
   late ScrollController _scrollController;
@@ -129,8 +133,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
 
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
-    print("웹 소캣 연결");
+    // _stompClient = widget.stompClient!;
+
+    // _stompClient.deactivate();
     connectToStomp(); //stomp 연결
+    print("웹 소캣 연결");
+
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
@@ -138,29 +146,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void connectToStomp() {
-    stompClient = StompClient(
-      config: StompConfig(
-        url: 'ws://10.0.2.2:9081/chat', // Spring Boot 서버의 WebSocket URL
-        onConnect: onConnectCallback, // 연결 성공 시 호출되는 콜백 함수
-      ),
-    );
-    stompClient.activate();
+    // _stompClient.config.onConnect;
+    // _stompClient.subscribe(//메세지 서버에서 받고 rabbitmq로 전송
+    //     destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
+    //     callback: (connectFrame) {
+    //       print(connectFrame.body); //메시지를 받았을때!
+    //       // 메시지 처리
+    //       }
+    //     );
+    _stompClient = StompClient(
+        config:  StompConfig(
+          url: 'ws://localhost:9081/chat', // Spring Boot 서버의 WebSocket URL
+          onConnect: onConnectCallback,
+       )// 연결 성공 시 호출되는 콜백 함수
+      );
+    print("chating 연결성공");
   }
 
   void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
-    stompClient.subscribe(
+    _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print(connectFrame.body); //메시지를 받았을때!
-        String? talk = connectFrame.body;
-        _token = Token.fromJson(json.decode(talk!));      // 여기 고쳐야함
-        String text =
-            connectFrame.body!.substring(1, connectFrame.body!.length - 1);
-        _text.add(text);
-        _name.add("sss");
-        _userID.add("sss");
-        _img.add('assets/images/test_img/조유리.jpg');
         // 메시지 처리
       },
     );
@@ -170,7 +178,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     FocusScope.of(context).unfocus();
     String message = messageController.text;
     var body = json.encode(ChatMessage(type: "TALK", roomId: widget.roomNum.toString(), sender: _memberId.toString(), message: message, roomType: "Single"));
-    stompClient.send(
+    _stompClient.send(
       destination: '/app/chat.enter.abc',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: body,
@@ -192,7 +200,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     // TODO: implement dispose
-    stompClient?.deactivate();
+    _stompClient.deactivate();
     super.dispose();
     if (_timer.isActive) _timer.cancel();
     print("dispose");
@@ -326,6 +334,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _stompClient.activate();
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
