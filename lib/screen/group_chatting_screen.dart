@@ -22,19 +22,13 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   final GroupRoomModel? roomData;
 
-
-  GroupChattingScreen(
-      {
-      required this.roomData,
-      Key? key,
-      @required this.token})
+  GroupChattingScreen({required this.roomData, Key? key, @required this.token})
       : super(key: key);
 
   @override
-  ConsumerState<GroupChattingScreen> createState() => _GroupChattingScreenState();
+  ConsumerState<GroupChattingScreen> createState() =>
+      _GroupChattingScreenState();
 }
-
-
 
 class ChatMessage {
   String? type;
@@ -49,9 +43,17 @@ class ChatMessage {
       required this.sender,
       required this.message,
       required this.roomType});
+
+  factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
+    return ChatMessage(
+      type: json['type'],
+      roomId: json['roomId'],
+      sender: json['sender'],
+      message: json['message'],
+      roomType: json['roomType']
+    );
+  }
 }
-
-
 
 class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late int _memberId;
@@ -73,7 +75,6 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   List<DateTime> roomCreateTimeList = [];
   late ScrollController _scrollController;
 
-  String userID = "test";
   final List<String> _img = <String>[
     'assets/images/test_img/1.jpg',
     'assets/images/test_img/2.jpg',
@@ -109,18 +110,18 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
   late Token _token;
 
-  Future<ChatMessage> searchGroupChatRecord() async{
+  Future<ChatMessage> searchGroupChatRecord() async {
     print("Get chat record's information");
     final dio = Dio();
 
     try {
       final getGender = await dio.get(
-        'http://$ip/api/v1/members/${m}',
+        'http://$ip/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
       );
-      return MemberModel.fromJson(json: getGender.data);
+      return ChatMessage.fromJson(json: getGender.data);
     } on DioError catch (e) {
       print('error: $e');
       rethrow;
@@ -136,8 +137,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
-    if (widget.createTime != null) {
-      timeDiff = DateTime.now().difference(widget.createTime!);
+    if (widget.roomData!.createAt != null) {
+      timeDiff =
+          DateTime.now().difference(DateTime.parse(widget.roomData!.createAt));
       print("now : ${DateTime.now()}");
       print("timeDiff : $timeDiff");
       setState(
@@ -152,43 +154,31 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     }
 
     _handleTimer();
-    // if(!ref.read(TimerProvider.notifier).isRun)
-    //   ref.read(TimerProvider.notifier).start();
+
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
 
-    //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
-    // _stompClient = widget.stompClient!;
-
-    // _stompClient.deactivate();
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
   }
 
   void connectToStomp() {
-    // _stompClient.config.onConnect;
-    // _stompClient.subscribe(//메세지 서버에서 받고 rabbitmq로 전송
-    //     destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
-    //     callback: (connectFrame) {
-    //       print(connectFrame.body); //메시지를 받았을때!
-    //       // 메시지 처리
-    //       }
-    //     );
     _stompClient = StompClient(
-        config:  StompConfig(
-          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-          onConnect: onConnectCallback,
-       )// 연결 성공 시 호출되는 콜백 함수
-      );
+        config: StompConfig(
+      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+      onConnect: onConnectCallback,
+    ) // 연결 성공 시 호출되는 콜백 함수
+        );
     print("chating 연결성공");
   }
 
-  void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
+  void onConnectCallback(StompFrame connectFrame) {
+    //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.single' + 1.toString(), // 구독할 주제 경로  abc방을 구독
@@ -213,10 +203,10 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     String message = messageController.text;
     var body = json.encode(ChatMessage(
         type: "TALK",
-        roomId: widget.roomNum.toString(),
+        roomId: widget.roomData!.id.toString(),
         sender: _memberId.toString(),
         message: message,
-        roomType: "Single"));
+        roomType: "Multi"));
     _stompClient.send(
       destination: '/app/chat.enter.abc',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
@@ -442,8 +432,11 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                 itemBuilder: (context, index) {
                   scrollListToEnd();
                   scrollMax = false;
-                  return ChatBubbles(_text[index], _userID[index] == userID,
-                      _name[index], _img[index]);
+                  return ChatBubbles(
+                      _text[index],
+                      _userID[index] == _memberId.toString(),
+                      _name[index],
+                      _img[index]);
                   // chat bubble 안에 메세지들을 넣어준다
                 },
               ),

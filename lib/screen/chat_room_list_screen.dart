@@ -45,6 +45,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   List<DateTime> roomCreateTimeList = [];
   List<int> roomSingleNumberList = [];
+  List<int> roomMultiNumberList = [];
 
   @override
   void initState() {
@@ -55,7 +56,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
 
     _token = widget.token!;
-
 
     _memberId = widget.token!.id!;            // 로그인한 사람
     _memberToken = widget.token!.accessToken!;  // 여기 에러 왜?????????
@@ -354,27 +354,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     },
                     child: Stack(
                       children: [
-                       /* Positioned(
-                          // message5MP (9:155)
-                          left: 5 * fem,
-                          top: 20 * fem,
-                          child: Align(
-                            child: SizedBox(
-                              width: 77 * fem,
-                              height: 22 * fem,
-                              child: Text(
-                                'message',
-                                style: SafeGoogleFont(
-                                  'Inter',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.2222222222 * ffem / fem,
-                                  color: Color(0xff808080),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),*/
                         Positioned(
                           // Adj (9:156)
                           left: 5 * fem,
@@ -454,7 +433,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget _renderGroupListChild(GroupRoomModel m, int i){
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
-
 
     return InkWell(
       onTap: (){
