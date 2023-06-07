@@ -30,7 +30,6 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   late TabController controller;
   late StompClient stompClient;
   int _bottomNavIndex = 0;
-
   @override
   void initState() {
     // TODO: implement initState

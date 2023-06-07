@@ -101,8 +101,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           } else {
             // 프로필이 설정되어있는 기존 유저라면 정상적으로 RootTab으로 라우팅
             print("실행");
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => RootTab(token: token)));
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RootTab(token: token),
+              ),
+            );
+
+            if(result == "logout")
+              buttonNaverLogoutAndDeleteTokenPressed();
           }
 
           // 로그인 성공하면 아아디 패스워드 입력해둔거 지우기
@@ -383,16 +390,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onTap: () {
                               signInWithNaver();
                             },
-                            child:Container(
+                            child: Container(
                               height: getMediaHeight(context) * 0.052,
                               width: getMediaWidth(context) * 0.45,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage('assets/images/naver_login_btn.png')
-                                )
-                              ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: AssetImage(
+                                          'assets/images/naver_login_btn.png'))),
                             ),
                             // Container(
                             //   padding: EdgeInsets.all(20),
@@ -462,7 +468,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (response.statusCode == 200) {
         print('일반 로그인 토큰 발행');
         token = Token.fromJson(json.decode(response.body));
-        print(token);
+        print(token?.gender);
         if (token != null) {
           isLogin = true;
         }
@@ -612,6 +618,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> buttonNaverLogoutAndDeleteTokenPressed() async {
+    print("buttonNaverLogoutAndDeleteTokenPressed 실행");
     //로그아웃 및 토큰 제거
     try {
       await FlutterNaverLogin.logOutAndDeleteToken();
@@ -627,6 +634,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> buttonLogoutPressed() async {
+    print("buttonLogoutPressed 실행");
     //로그아웃만
     try {
       await FlutterNaverLogin.logOut();

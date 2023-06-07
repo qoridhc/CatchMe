@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:captone4/exception/HasNotNicknameChangeCouponException.dart';
 import 'package:captone4/model/member_model.dart';
