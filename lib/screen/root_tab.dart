@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:captone4/Token.dart'; //토큰 클래스
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stomp_dart_client/stomp.dart';
 
 import '../const/colors.dart';
 
@@ -26,7 +27,6 @@ class RootTab extends StatefulWidget {
 class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   late TabController controller;
   int _bottomNavIndex = 0;
-
   @override
   void initState() {
     // TODO: implement initState

@@ -451,7 +451,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (response.statusCode == 200) {
         print('일반 로그인 토큰 발행');
         token = Token.fromJson(json.decode(response.body));
-        print(token);
+        print(token?.gender);
         if (token != null) {
           isLogin = true;
         }

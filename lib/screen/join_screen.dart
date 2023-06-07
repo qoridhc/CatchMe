@@ -282,7 +282,7 @@ class _joinScreenState extends State<joinScreen> {
       };
 
       var body = json.encode(data);
-
+      print(data);
       final response = await http.post(Uri.parse(url),
           headers: <String, String>{"Content-Type": "application/json"},
           body: body);

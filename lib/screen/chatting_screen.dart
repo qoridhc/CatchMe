@@ -7,7 +7,6 @@ import 'package:captone4/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
-import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
@@ -124,7 +123,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void onConnectCallback(StompFrame connectFrame) {
     stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
+      destination: '/topic/room.single' + 1.toString(), // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print(connectFrame.body); //메시지를 받았을때!
         String text =
