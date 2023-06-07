@@ -101,8 +101,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           } else {
             // 프로필이 설정되어있는 기존 유저라면 정상적으로 RootTab으로 라우팅
             print("실행");
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => RootTab(token: token)));
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RootTab(token: token),
+              ),
+            );
+
+            if(result == "logout")
+              buttonNaverLogoutAndDeleteTokenPressed();
           }
 
           // 로그인 성공하면 아아디 패스워드 입력해둔거 지우기
@@ -384,21 +391,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               signInWithNaver();
                             },
                             child: Container(
-                              padding: EdgeInsets.all(20),
+                              height: getMediaHeight(context) * 0.052,
+                              width: getMediaWidth(context) * 0.45,
                               decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/images/icons/naver_icon.png'),
-                                ),
-                                color: Colors.white,
-                                border: Border.all(
-                                  width: 2,
-                                  // color: Color(0xFF1EC800),
-                                  color: Colors.white,
-                                ),
-                                shape: BoxShape.circle,
-                              ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: AssetImage(
+                                          'assets/images/naver_login_btn.png'))),
                             ),
+                            // Container(
+                            //   padding: EdgeInsets.all(20),
+                            //   decoration: BoxDecoration(
+                            //     image: DecorationImage(
+                            //       image: AssetImage(
+                            //           'assets/images/icons/naver_icon.png'),
+                            //     ),
+                            //     color: Colors.white,
+                            //     border: Border.all(
+                            //       width: 2,
+                            //       // color: Color(0xFF1EC800),
+                            //       color: Colors.white,
+                            //     ),
+                            //     shape: BoxShape.circle,
+                            //   ),
+                            // ),
                           ),
                           // SizedBox(
                           //   width:
@@ -601,6 +618,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> buttonNaverLogoutAndDeleteTokenPressed() async {
+    print("buttonNaverLogoutAndDeleteTokenPressed 실행");
     //로그아웃 및 토큰 제거
     try {
       await FlutterNaverLogin.logOutAndDeleteToken();
@@ -616,6 +634,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> buttonLogoutPressed() async {
+    print("buttonLogoutPressed 실행");
     //로그아웃만
     try {
       await FlutterNaverLogin.logOut();

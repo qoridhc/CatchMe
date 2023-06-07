@@ -6,6 +6,7 @@ import 'package:captone4/provider/follow_provider.dart';
 import 'package:captone4/provider/member_profile_provider.dart';
 import 'package:captone4/provider/member_provider.dart';
 import 'package:captone4/screen/my_page/faq_screen.dart';
+import 'package:captone4/screen/my_page/information_screen.dart';
 import 'package:captone4/screen/my_page/profile_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:captone4/widget/default_layout.dart';
@@ -113,7 +114,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(25),
                     decoration: const BoxDecoration(
                       color: Color(0xFFFFFFFF),
                       borderRadius: BorderRadius.only(
@@ -125,7 +126,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       children: [
                         _generateCategoryIcon(
                           const Icon(Icons.settings),
-                          "settings",
+                          "Settings",
                         ),
                         InkWell(
                           onTap: () {
@@ -141,16 +142,28 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             "FAQ",
                           ),
                         ),
-                        _generateCategoryIcon(
-                          const Icon(Icons.info_rounded),
-                          "information",
+                        InkWell(
+                          onTap: (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => InformationScreen(),
+                              ),
+                            );
+                          },
+                          child: _generateCategoryIcon(
+                            const Icon(Icons.info_rounded),
+                            "Information",
+                          ),
                         ),
                         InkWell(
                           child: _generateCategoryIcon(
                             const Icon(Icons.logout),
                             "logout",
                           ),
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pop(context, "logout");
+                          },
                         ),
                       ],
                     ),
@@ -161,107 +174,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       ),
     );
 
-    return DefaultLayout(
-      backgroundColor: const Color(0xFFFAFAFA),
-      title: "My Page",
-      child: SafeArea(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          // color: Colors.black,
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      state.images.isEmpty == true
-                          ? _renderMemberInfoTop(
-                              "empty", memberState, followState)
-                          : _renderMemberInfoTop(
-                              state.images.last.url, memberState, followState),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
-                        child: LinearPercentIndicator(
-                          percent: memberState.averageScore / 100,
-                          // trailing: Text("${memberState.averageScore}"),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    top: getMediaHeight(context) * 0.31,
-                    left: getMediaWidth(context) *
-                        (1 - 0.11) *
-                        (memberState.averageScore / 100),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: PRIMARY_COLOR,
-                          borderRadius: BorderRadius.circular(20)),
-                      width: getMediaWidth(context) * 0.07,
-                      height: getMediaHeight(context) * 0.03,
-                      child: Center(
-                        child: Text(
-                          memberState.averageScore.toString(),
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFFFFF),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _generateCategoryIcon(
-                        const Icon(Icons.settings),
-                        "settings",
-                      ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FAQScreen(),
-                            ),
-                          );
-                        },
-                        child: _generateCategoryIcon(
-                          const Icon(Icons.question_mark),
-                          "FAQ",
-                        ),
-                      ),
-                      _generateCategoryIcon(
-                        const Icon(Icons.info_rounded),
-                        "information",
-                      ),
-                      InkWell(
-                        child: _generateCategoryIcon(
-                          const Icon(Icons.logout),
-                          "logout",
-                        ),
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _renderMemberInfoTop(
@@ -309,7 +221,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             children: [
               member.nickname != ""
                   ? Text(
-                      member.nickname,
+                      member.nickname.length > 4
+                          ? member.nickname.substring(0, 4)
+                          : member.nickname,
                       textScaleFactor: 1.18,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
@@ -318,8 +232,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                   : const Text(
                       "",
                       textScaleFactor: 1.0,
-                      style:
-                          TextStyle( fontWeight: FontWeight.w700),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
               Text(
                 member.email,
@@ -332,7 +245,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _generateMemberInfoIcon(0, "Tickets"),
+              _generateMemberInfoIcon(0, "Tickets"), // 추후 api 연동해서 수정
               _generateMemberInfoIcon(follow.first.count, "Followings"),
               _generateMemberInfoIcon(follow.last.count, "Followers"),
             ],
@@ -356,30 +269,27 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(
-              width: getMediaWidth(context) * 0.4,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    height: getMediaHeight(context) * 0.06,
-                    width: getMediaWidth(context) * 0.12,
-                    child: icon,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFF7F6F9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  height: getMediaHeight(context) * 0.06,
+                  width: getMediaWidth(context) * 0.12,
+                  child: icon,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFF7F6F9),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0),
-                    child: Text(
-                      categoryName,
-                      textScaleFactor: 1.0,
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15.0),
+                  child: Text(
+                    categoryName,
+                    textScaleFactor: 1.15,
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             Icon(Icons.chevron_right)
           ],

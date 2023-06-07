@@ -1,9 +1,14 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:captone4/screen/chatting_screen.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../Token.dart';
+import '../const/data.dart';
+import '../model/member_model.dart';
+import '../model/single_room_model.dart';
 import '../utils/utils.dart';
 import '../widget/default_layout.dart';
 
@@ -19,30 +24,24 @@ import 'package:stomp_dart_client/stomp_parser.dart';
 import "package:dart_amqp/dart_amqp.dart";
 
 class ChatRoomScreen extends StatefulWidget {
-  const ChatRoomScreen({Key? key}) : super(key: key);
+  final Token? token;
+  const ChatRoomScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
-}
-
-class Msg{
-  String content;
-
-  Msg({
-    required this.content
-});
 }
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _pageChanged = 0;
   bool _chatsOrGroups = true;
 
-  late StompClient stompClient;
-  TextEditingController messageController = TextEditingController();
+  late int _memberId;
+  late String _memberToken;
+  late int _mid;
   //late WebSocketChannel channel;
 
   List<DateTime> roomCreateTimeList = [];
-
+  List<int> roomNumberList = [];
 
   @override
   void initState() {
@@ -52,47 +51,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
 
+    _memberId = widget.token!.id!;            // 로그인한 사람
+    _memberToken = widget.token!.accessToken!;  // 여기 에러 왜?????????
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
-    print("웹 소캣 연결");
-    connectToStomp();  //stomp 연결
-  }
-
-  void connectToStomp() {
-    stompClient = StompClient(
-      config: StompConfig(
-        url: 'ws://10.0.2.2:9081/chat', // Spring Boot 서버의 WebSocket URL
-        onConnect: onConnectCallback, // 연결 성공 시 호출되는 콜백 함수
-      ),
-    );
-
-    stompClient.activate();
-  }
-
-  void onConnectCallback(StompFrame connectFrame) {
-    stompClient.subscribe(  //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
-      callback: (connectFrame){
-        //print(connectFrame.body);  //메시지를 받았을때!
-        // 메시지 처리
-      },
-    );
   }
 
   @override
   void dispose() {
-    stompClient?.deactivate();
    // channel.sink.close();
     super.dispose();
-  }
-
-  void sendMessage() {
-    String message = messageController.text;
-    stompClient.send(
-      destination: '/app/chat.enter.abc', // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
-      body: message,
-    );
-    print("전송!");
-    messageController.clear();
   }
 
   @override
@@ -213,140 +180,225 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
+  Future<MemberListModel> getUserInfo(int mid) async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getInfo = await dio.get('http://$ip/api/v1/members/${mid}',
+        options: Options(
+          headers: {
+            'authorization': 'Bearer ${_memberToken}'
+          },
+        ),
+      ); // 여기에 mid1이나 mid2값을 넣는 방법은?
+      return MemberListModel.fromJson(json: getInfo.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<SingleRoomListModel> getRoomList() async{
+    print("getRoomList 실행");
+    final dio = Dio();
+    final List<String> ls;
+
+    try{
+      final response = await dio.get('http:/10.0.2.2:9081/api/v1/single_room?mid1=$_memberId&mid2=$_memberId');
+      return SingleRoomListModel.fromJson(json: response.data);
+    } on DioError catch (e) {
+      print("에러 발생");
+      print(e);
+      rethrow;
+    }
+  }
+
   Widget chatsListviewBuilder() {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
 
-    final List<String> _img = <String>[
-      'assets/images/test_img/1.jpg',
-      'assets/images/test_img/2.jpg',
-      'assets/images/test_img/3.jpg',
-    ];
-    final List<String> _name = <String>[
-      '아이유',
-      '차은우',
-      '배수지',
-    ];
+    final List<String> _img = <String>[];
+    final List<String> _name = <String>[];
 
-    return ListView.builder(
-      // scrollDirection: Axis.vertical,
-      itemCount: _img.length,
-      padding: EdgeInsets.symmetric(vertical: 0),
-      itemBuilder: (BuildContext context, int index) {
-        return Container(
-          width: double.infinity,
-          height: 62 * fem,
-          padding: EdgeInsets.fromLTRB(40 * fem, 0 * fem, 0 * fem, 0 * fem),
-          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(31 * fem),
+    return Container(
+      child: FutureBuilder<SingleRoomListModel>(
+        future: getRoomList(),
+        builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+                child: Text(snapshot.error.toString())
+            );
+          }
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.data!.count != 0) {
+            return ListView.builder(// container를 넣고 child를 넣고 그안에 futurebuilder 이건 재민이형 api 받을수있게
+                itemCount: snapshot.data!.singleRoomList.length,
+                padding: EdgeInsets.symmetric(vertical: 0),
+                itemBuilder: (context, index) {
+                  int _mid = snapshot.data!.singleRoomList[index].mid1 == _memberId
+                      ? snapshot.data!.singleRoomList[index].mid2 :
+                  snapshot.data!.singleRoomList[index].mid1;
+                  /*_midList.add(snapshot.data!.singleRoomList[index].mid1 == _memberId
+                      ? snapshot.data!.singleRoomList[index].mid2 :
+                        snapshot.data!.singleRoomList[index].mid1);*/
+                  roomNumberList.add(snapshot.data!.singleRoomList[index].Roomid);
+                  return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
+                });
+          }
+          else {
+            return Center(child: Container(child: Text('생성된 채팅방이 없습니다'),));
+          }
+        },
+      ),
+    );
+  }
+
+  Widget renderMemberLInfo(int mid, int indexNum) {
+    return Container(
+      child: FutureBuilder<MemberListModel>(
+        future: getUserInfo(mid),
+        builder: (_, AsyncSnapshot<MemberListModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+              ),
+            );
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.data!.count != 0) {
+            return _renderSingleRoomListView(
+                snapshot.data!.memberList[0], indexNum);
+          } else {
+            return Center(
+              child: Text("해당 정보가 없습니다."),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _renderSingleRoomListView(MemberModel l, int indexNum){ // 여기서 회원 정보를 받고 아래서 돌리기
+    double baseWidth = 380;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
+    double ffem = fem * 0.97;
+    double _sw = getMediaWidth(context);
+
+    return Container(
+      width: double.infinity,
+      height: 62 * fem,
+      padding: EdgeInsets.fromLTRB(40 * fem, 0 * fem, 0 * fem, 0 * fem),
+      margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(31 * fem),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            // image40kgV (1:81)
+            width: 62.49 * fem,
+            height: 62 * fem,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(31 * fem),
+              child: Container(
+                height: _sw * 0.15,
+                width: _sw * 0.15,
+                child: l.imageUrls.length > 0 ? Image.network(  //memberinfo에서 imgurl가져오기
+                  l.imageUrls[0],
+                  fit: BoxFit.fill,
+                ):
+                Center(child: Text("NoImg")),
+              ),
+            ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                // image40kgV (1:81)
-                width: 62.49 * fem,
-                height: 62 * fem,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(31 * fem),
-                  child: Image.asset(
-                    _img[index],
-                    fit: BoxFit.cover,
+          Container(
+            padding:
+            EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
+            height: double.infinity,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
+                  margin: EdgeInsets.fromLTRB(
+                      0 * fem, 0 * fem, 80 * fem, 0 * fem),
+                  width: 80 * fem,
+                  height: 42 * fem,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            createTime: roomCreateTimeList[indexNum],roomNum: roomNumberList[indexNum], // 0번째 채팅방 생성시간
+                          ),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                       /* Positioned(
+                          // message5MP (9:155)
+                          left: 5 * fem,
+                          top: 20 * fem,
+                          child: Align(
+                            child: SizedBox(
+                              width: 77 * fem,
+                              height: 22 * fem,
+                              child: Text(
+                                'message',
+                                style: SafeGoogleFont(
+                                  'Inter',
+                                  fontSize: 18 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.2222222222 * ffem / fem,
+                                  color: Color(0xff808080),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),*/
+                        Positioned(
+                          // Adj (9:156)
+                          left: 5 * fem,
+                          top: 0 * fem,
+                          child: Align(
+                            child: SizedBox(
+                              width: 60 * fem,
+                              height: 25 * fem,
+                              child: Text(
+                                l.nickname,  // 이부분은 id에 해당하는 이름으로 바꿔줘야함
+                                style: SafeGoogleFont(
+                                  'Estonia',
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.24 * ffem / fem,
+                                  color: Color(0xff000000),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                padding:
-                    EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
-                height: double.infinity,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
-                      margin: EdgeInsets.fromLTRB(
-                          0 * fem, 0 * fem, 80 * fem, 0 * fem),
-                      width: 80 * fem,
-                      height: 42 * fem,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatScreen(
-                                createTime: roomCreateTimeList[0], // 0번째 채팅방 생성시간
-                              ),
-                            ),
-                          );
-                        },
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              // message5MP (9:155)
-                              left: 5 * fem,
-                              top: 20 * fem,
-                              child: Align(
-                                child: SizedBox(
-                                  width: 77 * fem,
-                                  height: 22 * fem,
-                                  child: Text(
-                                    'message',
-                                    style: SafeGoogleFont(
-                                      'Inter',
-                                      fontSize: 18 * ffem,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.2222222222 * ffem / fem,
-                                      color: Color(0xff808080),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              // Adj (9:156)
-                              left: 5 * fem,
-                              top: 0 * fem,
-                              child: Align(
-                                child: SizedBox(
-                                  width: 60 * fem,
-                                  height: 25 * fem,
-                                  child: Text(
-                                    _name[index],
-                                    style: SafeGoogleFont(
-                                      'Estonia',
-                                      fontSize: 20 * ffem,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.24 * ffem / fem,
-                                      color: Color(0xff000000),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Text(
-                      // 2vq (9:157)
-                      '12:00',
-                      style: SafeGoogleFont(
-                        'Estonia',
-                        fontSize: 20 * ffem,
-                        fontWeight: FontWeight.w400,
-                        height: 1.24 * ffem / fem,
-                        color: Color(0xff000000),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
