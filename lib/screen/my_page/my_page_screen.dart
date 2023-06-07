@@ -162,7 +162,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                             "logout",
                           ),
                           onTap: () {
-                            Navigator.pop(context);
+                            Navigator.pop(context, "logout");
                           },
                         ),
                       ],

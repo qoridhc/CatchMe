@@ -28,7 +28,7 @@ class _InformationScreenState extends State<InformationScreen> {
                   height: getMediaHeight(context) * 0.25,
                   width: getMediaWidth(context),
                   child: Image.asset(
-                    'assets/images/image 45.png',
+                    'assets/images/information_image.png',
                   ),
                 ),
               ),
