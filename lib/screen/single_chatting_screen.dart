@@ -21,14 +21,12 @@ class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   int? roomNum;
 
-  SingleChattingScreen({
-      required this.roomNum,
-      Key? key,
-      @required this.token
-  }) : super(key: key);
+  SingleChattingScreen({required this.roomNum, Key? key, @required this.token})
+      : super(key: key);
 
   @override
-  ConsumerState<SingleChattingScreen> createState() => _SingleChattingScreenState();
+  ConsumerState<SingleChattingScreen> createState() =>
+      _SingleChattingScreenState();
 }
 
 class ChatMessage {
@@ -44,6 +42,19 @@ class ChatMessage {
       required this.sender,
       required this.message,
       required this.roomType});
+
+  factory ChatMessage.fromJson({
+    required Map<String, dynamic> json,
+  }) {
+    return ChatMessage(
+        type: json['type'],
+        roomId: json['roomId'],
+        sender: json['sender'],
+        message: json['message'],
+        roomType: json['roomType'].map<ChatMessage>(
+          (x) => ChatMessage.fromJson(json: x),
+        ));
+  }
 }
 
 class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
@@ -79,7 +90,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
-
     // if(!ref.read(TimerProvider.notifier).isRun)
     //   ref.read(TimerProvider.notifier).start();
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
@@ -100,23 +110,25 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
   void connectToStomp() {
     _stompClient = StompClient(
-        config:  StompConfig(
-          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-          onConnect: onConnectCallback,
-       )// 연결 성공 시 호출되는 콜백 함수
-      );
+        config: StompConfig(
+      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+      onConnect: onConnectCallback,
+    ) // 연결 성공 시 호출되는 콜백 함수
+        );
     print("chating 연결성공");
   }
 
-  void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
+  void onConnectCallback(StompFrame connectFrame) {
+    //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.abc',
-      headers: {"id": "1234","durable" : "true", "auto-delete":"false"},
+      headers: {"id": "1234", "durable": "true", "auto-delete": "false"},
       // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print(connectFrame.body); //메시지를 받았을때!
-        Map<String, dynamic> chat = (json.decode(connectFrame.body.toString()));      // 여기 고쳐야함
+        Map<String, dynamic> chat =
+            (json.decode(connectFrame.body.toString())); // 여기 고쳐야함
 
         ChatMessage? chatMessage;
         chatMessage?.type = chat["type"];
@@ -131,15 +143,20 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     );
   }
 
-
-  void sendMessage() {  //encoder
+  void sendMessage() {
+    //encoder
     FocusScope.of(context).unfocus();
     String message = messageController.text;
     print("body출력");
     print(widget.roomNum.toString());
     print(message);
 
-    ChatMessage chatMessage = ChatMessage(type: "TALK", roomId: "aaa", sender: _memberId.toString(), message: message, roomType: "Single");
+    ChatMessage chatMessage = ChatMessage(
+        type: "TALK",
+        roomId: "aaa",
+        sender: _memberId.toString(),
+        message: message,
+        roomType: "Single");
     print(chatMessage);
     var body = json.encode(chatMessage);
 
@@ -158,7 +175,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     renderSenderInfoBuild();
     print(senderImage);
   }
-
 
   void scrollListToEnd() {
     if (scrollMax) {
@@ -329,8 +345,11 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                 itemBuilder: (context, index) {
                   scrollListToEnd();
                   scrollMax = false;
-                  return ChatBubbles(_text[index], _sender[index] == _memberId.toString(),
-                      _name[index], _img[index]);
+                  return ChatBubbles(
+                      _text[index],
+                      _sender[index] == _memberId.toString(),
+                      _name[index],
+                      _img[index]);
                   // chat bubble 안에 메세지들을 넣어준다
                 },
               ),
