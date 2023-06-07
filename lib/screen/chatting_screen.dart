@@ -5,6 +5,7 @@ import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/provider/time_provider.dart';
 import 'package:captone4/screen/chat_room_screen.dart';
 import 'package:captone4/utils/utils.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
@@ -14,40 +15,44 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../Token.dart';
 import '../chat/chat_bubble.dart';
+import '../const/data.dart';
+import '../model/member_model.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final Token? token;
   DateTime? createTime;
   int? roomNum;
 
-  ChatScreen({
-    required this.createTime,
-    required this.roomNum,
-    Key? key,@required this.token
-  }) : super(key: key);
+  ChatScreen(
+      {required this.createTime,
+      required this.roomNum,
+      Key? key,
+      @required this.token})
+      : super(key: key);
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class ChatMessage{
+class ChatMessage {
   String? type;
   String? roomId;
   String? sender;
   String? message;
   String? roomType;
 
-  ChatMessage({
-    required this.type,
-    required this.roomId,
-    required this.sender,
-    required this.message,
-    required this.roomType
-  });
+  ChatMessage(
+      {required this.type,
+      required this.roomId,
+      required this.sender,
+      required this.message,
+      required this.roomType});
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late int _memberId;
+  late String _memberToken;
+  late String senderImage;
   var _userEnterMessage = '';
 
   bool _visibility = true;
@@ -86,7 +91,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     '김민주',
     '조유리',
     'test',
-
   ];
   final List<String> _text = <String>[
     '안녕하세요 아이입니다',
@@ -106,6 +110,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
 
     _memberId = widget.token!.id!;
+    _memberToken = widget.token!.accessToken!;
 
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
@@ -147,14 +152,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     stompClient.activate();
   }
 
-  void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
+  void onConnectCallback(StompFrame connectFrame) {
+    //decoder, imgurl 앞에서 받아올것
     stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.abc', // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print(connectFrame.body); //메시지를 받았을때!
         String? talk = connectFrame.body;
-        _token = Token.fromJson(json.decode(talk!));      // 여기 고쳐야함
+        _token = Token.fromJson(json.decode(talk!)); // 여기 고쳐야함
         String text =
             connectFrame.body!.substring(1, connectFrame.body!.length - 1);
         _text.add(text);
@@ -166,10 +172,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  void sendMessage() {  //encoder
+  void sendMessage() {
+    //encoder
     FocusScope.of(context).unfocus();
     String message = messageController.text;
-    var body = json.encode(ChatMessage(type: "TALK", roomId: widget.roomNum.toString(), sender: _memberId.toString(), message: message, roomType: "Single"));
+    var body = json.encode(ChatMessage(
+        type: "TALK",
+        roomId: widget.roomNum.toString(),
+        sender: _memberId.toString(),
+        message: message,
+        roomType: "Single"));
     stompClient.send(
       destination: '/app/chat.enter.abc',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
@@ -183,7 +195,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void scrollListToEnd() {
-    if(scrollMax){
+    if (scrollMax) {
       _scrollController.animateTo(_scrollController.position.maxScrollExtent,
           duration: const Duration(seconds: 2), curve: Curves.easeOut);
     }
@@ -214,6 +226,61 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           }
         });
       },
+    );
+  }
+
+  // sender 정보 얻기
+  Future<MemberModel> getSenderInfo() async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getGender = await dio.get(
+        'http://$ip/api/v1/members/${_memberId}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      return MemberModel.fromJson(json: getGender.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      rethrow;
+    }
+  }
+
+  // senderImage를 _img에 넣음
+  Widget renderSenderInfoBuild() {
+    return Container(
+      child: FutureBuilder<MemberModel>(
+        future: getSenderInfo(),
+        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+              ),
+            );
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.data! != 0) {
+            if (snapshot.data!.imageUrls != null) {
+              senderImage = snapshot.data!.imageUrls as String;
+              _img.add(senderImage);
+              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
+              return _buildAppBar();
+            } else {
+              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
+              return _buildAppBar();
+            }
+          } else {
+            return const Center(
+              child: Text("There's no such information."),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -262,7 +329,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ), // 채팅창 앱바 프로필 사진 파트
             Container(
               width: getMediaWidth(context) * 0.5,
-              padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
+              padding: const EdgeInsets.only(top: 0, bottom: 0, right: 0),
               child: Row(
                 children: [
                   SizedBox(
@@ -290,14 +357,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   Text(
                     "${(time / 60).toInt()}",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Avenir',
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       fontSize: 15,
                     ),
                   ),
-                  Text(
+                  const Text(
                     ':',
                     style: TextStyle(
                       fontFamily: 'Avenir',
@@ -308,7 +375,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   Text(
                     (time % 60).toString().padLeft(2, '0'),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Avenir',
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -344,21 +411,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   // chat bubble 안에 메세지들을 넣어준다
                 },
               ),
-
             ),
             Visibility(
               visible: _visibility,
               child: Container(
-                margin: EdgeInsets.only(top: 8),
-                padding: EdgeInsets.all(8),
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         maxLines: null,
                         controller: messageController,
-                        decoration:
-                            InputDecoration(labelText: 'Send a message...'),
+                        decoration: const InputDecoration(
+                            labelText: 'Send a message...'),
                         onChanged: (value) {
                           setState(() {
                             // 이렇게 설정하면 변수에다가 입력된 값이 바로바로 들어가기 때문에 send 버튼 활성화,비활성화 설정가능
@@ -372,7 +438,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       onPressed:
                           _userEnterMessage.trim().isEmpty ? null : sendMessage,
                       // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
-                      icon: Icon(Icons.send),
+                      icon: const Icon(Icons.send),
                       // 보내기 버튼
                       color: Colors.blue,
                     )
