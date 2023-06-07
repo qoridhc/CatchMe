@@ -206,7 +206,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final List<String> ls;
 
     try{
-      final response = await dio.get('http://localhost:9081/api/v1/single_room?mid1=$_memberId&mid2=$_memberId');
+      final response = await dio.get('http:/10.0.2.2:9081/api/v1/single_room?mid1=$_memberId&mid2=$_memberId');
       return SingleRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");
