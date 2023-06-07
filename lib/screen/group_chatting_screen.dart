@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:captone4/chat/message.dart';
 import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/provider/time_provider.dart';
-import 'package:captone4/screen/chat_room_screen.dart';
+import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +21,7 @@ class ChatScreen extends ConsumerStatefulWidget {
   final Token? token;
   DateTime? createTime;
   int? roomNum;
-  final StompClient? stompClient;
+
 
   ChatScreen(
       {required this.createTime,
@@ -194,7 +194,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         sender: _memberId.toString(),
         message: message,
         roomType: "Single"));
-    stompClient.send(
+    _stompClient.send(
       destination: '/app/chat.enter.abc',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: body,

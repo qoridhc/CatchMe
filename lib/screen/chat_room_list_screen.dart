@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
-import 'package:captone4/screen/chatting_screen.dart';
+import 'package:captone4/screen/single_chatting_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -25,8 +25,7 @@ import "package:dart_amqp/dart_amqp.dart";
 
 class ChatRoomScreen extends StatefulWidget {
   final Token? token;
-  final StompClient? stompClient;
-  const ChatRoomScreen({Key? key, @required this.token, @required this.stompClient}) : super(key: key);
+  const ChatRoomScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -37,7 +36,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _chatsOrGroups = true;
 
   late Token _token;
-  // late StompClient _stompClient;
   late int _memberId;
   late String _memberToken;
   late int _mid;
@@ -56,7 +54,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     _token = widget.token!;
 
-    // _stompClient = widget.stompClient!;
 
     _memberId = widget.token!.id!;            // 로그인한 사람
     _memberToken = widget.token!.accessToken!;  // 여기 에러 왜?????????
@@ -353,7 +350,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             createTime: roomCreateTimeList[indexNum],
                             roomNum: roomNumberList[indexNum],
                             token: _token,
-                            // stompClient: _stompClient,// 0번째 채팅방 생성시간
+                            // 0번째 채팅방 생성시간
                           ),
                         ),
                       );
