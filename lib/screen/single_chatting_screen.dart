@@ -17,21 +17,20 @@ import '../chat/chat_bubble.dart';
 import '../const/data.dart';
 import '../model/member_model.dart';
 
-class ChatScreen extends ConsumerStatefulWidget {
+class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
-  DateTime? createTime;
+
   int? roomNum;
 
 
-  ChatScreen(
-      {required this.createTime,
+  SingleChattingScreen({
       required this.roomNum,
       Key? key,
-      @required this.token})
-      : super(key: key);
+      @required this.token
+  }) : super(key: key);
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<SingleChattingScreen> createState() => _SingleChattingScreenState();
 }
 
 class ChatMessage {
@@ -49,7 +48,7 @@ class ChatMessage {
       required this.roomType});
 }
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   late int _memberId;
   late String _memberToken;
   late String senderImage;
