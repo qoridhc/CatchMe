@@ -31,9 +31,9 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
       : super(key: key);
 
   @override
-  ConsumerState<GroupChattingScreen> createState() => _GroupChattingScreenState();
+  ConsumerState<GroupChattingScreen> createState() =>
+      _GroupChattingScreenState();
 }
-
 
 class ChatMessage {
   String? type;
@@ -48,9 +48,17 @@ class ChatMessage {
       required this.sender,
       required this.message,
       required this.roomType});
+
+  factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
+    return ChatMessage(
+      type: json['type'],
+      roomId: json['roomId'],
+      sender: json['sender'],
+      message: json['message'],
+      roomType: json['roomType']
+    );
+  }
 }
-
-
 
 class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late int _memberId;
@@ -107,13 +115,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
   late Token _token;
 
- /* Future<ChatMessage> searchGroupChatRecord() async{
+  Future<ChatMessage> searchGroupChatRecord() async {
     print("Get chat record's information");
     final dio = Dio();
 
     try {
       final getGender = await dio.get(
-        'http://$ip/api/v1/group_records?groupId={$widget.roomData!.id.toString()}',
+        'http://$ip/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
@@ -123,7 +131,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       print('error: $e');
       rethrow;
     }
-  }*/
+  }
 
   @override
   void initState() {
@@ -135,7 +143,8 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberToken = widget.token!.accessToken!;
 
     if (widget.roomData!.createAt != null) {
-      timeDiff = DateTime.now().difference(DateTime.parse(widget.roomData!.createAt));
+      timeDiff =
+          DateTime.now().difference(DateTime.parse(widget.roomData!.createAt));
       print("now : ${DateTime.now()}");
       print("timeDiff : $timeDiff");
       setState(
@@ -157,7 +166,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
@@ -165,15 +174,16 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
   void connectToStomp() {
     _stompClient = StompClient(
-        config:  StompConfig(
-          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-          onConnect: onConnectCallback,
-       )// 연결 성공 시 호출되는 콜백 함수
-      );
+        config: StompConfig(
+      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+      onConnect: onConnectCallback,
+    ) // 연결 성공 시 호출되는 콜백 함수
+        );
     print("chating 연결성공");
   }
 
-  void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
+  void onConnectCallback(StompFrame connectFrame) {
+    //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.single' + 1.toString(), // 구독할 주제 경로  abc방을 구독
@@ -427,8 +437,11 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                 itemBuilder: (context, index) {
                   scrollListToEnd();
                   scrollMax = false;
-                  return ChatBubbles(_text[index], _userID[index] == _memberId.toString(),
-                      _name[index], _img[index]);
+                  return ChatBubbles(
+                      _text[index],
+                      _userID[index] == _memberId.toString(),
+                      _name[index],
+                      _img[index]);
                   // chat bubble 안에 메세지들을 넣어준다
                 },
               ),
