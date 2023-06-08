@@ -320,7 +320,7 @@ class _MainPageScreenState extends ConsumerState<MainPageScreen> {
                             width: getMediaWidth(context),
                             height: getMediaHeight(context) * 0.6,
                             child: CachedNetworkImage(
-                              imageUrl: l.imageUrls[1],
+                              imageUrl: l.imageUrls[l.imageUrls.length - 1],
                               fit: BoxFit.cover,
                             ),
                           ),
