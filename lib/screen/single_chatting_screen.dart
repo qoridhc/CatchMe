@@ -16,6 +16,7 @@ import '../Token.dart';
 import '../chat/chat_bubble.dart';
 import '../const/data.dart';
 import '../model/member_model.dart';
+import '../model/single_room_model.dart';
 
 class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
@@ -63,6 +64,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   late String senderImage;
   var _userEnterMessage = '';
 
+  late int senderId;
   bool _visibility = true;
 
   bool scrollMax = false;
@@ -172,7 +174,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     messageController.clear();
     _userEnterMessage = '';
 
-    renderSenderInfoBuild();
+    renderSenderInfoBuild(senderId);
     print(senderImage);
   }
 
@@ -194,19 +196,69 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     // ref.read(TimerProvider.notifier).pause();
   }
 
+  Future<SingleRoomListModel> getSingleRoomList() async {
+    print("getRoomList 실행");
+    final dio = Dio();
+    final List<String> ls;
+
+    try {
+      final response = await dio
+          .get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
+      return SingleRoomListModel.fromJson(json: response.data);
+    } on DioError catch (e) {
+      print("에러 발생");
+      print(e);
+      rethrow;
+    }
+  }
+  // 싱글룸 정보를 통해 sender Id 구하기
+  Widget getSenderId() {
+    return Container(
+      child: FutureBuilder<SingleRoomListModel>(
+        future: getSingleRoomList(),
+        builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text(snapshot.error.toString()));
+          }
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.data!.count != 0) {
+            return ListView.builder(
+                itemCount: snapshot.data!.singleRoomList.length,
+                padding: EdgeInsets.symmetric(vertical: 0),
+                itemBuilder: (context, index) {
+                  senderId =
+                      snapshot.data!.singleRoomList[index].mid1 == _memberId
+                          ? snapshot.data!.singleRoomList[index].mid2
+                          : snapshot.data!.singleRoomList[index].mid1;
+                  return renderSenderInfoBuild(senderId); // 여기서 회원 정보 던져줘야 하는 상황
+                });
+          } else {
+            return const Center(
+              child: Text("There's no such information."),
+            );
+          }
+        },
+      ),
+    );
+  }
+
   // sender 정보 얻기
-  Future<MemberModel> getSenderInfo() async {
+  Future<MemberModel> getSenderInfo(int senderId) async {
     print("Get user's information");
     final dio = Dio();
 
     try {
-      final getGender = await dio.get(
-        CATCHME_URL + '/api/v1/members/${_memberId}',
+      final getSender = await dio.get(
+        CATCHME_URL + '/api/v1/members/${senderId}',
         options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
         ),
       );
-      return MemberModel.fromJson(json: getGender.data);
+      return MemberModel.fromJson(json: getSender.data);
     } on DioError catch (e) {
       print('error: $e');
       rethrow;
@@ -214,10 +266,10 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   }
 
   // senderImage를 _img에 넣음
-  Widget renderSenderInfoBuild() {
+  Widget renderSenderInfoBuild(int senderId) {
     return Container(
       child: FutureBuilder<MemberModel>(
-        future: getSenderInfo(),
+        future: getSenderInfo(senderId),
         builder: (_, AsyncSnapshot<MemberModel> snapshot) {
           if (snapshot.hasError) {
             return Center(
