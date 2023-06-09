@@ -207,7 +207,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   //싱글 채팅방 리스트 호출
   Future<SingleRoomListModel> getSingleRoomList() async{
-    print("getRoomList 실행");
     final dio = Dio();
     final List<String> ls;
 
@@ -369,7 +368,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                   fontWeight: FontWeight.w400,
                                   height: 1.24 * ffem / fem,
                                   color: Color(0xff000000),
-                                ),
+                                ),*/
                               ),
                             ),
                           ),
@@ -413,12 +412,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               if (!snapshot.hasData) {
                 return Center(child: CircularProgressIndicator(),);
               }
-              if (snapshot.data!.count != 0) {
+              if (snapshot.data!.count != 0 && snapshot.data!.groupRoomList != null) {
                 return ListView.builder(
-                    itemCount: snapshot.data!.groupRoomList.length,
+                    itemCount: snapshot.data!.groupRoomList!.length,
                     padding: EdgeInsets.symmetric(vertical: 0),
                   itemBuilder: (context, index){
-                     return _renderGroupListChild(snapshot.data!.groupRoomList[index], index);
+                     return _renderGroupListChild(snapshot.data!.groupRoomList![index], index);
+                    //return Center(child: Container(child: Text('생성된 그룹 채팅방이 없습니다.')));
+
                   });
               }
               else{
