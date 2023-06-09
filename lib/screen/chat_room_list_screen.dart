@@ -368,7 +368,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                   fontWeight: FontWeight.w400,
                                   height: 1.24 * ffem / fem,
                                   color: Color(0xff000000),
-                                ),*/
+                                ),
                               ),
                             ),
                           ),
