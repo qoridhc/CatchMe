@@ -17,12 +17,17 @@ import '../chat/chat_bubble.dart';
 import '../const/data.dart';
 import '../model/member_model.dart';
 import '../model/single_room_model.dart';
+import '../provider/member_profile_provider.dart';
+import '../provider/member_provider.dart';
 
 class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   int? roomNum;
+  String imgUrl;
+  String nickname;
 
-  SingleChattingScreen({required this.roomNum, Key? key, @required this.token})
+  SingleChattingScreen({required this.roomNum, required this.imgUrl,
+    required this.nickname,Key? key, @required this.token})
       : super(key: key);
 
   @override
@@ -105,13 +110,15 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     //   ref.read(TimerProvider.notifier).start();
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
-
+    ref.read(memberProfileNotifierProvider.notifier).getProfileImage();
+    ref.read(memberNotifierProvider.notifier).getMemberInfoFromServer();
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
     // _stompClient = widget.stompClient!;
 
     // _stompClient.deactivate();
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
+    print("닉네임:"+ widget.nickname);
 
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
@@ -124,31 +131,38 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
         config: StompConfig(
       url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
       onConnect: onConnectCallback,
-    ) // 연결 성공 시 호출되는 콜백 함수
+    )
+      // 연결 성공 시 호출되는 콜백 함수
         );
     print("chating 연결성공");
   }
 
   void onConnectCallback(StompFrame connectFrame) {
+    final memberState = ref.watch(memberNotifierProvider);
     //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.abc',
-      headers: {"id": "1234", "durable": "true", "auto-delete": "false"},
+      destination: '/topic/room.aba',
+      headers: {"auto-delete": "true"},// "id": "1234", "durable": "true",
       // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
+        print("connectFrame.body 출력 :");
         print(connectFrame.body); //메시지를 받았을때!
-        Map<String, dynamic> chat =
-            (json.decode(connectFrame.body.toString())); // 여기 고쳐야함
 
-        ChatMessage? chatMessage;
-        chatMessage?.type = chat["type"];
-        _text.add(chat["message"]);
-        chatMessage?.roomId = chat["roomId"];
-        _name.add("실험중");
-        _sender.add(chat["sender"]);
-        _img.add('assets/images/test_img/조유리.jpg');
-        chatMessage?.roomType = chat["roomType"];
+        setState(() {
+          Map<String, dynamic> chat =
+          (json.decode(connectFrame.body.toString())); // 여기 고쳐야함
+
+          ChatMessage? chatMessage;
+          chatMessage?.type = chat["type"];
+          _text.add(chat["message"]);
+          chatMessage?.roomId = chat["roomId"];
+          _name.add(chat["sender"] != _memberId.toString() ? widget.nickname : memberState.nickname);
+          _sender.add(chat["sender"]);
+          chatMessage?.roomType = chat["roomType"];
+
+          scrollListToEnd();
+        });
         // 메시지 처리
       },
     );
@@ -164,7 +178,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
     ChatMessage chatMessage = ChatMessage(
         type: "TALK",
-        roomId: "aaa",
+        roomId: widget.roomNum.toString(),
         sender: _memberId.toString(),
         message: message,
         roomType: "Single");
@@ -173,24 +187,25 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
     print(body);
     _stompClient.send(
-      destination: '/app/chat.enter.abc',
+      destination: '/app/chat.enter.aba',
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: body,
     );
     print("전송!");
-    scrollMax = true;
+
     scrollListToEnd();
     messageController.clear();
     _userEnterMessage = '';
 
-    renderSenderInfoBuild(senderId);
-    print(senderImage);
   }
 
   void scrollListToEnd() {
     if (scrollMax) {
-      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-          duration: const Duration(seconds: 2), curve: Curves.easeOut);
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -201,114 +216,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     super.dispose();
     print("dispose");
 
-    // ref.read(TimerProvider.notifier).cancel();
-    // ref.read(TimerProvider.notifier).pause();
   }
 
-  Future<SingleRoomListModel> getSingleRoomList() async {
-    print("getRoomList 실행");
-    final dio = Dio();
-    final List<String> ls;
-
-    try {
-      final response = await dio
-          .get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
-      return SingleRoomListModel.fromJson(json: response.data);
-    } on DioError catch (e) {
-      print("에러 발생");
-      print(e);
-      rethrow;
-    }
-  }
-  // 싱글룸 정보를 통해 sender Id 구하기
-  Widget getSenderId() {
-    return Container(
-      child: FutureBuilder<SingleRoomListModel>(
-        future: getSingleRoomList(),
-        builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
-          }
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          if (snapshot.data!.count != 0) {
-            return ListView.builder(
-                itemCount: snapshot.data!.singleRoomList.length,
-                padding: EdgeInsets.symmetric(vertical: 0),
-                itemBuilder: (context, index) {
-                  senderId =
-                      snapshot.data!.singleRoomList[index].mid1 == _memberId
-                          ? snapshot.data!.singleRoomList[index].mid2
-                          : snapshot.data!.singleRoomList[index].mid1;
-                  return renderSenderInfoBuild(senderId); // 여기서 회원 정보 던져줘야 하는 상황
-                });
-          } else {
-            return const Center(
-              child: Text("There's no such information."),
-            );
-          }
-        },
-      ),
-    );
-  }
-
-  // sender 정보 얻기
-  Future<MemberModel> getSenderInfo(int senderId) async {
-    print("Get user's information");
-    final dio = Dio();
-
-    try {
-      final getSender = await dio.get(
-        CATCHME_URL + '/api/v1/members/${senderId}',
-        options: Options(
-          headers: {'authorization': 'Bearer ${_memberToken}'},
-        ),
-      );
-      return MemberModel.fromJson(json: getSender.data);
-    } on DioError catch (e) {
-      print('error: $e');
-      rethrow;
-    }
-  }
-
-  // senderImage를 _img에 넣음
-  Widget renderSenderInfoBuild(int senderId) {
-    return Container(
-      child: FutureBuilder<MemberModel>(
-        future: getSenderInfo(senderId),
-        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-              ),
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.data! != 0) {
-            if (snapshot.data!.imageUrls != null) {
-              senderImage = snapshot.data!.imageUrls as String;
-              _img.add(senderImage);
-              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
-              return _buildAppBar();
-            } else {
-              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
-              return _buildAppBar();
-            }
-          } else {
-            return const Center(
-              child: Text("There's no such information."),
-            );
-          }
-        },
-      ),
-    );
-  }
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -348,7 +257,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                        AssetImage('assets/images/test_img/조유리.jpg'),
+                        NetworkImage(widget.imgUrl),
                   ),
                 ),
               ),
@@ -366,7 +275,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                       child: Column(
                         children: [
                           Text(
-                            '채팅방',
+                            widget.nickname,
                             style: TextStyle(
                               fontFamily: 'Avenir',
                               fontWeight: FontWeight.bold,
@@ -392,6 +301,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(memberProfileNotifierProvider);
+
     _stompClient.activate();
     return Scaffold(
       appBar: _buildAppBar(),
@@ -410,7 +321,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                       _text[index],
                       _sender[index] == _memberId.toString(),
                       _name[index],
-                      _img[index]);
+                      _sender[index] == _memberId.toString()?
+                      state.images.last.url : widget.imgUrl);
                   // chat bubble 안에 메세지들을 넣어준다
                 },
               ),

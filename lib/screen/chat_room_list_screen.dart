@@ -345,6 +345,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           builder: (context) => SingleChattingScreen(
                             roomNum: roomSingleNumberList[indexNum],
                             token: _token,
+                            imgUrl: l.imageUrls[0],
+                            nickname: l.nickname,
                             // 0번째 채팅방 생성시간
                           ),
                         ),
