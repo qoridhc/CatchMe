@@ -178,7 +178,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   },
                   children: [
                     chatsListviewBuilder(),
-                    // _renderGroupListView(), // 추후 구현
+                    _renderGroupListView(), // 추후 구현
                   ],
                 ),
               ),
@@ -314,7 +314,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     double ffem = fem * 0.97;
     double _sw = getMediaWidth(context);
 
-    print(roomSingleNumberList);
+    //print(roomSingleNumberList);
 
     return Container(
       width: double.infinity,
@@ -455,22 +455,91 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget _renderGroupListChild(GroupRoomModel m, int i) {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
+    double ffem = fem * 0.97;
+    double _sw = getMediaWidth(context);
 
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GroupChattingScreen(roomData: m, token: _token
-                // 0번째 채팅방 생성시간
+    return Container(
+      width: double.infinity,
+      height: 62 * fem,
+      padding: EdgeInsets.fromLTRB(40 * fem, 0 * fem, 0 * fem, 0 * fem),
+      margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(31 * fem),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            // image40kgV (1:81)
+            width: 62.49 * fem,
+            height: 62 * fem,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(31 * fem),
+              child: Container(
+                height: _sw * 0.15,
+                width: _sw * 0.15,
+                child: Image.asset(
+                  'assets/images/information_image.png',
+                  //l.imageUrls[0],
+                  fit: BoxFit.fill,
                 ),
+              ),
+            ),
           ),
-        );
-      },
-      child: Container(
-        width: double.infinity,
-        height: 62 * fem,
-        child: Text("그룹채팅 $i"),
+          Container(
+            padding: EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
+            height: double.infinity,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
+                  margin:
+                  EdgeInsets.fromLTRB(0 * fem, 0 * fem, 80 * fem, 0 * fem),
+                  width: 80 * fem,
+                  height: 42 * fem,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GroupChattingScreen(roomData: m, token: _token
+                            // 0번째 채팅방 생성시간
+                          ),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          // Adj (9:156)
+                          left: 5 * fem,
+                          top: 0 * fem,
+                          child: Align(
+                            child: SizedBox(
+                              width: 60 * fem,
+                              height: 25 * fem,
+                              child: Text(
+                                "그룹채팅 $i", // 이부분은 id에 해당하는 이름으로 바꿔줘야함
+                                style: SafeGoogleFont(
+                                  'Estonia',
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.24 * ffem / fem,
+                                  color: Color(0xff000000),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
@@ -199,6 +200,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
         sender: _memberId.toString(),
         message: message,
         roomType: "Single");
+
     print(chatMessage);
     var body = json.encode(chatMessage);
 
@@ -331,6 +333,15 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     final state = ref.watch(memberProfileNotifierProvider);
     final memberState = ref.watch(memberNotifierProvider);
     _stompClient.activate();
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
+      if (_scrollToEnd) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
