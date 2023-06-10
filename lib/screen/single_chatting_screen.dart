@@ -8,6 +8,7 @@ import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
@@ -27,8 +28,12 @@ class SingleChattingScreen extends ConsumerStatefulWidget {
   String imgUrl;
   String nickname;
 
-  SingleChattingScreen({required this.roomNum, required this.imgUrl,
-    required this.nickname,Key? key, @required this.token})
+  SingleChattingScreen(
+      {required this.roomNum,
+      required this.imgUrl,
+      required this.nickname,
+      Key? key,
+      @required this.token})
       : super(key: key);
 
   @override
@@ -43,8 +48,7 @@ class ChatMessage {
   String? message;
   String? roomType;
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'type': type,
         'roomId': roomId,
         'sender': sender,
@@ -121,7 +125,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     // _stompClient.deactivate();
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
-    print("닉네임:"+ widget.nickname);
+    print("닉네임:" + widget.nickname);
 
     // WidgetsBinding.instance!.addPostFrameCallback((_) {
     //   // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
@@ -135,7 +139,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
       url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
       onConnect: onConnectCallback,
     )
-      // 연결 성공 시 호출되는 콜백 함수
+        // 연결 성공 시 호출되는 콜백 함수
         );
     print("chating 연결성공");
   }
@@ -146,7 +150,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.single' + widget.roomNum.toString(),
-      headers: {"auto-delete": "true"},// "id": "1234", "durable": "true",
+      headers: {"auto-delete": "true"}, // "id": "1234", "durable": "true",
       // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print("connectFrame.body 출력 :");
@@ -154,14 +158,24 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
         setState(() {
           Map<String, dynamic> chat =
-          (json.decode(connectFrame.body.toString()));
-
+              (json.decode(connectFrame.body.toString()));
 
           ChatMessage? chatMessage;
           chatMessage?.type = chat["type"];
-          _text.add(chat["message"]);
+          chatHistoryList.add(ChattingHistory(
+            id: chatHistoryList.last.id + 1,
+            type: "TALK",
+            roomId: widget.roomNum.toString(),
+            sender: chat["sender"],
+            message: chat["message"],
+            roomType: "Single",
+            send_time: DateTime.now().toString(),
+          ));
+
           chatMessage?.roomId = chat["roomId"];
-          _name.add(chat["sender"] != _memberId.toString() ? widget.nickname : memberState.nickname);
+          _name.add(chat["sender"] != _memberId.toString()
+              ? widget.nickname
+              : memberState.nickname);
           _sender.add(chat["sender"]);
           chatMessage?.roomType = chat["roomType"];
 
@@ -186,6 +200,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
         sender: _memberId.toString(),
         message: message,
         roomType: "Single");
+
     print(chatMessage);
     var body = json.encode(chatMessage);
 
@@ -200,7 +215,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     scrollListToEnd();
     messageController.clear();
     _userEnterMessage = '';
-
   }
 
   void scrollListToEnd() {
@@ -219,7 +233,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     _stompClient.deactivate();
     super.dispose();
     print("dispose");
-
   }
 
   Future<ChattingHistoryListModel> getChattingHistory() async {
@@ -234,114 +247,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
       print(e);
       rethrow;
     }
-  }
-
-  //
-  // Future<SingleRoomListModel> getSingleRoomList() async {
-  //   print("getRoomList 실행");
-  //   final dio = Dio();
-  //   final List<String> ls;
-  //
-  //   try {
-  //     final response = await dio
-  //   //         .get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
-  //   //     return SingleRoomListModel.fromJson(json: response.data);
-  //   } on DioError catch (e) {
-  //     print("에러 발생");
-  //     print(e);
-  //     rethrow;
-  //   }
-  // }
-  //
-  // // 싱글룸 정보를 통해 sender Id 구하기
-  // Widget getSenderId() {
-  //   return Container(
-  //     child: FutureBuilder<SingleRoomListModel>(
-  //       future: getSingleRoomList(),
-  //       builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
-  //         if (snapshot.hasError) {
-  //           return Center(child: Text(snapshot.error.toString()));
-  //         }
-  //         if (!snapshot.hasData) {
-  //           return Center(
-  //             child: CircularProgressIndicator(),
-  //           );
-  //         }
-  //         if (snapshot.data!.count != 0) {
-  //           return ListView.builder(
-  //               itemCount: snapshot.data!.singleRoomList.length,
-  //               padding: EdgeInsets.symmetric(vertical: 0),
-  //               itemBuilder: (context, index) {
-  //                 senderId =
-  //                     snapshot.data!.singleRoomList[index].mid1 == _memberId
-  //                         ? snapshot.data!.singleRoomList[index].mid2
-  //                         : snapshot.data!.singleRoomList[index].mid1;
-  //                 return renderSenderInfoBuild(
-  //                     senderId); // 여기서 회원 정보 던져줘야 하는 상황
-  //               });
-  //         } else {
-  //           return const Center(
-  //             child: Text("There's no such information."),
-  //           );
-  //         }
-  //       },
-  //     ),
-  //   );
-  // }
-
-  // sender 정보 얻기
-  Future<MemberModel> getSenderInfo(int senderId) async {
-    print("Get user's information");
-    final dio = Dio();
-
-    try {
-      final getSender = await dio.get(
-        CATCHME_URL + '/api/v1/members/${senderId}',
-        options: Options(
-          headers: {'authorization': 'Bearer ${_memberToken}'},
-        ),
-      );
-      return MemberModel.fromJson(json: getSender.data);
-    } on DioError catch (e) {
-      print('error: $e');
-      rethrow;
-    }
-  }
-
-  // senderImage를 _img에 넣음
-  Widget renderSenderInfoBuild(int senderId) {
-    return Container(
-      child: FutureBuilder<MemberModel>(
-        future: getSenderInfo(senderId),
-        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-              ),
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.data! != 0) {
-            if (snapshot.data!.imageUrls != null) {
-              senderImage = snapshot.data!.imageUrls as String;
-              _img.add(senderImage);
-              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
-              return _buildAppBar();
-            } else {
-              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
-              return _buildAppBar();
-            }
-          } else {
-            return const Center(
-              child: Text("There's no such information."),
-            );
-          }
-        },
-      ),
-    );
   }
 
   AppBar _buildAppBar() {
@@ -381,8 +286,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                   width: getMediaWidth(context) * 0.1,
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
-                    backgroundImage:
-                        NetworkImage(widget.imgUrl),
+                    backgroundImage: NetworkImage(widget.imgUrl),
                   ),
                 ),
               ),
@@ -427,8 +331,17 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(memberProfileNotifierProvider);
-
+    final memberState = ref.watch(memberNotifierProvider);
     _stompClient.activate();
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
+      if (_scrollToEnd) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
@@ -438,7 +351,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
               child: Container(
                 child: FutureBuilder<ChattingHistoryListModel>(
                   future: getChattingHistory(),
-                  builder: (_, AsyncSnapshot<ChattingHistoryListModel> snapshot) {
+                  builder:
+                      (_, AsyncSnapshot<ChattingHistoryListModel> snapshot) {
                     if (snapshot.hasError) {
                       return Center(
                         child: Text(
@@ -454,7 +368,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                       ChattingHistoryListModel chattingHistoryListModel =
                           snapshot.data!;
 
-
                       if (chattingHistoryListModel.count != 0) {
                         chatHistoryList =
                             List.from(snapshot.data!.chattingHistory!.reversed);
@@ -464,9 +377,9 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                           itemBuilder: (context, index) {
                             return ChatBubbles(
                               chatHistoryList[index].message,
-                              chatHistoryList[index].sender == widget.token!.id,
-                              chatHistoryList[index].sender.toString(),
-                              "",
+                              chatHistoryList[index].sender == _memberId.toString(),
+                              chatHistoryList[index].sender.toString() != _memberId.toString() ? widget.nickname : memberState.nickname,
+                              chatHistoryList[index].sender == _memberId.toString()?state.images.last.url : widget.imgUrl,
                             );
                           },
                         );
@@ -475,22 +388,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                           child: Text("해당 정보가 없습니다."),
                         );
                       }
-
-                      // return ListView.builder(
-                      //   // container를 넣고 child를 넣고 그안에 futurebuilder 이건 재민이형 api 받을수있게
-                      //   itemCount: snapshot.data!.singleRoomList.length,
-                      //   padding: EdgeInsets.symmetric(vertical: 0),
-                      //   itemBuilder: (context, index) {
-                      //     int _mid = singleRoomModelList[index].mid1 == _memberId
-                      //         ? singleRoomModelList[index].mid2
-                      //         : singleRoomModelList[index].mid1;
-                      //
-                      //     // roomSingleNumberList.add(singleRoomModelList[index].id);
-                      //
-                      //     return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
-                      //   },
-                      // );
-                      //
                     } else {
                       return Center(
                         child: Text("해당 정보가 없습니다."),
@@ -500,23 +397,6 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                 ),
               ),
             ),
-            // Expanded(
-            //   child: ListView.builder(
-            //     controller: _scrollController,
-            //     itemCount: _name.length,
-            //     // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
-            //     itemBuilder: (context, index) {
-            //       scrollListToEnd();
-            //       scrollMax = false;
-            //       return ChatBubbles(
-            //           _text[index],
-            //           _sender[index] == _memberId.toString(),
-            //           _name[index],
-            //           _img[index]);
-            //       // chat bubble 안에 메세지들을 넣어준다
-            //     },
-            //   ),
-            // ),
             Visibility(
               visible: _visibility,
               child: Container(
