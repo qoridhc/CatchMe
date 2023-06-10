@@ -73,7 +73,7 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
   void dispose(){
     print("레이아웃 종료");
     try{
-        stompClient?.deactivate();
+        stompClient!.deactivate();
     }
     catch (e){
       print("error : $e");
@@ -98,8 +98,8 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
           ? FloatingActionButton(
               backgroundColor: PRIMARY_COLOR,
               child: Icon(Icons.favorite_border_outlined),
-              onPressed: () {
-                connectToStomp();
+              onPressed: () async {
+                await connectToStomp();
                 _showDialog(context);
                 print("버튼 눌림");
               },
@@ -144,7 +144,7 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
         destination: '/pub/matching',body: body);
   }
 
-  void connectToStomp(){
+  connectToStomp(){
     print("매칭 연결");
     stompClient = StompClient(config: StompConfig(
       url: 'ws://ec2-3-34-216-149.ap-northeast-2.compute.amazonaws.com:9090/ws',

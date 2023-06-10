@@ -124,7 +124,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     // _stompClient = widget.stompClient!;
 
     // _stompClient.deactivate();
-    // connectToStomp(); //stomp 연결
+    connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
     print("닉네임:" + widget.nickname);
 
@@ -137,18 +137,19 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   void connectToStomp() {
     _stompClient = StompClient(
         config: StompConfig(
-      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-      onConnect: onConnectCallback,
-    )
+        url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+        onConnect: onConnectCallback
+        )
         // 연결 성공 시 호출되는 콜백 함수
-        );
+    );
+    _stompClient.activate();
     print("chating 연결성공");
   }
 
   void onConnectCallback(StompFrame connectFrame) {
     final memberState = ref.watch(memberNotifierProvider);
     //decoder, imgurl 앞에서 받아올것
-    _stompClient.subscribe(
+    _stompClient!.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.single' + widget.roomNum.toString(),
       // headers: {"auto-delete": "false", "id": "${_memberId}", "durable": "true"},
@@ -206,12 +207,16 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     var body = json.encode(chatMessage);
 
     print(body);
-    _stompClient.send(
-      // headers: {"auto-delete": "false", "id": "${_memberId}", "durable": "true"},
-      destination: '/app/chat.enter.single' + widget.roomNum.toString(),
-      // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
-      body: body,
-    );
+
+    setState(() {
+      _stompClient.send(
+        // headers: {"auto-delete": "false", "id": "${_memberId}", "durable": "true"},
+        destination: '/app/chat.enter.single' + widget.roomNum.toString(),
+        // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
+        body: body,
+      );
+    });
+
     print("전송!");
 
     scrollListToEnd();
@@ -233,6 +238,9 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   void dispose() {
     // TODO: implement dispose
     _stompClient.deactivate();
+    if(_stompClient.isActive){
+      _stompClient.deactivate();
+    }
     super.dispose();
     print("dispose");
   }
@@ -336,8 +344,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     ScrollController _scrollController = ScrollController();
     final memberState = ref.watch(memberNotifierProvider);
 
-    connectToStomp();
-    _stompClient.activate();
+    // connectToStomp();
+    // _stompClient.activate();
 
     return Scaffold(
       appBar: _buildAppBar(),
@@ -436,13 +444,11 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                       ),
                     ),
                     IconButton(
-                      // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
-                      onPressed:
-                          _userEnterMessage.trim().isEmpty ? null : sendMessage,
-                      // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
-                      icon: const Icon(Icons.send),
-                      // 보내기 버튼
-                      color: Colors.blue,
+                      icon: Icon(Icons.send, color: Colors.blue,),
+                        // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
+                        // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
+                        // 보내기 버튼
+                      onPressed: _userEnterMessage.trim().isEmpty ? null : sendMessage
                     )
                   ],
                 ),

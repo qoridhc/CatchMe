@@ -190,7 +190,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.Multi' + widget.roomData!.id.toString(),
-      headers: {"auto-delete": "true"},
+      // headers: {"auto-delete": "true"},
       callback: (connectFrame) {
         print("connectFrame.body 출력 :");
         print(connectFrame.body); //메시지를 받았을때!
