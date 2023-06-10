@@ -385,7 +385,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                               child: Text(
                                 l.nickname, // 이부분은 id에 해당하는 이름으로 바꿔줘야함
                                 style: SafeGoogleFont(
-                                  'Estonia',
+                                  'Avenir',
                                   fontSize: 20 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.24 * ffem / fem,
@@ -497,7 +497,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
                   margin:
                       EdgeInsets.fromLTRB(0 * fem, 0 * fem, 80 * fem, 0 * fem),
-                  width: 80 * fem,
+                  width: 120 * fem,
                   height: 42 * fem,
                   child: GestureDetector(
                     onTap: () {
@@ -521,12 +521,12 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           top: 0 * fem,
                           child: Align(
                             child: SizedBox(
-                              width: 60 * fem,
+                              width: 120 * fem,
                               height: 25 * fem,
                               child: Text(
-                                "그룹채팅 $i", // 이부분은 id에 해당하는 이름으로 바꿔줘야함
+                                "그룹채팅" + i.toString(), // 이부분은 id에 해당하는 이름으로 바꿔줘야함
                                 style: SafeGoogleFont(
-                                  'Estonia',
+                                  'Avenir',
                                   fontSize: 20 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.24 * ffem / fem,

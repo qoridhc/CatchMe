@@ -28,9 +28,9 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   GroupChattingScreen(
       {
         required this.createTime,
-      required this.roomData,
-      Key? key,
-      @required this.token})
+        required this.roomData,
+        Key? key,
+        @required this.token})
       : super(key: key);
 
   @override
@@ -45,20 +45,30 @@ class ChatMessage {
   String? message;
   String? roomType;
 
+  Map<String, dynamic> toJson() => {
+    'type': type,
+    'roomId': roomId,
+    'sender': sender,
+    'message': message,
+    'roomType': roomType,
+  };
+
   ChatMessage(
       {required this.type,
-      required this.roomId,
-      required this.sender,
-      required this.message,
-      required this.roomType});
+        required this.roomId,
+        required this.sender,
+        required this.message,
+        required this.roomType});
 
   factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
     return ChatMessage(
-      type: json['type'],
-      roomId: json['roomId'],
-      sender: json['sender'],
-      message: json['message'],
-      roomType: json['roomType']
+        type: json['type'],
+        roomId: json['roomId'],
+        sender: json['sender'],
+        message: json['message'],
+        roomType: json['roomType'].map<ChatMessage>(
+              (x) => ChatMessage.fromJson(json: x),
+        )
     );
   }
 }
@@ -83,38 +93,6 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   List<DateTime> roomCreateTimeList = [];
   late ScrollController _scrollController;
 
-  final List<String> _img = <String>[
-    'assets/images/test_img/1.jpg',
-    'assets/images/test_img/2.jpg',
-    'assets/images/test_img/3.jpg',
-    'assets/images/test_img/김민주.jpg',
-    'assets/images/test_img/조유리.jpg',
-    'assets/images/test_img/5.jpg',
-  ];
-  final List<String> _name = <String>[
-    '아이유',
-    '차은우',
-    '배수지',
-    '김민주',
-    '조유리',
-    'tester',
-  ];
-  final List<String> _userID = <String>[
-    '아이유',
-    '차은우',
-    '배수지',
-    '김민주',
-    '조유리',
-    'test',
-  ];
-  final List<String> _text = <String>[
-    '안녕하세요 아이입니다',
-    '안녕하세요 차은우입니다',
-    '안녕하세요 배수지입니다',
-    '안녕하세요 김민주입니다',
-    '안녕하세요 조유리입니다',
-    '안녕하세요 테스터입니다',
-  ];
   List<ChattingHistory> chatHistoryList = [];
 
   late Token _token;
@@ -125,10 +103,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
     try {
       final response = await dio.get(
-          CHATTING_API_URL + '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
-        /*options: Options(
-          headers: {'authorization': 'Bearer ${_memberToken}'},
-        )*/
+        CHATTING_API_URL + '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
       );
       return ChattingHistoryListModel.fromJson(json: response.data);
     } on DioError catch (e) {
@@ -151,7 +126,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
           DateTime.now().difference(widget.createTime!);
 
       setState(
-        () {
+            () {
           if ((defaultTime - timeDiff!.inSeconds) > 0) {
             time = defaultTime - timeDiff!.inSeconds;
           } else {
@@ -178,10 +153,10 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void connectToStomp() {
     _stompClient = StompClient(
         config: StompConfig(
-      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-      onConnect: onConnectCallback,
-    ) // 연결 성공 시 호출되는 콜백 함수
-        );
+          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+          onConnect: onConnectCallback,
+        ) // 연결 성공 시 호출되는 콜백 함수
+    );
     print("chating 연결성공");
   }
 
@@ -190,7 +165,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.Multi' + widget.roomData!.id.toString(),
-      // headers: {"auto-delete": "true"},
+      headers: {"auto-delete": "true"},
       callback: (connectFrame) {
         print("connectFrame.body 출력 :");
         print(connectFrame.body); //메시지를 받았을때!
@@ -236,8 +211,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         sender: _memberId.toString(),
         message: message,
         roomType: "Multi");
-    var body = json.encode(chatMessage);
     print(chatMessage);
+    var body = json.encode(chatMessage);
+    print(body);
 
     _stompClient.send(
       destination: '/app/chat.enter.Multi' + widget.roomData!.id.toString(),
@@ -274,7 +250,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void _handleTimer() {
     _timer = Timer.periodic(
       Duration(seconds: 1),
-      (timer) {
+          (timer) {
         setState(() {
           if (time <= 0) {
             _visibility = false;
@@ -284,61 +260,6 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
           }
         });
       },
-    );
-  }
-
-  // sender 정보 얻기
-  Future<MemberModel> getSenderInfo() async {
-    print("Get user's information");
-    final dio = Dio();
-
-    try {
-      final getGender = await dio.get(
-        CATCHME_URL + '/api/v1/members/${_memberId}',
-        options: Options(
-          headers: {'authorization': 'Bearer ${_memberToken}'},
-        ),
-      );
-      return MemberModel.fromJson(json: getGender.data);
-    } on DioError catch (e) {
-      print('error: $e');
-      rethrow;
-    }
-  }
-
-  // senderImage를 _img에 넣음
-  Widget renderSenderInfoBuild() {
-    return Container(
-      child: FutureBuilder<MemberModel>(
-        future: getSenderInfo(),
-        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-              ),
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.data! != 0) {
-            if (snapshot.data!.imageUrls != null) {
-              senderImage = snapshot.data!.imageUrls as String;
-              _img.add(senderImage);
-              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
-              return _buildAppBar();
-            } else {
-              // 위젯만 리턴할 수 있어서 우선 아무거나 넣음
-              return _buildAppBar();
-            }
-          } else {
-            return const Center(
-              child: Text("There's no such information."),
-            );
-          }
-        },
-      ),
     );
   }
 
@@ -360,13 +281,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       flexibleSpace: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(
-          colors: [
-            Color(0xffFF6961),
-            Color(0xffFF6961),
-            Color(0xffFF6961),
-            Color(0xffFF6961),
-          ],
-        )),
+              colors: [
+                Color(0xffFF6961),
+                Color(0xffFF6961),
+                Color(0xffFF6961),
+                Color(0xffFF6961),
+              ],
+            )),
       ),
       title: Container(
         padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
@@ -380,7 +301,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                        AssetImage('assets/images/information_image.png'),
+                    AssetImage('assets/images/information_image.png'),
                   ),
                 ),
               ),
@@ -489,8 +410,8 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                               chatHistoryList[index].message,
                               chatHistoryList[index].sender == _memberId.toString(),
                               chatHistoryList[index].sender.toString() != _memberId.toString() ? "fdas" : "Asdf",
-                                "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
-                                    "z2geqehuje_1686184911395.jpg",
+                              "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
+                                  "z2geqehuje_1686184911395.jpg",
                             );
                           },
                         );
@@ -532,7 +453,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                     IconButton(
                       // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
                       onPressed:
-                          _userEnterMessage.trim().isEmpty ? null : sendMessage,
+                      _userEnterMessage.trim().isEmpty ? null : sendMessage,
                       // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
                       icon: const Icon(Icons.send),
                       // 보내기 버튼
