@@ -205,7 +205,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       child: FutureBuilder<SingleRoomListModel>(
         future: getSingleRoomList(),
         builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
-
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
           }
@@ -414,8 +413,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final dio = Dio();
     final List<String> ls;
 
-    try{
-      final response = await dio.get(CHATTING_API_URL + '/api/v1/group_room?mid=$_memberId');
+    try {
+      final response =
+          await dio.get(CHATTING_API_URL + '/api/v1/group_room?mid=$_memberId');
       return GroupRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("getGroupRoomList 에러 발생");
@@ -437,7 +437,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   child: CircularProgressIndicator(),
                 );
               }
-              if (snapshot.data!.count != 0 && snapshot.data!.groupRoomList != null) {
+              if (snapshot.data!.count != 0 &&
+                  snapshot.data!.groupRoomList != null) {
                 return ListView.builder(
                     itemCount: snapshot.data!.groupRoomList!.length,
                     padding: EdgeInsets.symmetric(vertical: 0),
@@ -495,7 +496,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 Container(
                   // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
                   margin:
-                  EdgeInsets.fromLTRB(0 * fem, 0 * fem, 80 * fem, 0 * fem),
+                      EdgeInsets.fromLTRB(0 * fem, 0 * fem, 80 * fem, 0 * fem),
                   width: 80 * fem,
                   height: 42 * fem,
                   child: GestureDetector(
@@ -503,7 +504,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GroupChattingScreen(roomData: m, token: _token,createTime: roomCreateTimeList[0],
+                          builder: (context) => GroupChattingScreen(
+                            roomData: m,
+                            token: _token,
+                            createTime: roomCreateTimeList[i],
                             // 0번째 채팅방 생성시간
                           ),
                         ),

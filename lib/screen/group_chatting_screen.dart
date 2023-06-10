@@ -146,11 +146,10 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
-    if (widget.roomData!.createAt != null) {
+    if (widget.createTime != null) {
       timeDiff =
-          DateTime.now().difference(DateTime.parse(widget.roomData!.createAt));
-      print("now : ${DateTime.now()}");
-      print("timeDiff : $timeDiff");
+          DateTime.now().difference(widget.createTime!);
+
       setState(
         () {
           if ((defaultTime - timeDiff!.inSeconds) > 0) {
@@ -170,10 +169,10 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
+    //   _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    // });
   }
 
   void connectToStomp() {
