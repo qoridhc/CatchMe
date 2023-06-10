@@ -15,16 +15,19 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 import '../Token.dart';
 import '../chat/chat_bubble.dart';
 import '../const/data.dart';
+import '../model/ChattingHistoryModel.dart';
 import '../model/GroupRoomListModel.dart';
 import '../model/member_model.dart';
 
 class GroupChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   final GroupRoomModel? roomData;
+  DateTime? createTime;
 
 
   GroupChattingScreen(
       {
+        required this.createTime,
       required this.roomData,
       Key? key,
       @required this.token})
@@ -112,21 +115,22 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     '안녕하세요 조유리입니다',
     '안녕하세요 테스터입니다',
   ];
+  List<ChattingHistory> chatHistoryList = [];
 
   late Token _token;
 
-  Future<ChatMessage> searchGroupChatRecord() async {
+  Future<ChattingHistoryListModel> getGroupChatRecord() async {
     print("Get chat record's information");
     final dio = Dio();
 
     try {
-      final getGender = await dio.get(
-        'http://$ip/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
-        options: Options(
+      final response = await dio.get(
+          CHATTING_API_URL + '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
+        /*options: Options(
           headers: {'authorization': 'Bearer ${_memberToken}'},
-        ),
+        )*/
       );
-      return ChatMessage.fromJson(json: getGender.data);
+      return ChattingHistoryListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print('error: $e');
       rethrow;
@@ -186,18 +190,36 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.single' + 1.toString(), // 구독할 주제 경로  abc방을 구독
+      destination: '/topic/room.Multi' + widget.roomData!.id.toString(),
+      headers: {"auto-delete": "true"},
       callback: (connectFrame) {
+        print("connectFrame.body 출력 :");
         print(connectFrame.body); //메시지를 받았을때!
-        String? talk = connectFrame.body;
-        _token = Token.fromJson(json.decode(talk!)); // 여기 고쳐야함
-        String text =
-            connectFrame.body!.substring(1, connectFrame.body!.length - 1);
-        _text.add(text);
-        _name.add("sss");
-        _userID.add("sss");
-        _img.add('assets/images/test_img/조유리.jpg');
-        // 메시지 처리
+        setState(() {
+          Map<String, dynamic> chat =
+          (json.decode(connectFrame.body.toString()));
+
+          ChatMessage? chatMessage;
+          chatMessage?.type = chat["type"];
+          chatHistoryList.add(ChattingHistory(
+            id: chatHistoryList.last.id + 1,
+            type: "TALK",
+            roomId: widget.roomData!.id.toString(),
+            sender: chat["sender"],
+            message: chat["message"],
+            roomType: "Multi",
+            send_time: DateTime.now().toString(),
+          ));
+
+          chatMessage?.roomId = chat["roomId"];
+          /*_name.add(chat["sender"] != _memberId.toString()
+              ? widget.nickname
+              : memberState.nickname);
+          _sender.add(chat["sender"]);*/
+          chatMessage?.roomType = chat["roomType"];
+
+          scrollListToEnd();
+        });
       },
     );
   }
@@ -206,18 +228,25 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     //encoder
     FocusScope.of(context).unfocus();
     String message = messageController.text;
-    var body = json.encode(ChatMessage(
+    print("body출력");
+    print(widget.roomData!.id.toString());
+
+    ChatMessage chatMessage = ChatMessage(
         type: "TALK",
         roomId: widget.roomData!.id.toString(),
         sender: _memberId.toString(),
         message: message,
-        roomType: "Multi"));
+        roomType: "Multi");
+    var body = json.encode(chatMessage);
+    print(chatMessage);
+
     _stompClient.send(
-      destination: '/app/chat.enter.abc',
+      destination: '/app/chat.enter.Multi' + widget.roomData!.id.toString(),
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: body,
     );
     print("전송!");
+
     scrollMax = true;
     scrollListToEnd();
     messageController.clear();
@@ -352,7 +381,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                        AssetImage('assets/images/test_img/조유리.jpg'),
+                        AssetImage('assets/images/information_image.png'),
                   ),
                 ),
               ),
@@ -430,20 +459,54 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _name.length,
-                // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
-                itemBuilder: (context, index) {
-                  scrollListToEnd();
-                  scrollMax = false;
-                  return ChatBubbles(
-                      _text[index],
-                      _userID[index] == _memberId.toString(),
-                      _name[index],
-                      _img[index]);
-                  // chat bubble 안에 메세지들을 넣어준다
-                },
+              child: Container(
+                child: FutureBuilder<ChattingHistoryListModel>(
+                  future: getGroupChatRecord(),
+                  builder:
+                      (_, AsyncSnapshot<ChattingHistoryListModel> snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          snapshot.error.toString(),
+                        ),
+                      );
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.data! != 0) {
+                      // return _renderSingleRoomListView(snapshot.data!, indexNum);
+                      ChattingHistoryListModel chattingHistoryListModel =
+                      snapshot.data!;
+
+                      if (chattingHistoryListModel.count != 0) {
+                        chatHistoryList =
+                            List.from(snapshot.data!.chattingHistory!.reversed);
+
+                        return ListView.builder(
+                          itemCount: chattingHistoryListModel.count,
+                          itemBuilder: (context, index) {
+                            return ChatBubbles(
+                              chatHistoryList[index].message,
+                              chatHistoryList[index].sender == _memberId.toString(),
+                              chatHistoryList[index].sender.toString() != _memberId.toString() ? "fdas" : "Asdf",
+                                "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
+                                    "z2geqehuje_1686184911395.jpg",
+                            );
+                          },
+                        );
+                      } else {
+                        return Center(
+                          child: Text("해당 정보가 없습니다."),
+                        );
+                      }
+                    } else {
+                      return Center(
+                        child: Text("해당 정보가 없습니다."),
+                      );
+                    }
+                  },
+                ),
               ),
             ),
             Visibility(

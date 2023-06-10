@@ -503,7 +503,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GroupChattingScreen(roomData: m, token: _token
+                          builder: (context) => GroupChattingScreen(roomData: m, token: _token,createTime: roomCreateTimeList[0],
                             // 0번째 채팅방 생성시간
                           ),
                         ),

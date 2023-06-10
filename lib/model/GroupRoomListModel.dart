@@ -12,7 +12,7 @@ class GroupRoomListModel{
   }){
     return GroupRoomListModel(
         count: json['count'],
-        groupRoomList: json['groupRoomList']
+        groupRoomList: json['data']
         .map<GroupRoomModel>(
             (x) => GroupRoomModel.fromJson(json: x),
         ).toList()
@@ -28,7 +28,7 @@ class GroupRoomModel{
   final int mid4;
   final int mid5;
   final int mid6;
-
+  final int jerry_id;
   final int id;
 
   final bool staus;
@@ -42,7 +42,8 @@ class GroupRoomModel{
       required this.mid5,
       required this.mid6,
       required this.id,
-      required this.staus
+      required this.staus,
+      required this.jerry_id,
   });
 
   factory GroupRoomModel.fromJson({
@@ -57,7 +58,8 @@ class GroupRoomModel{
         mid5: json['mid5'],
         mid6: json['mid6'],
         id: json['id'],
-        staus: json['status']
+        staus: json['status'],
+        jerry_id: json['jerry_id']
     );
   }
 }
