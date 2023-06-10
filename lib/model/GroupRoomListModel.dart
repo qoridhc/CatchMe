@@ -13,6 +13,9 @@ class GroupRoomListModel{
     return GroupRoomListModel(
         count: json['count'],
         groupRoomList: json['groupRoomList']
+        .map<GroupRoomModel>(
+            (x) => GroupRoomModel.fromJson(json: x),
+        ).toList()
     );
   }
 }
