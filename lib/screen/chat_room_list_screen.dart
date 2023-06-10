@@ -27,6 +27,7 @@ import "package:dart_amqp/dart_amqp.dart";
 
 class ChatRoomScreen extends StatefulWidget {
   final Token? token;
+
   const ChatRoomScreen({Key? key, @required this.token}) : super(key: key);
 
   @override
@@ -41,11 +42,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late int _memberId;
   late String _memberToken;
   late int _mid;
+
   //late WebSocketChannel channel;
 
   List<DateTime> roomCreateTimeList = [];
   List<int> roomSingleNumberList = [];
   List<int> roomMultiNumberList = [];
+
+  List<SingleRoomModel> singleRoomModelList = [];
 
   @override
   void initState() {
@@ -57,14 +61,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     _token = widget.token!;
 
-    _memberId = widget.token!.id!;            // 로그인한 사람
-    _memberToken = widget.token!.accessToken!;  // 여기 에러 왜?????????
+    _memberId = widget.token!.id!; // 로그인한 사람
+    _memberToken = widget.token!.accessToken!; // 여기 에러 왜?????????
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
   }
 
   @override
   void dispose() {
-   // channel.sink.close();
+    // channel.sink.close();
     super.dispose();
   }
 
@@ -172,7 +176,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         _chatsOrGroups = false;
                     });
                   },
-                  children: [chatsListviewBuilder(), _renderGroupListView()],
+                  children: [
+                    chatsListviewBuilder(),
+                    // _renderGroupListView(), // 추후 구현
+                  ],
                 ),
               ),
             ),
@@ -184,42 +191,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ),
       ),
     );
-  }
-
-  Future<MemberModel> getUserInfo(int mid) async {
-    print("Get user's information");
-    final dio = Dio();
-
-    try {
-      final getInfo = await dio.get(CATCHME_URL + '/api/v1/members/${mid}',
-        options: Options(
-          headers: {
-            'authorization': 'Bearer ${_memberToken}'
-          },
-        ),
-      ); // 여기에 mid1이나 mid2값을 넣는 방법은?
-      return MemberModel.fromJson(json: getInfo.data);
-    } on DioError catch (e) {
-      print('error: $e');
-      print(e);
-      rethrow;
-    }
-  }
-
-  //싱글 채팅방 리스트 호출
-  Future<SingleRoomListModel> getSingleRoomList() async{
-    print("getRoomList 실행");
-    final dio = Dio();
-    final List<String> ls;
-
-    try{
-      final response = await dio.get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
-      return SingleRoomListModel.fromJson(json: response.data);
-    } on DioError catch (e) {
-      print("에러 발생");
-      print(e);
-      rethrow;
-    }
   }
 
   Widget chatsListviewBuilder() {
@@ -234,34 +205,79 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       child: FutureBuilder<SingleRoomListModel>(
         future: getSingleRoomList(),
         builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
+
           if (snapshot.hasError) {
-            return Center(
-                child: Text(snapshot.error.toString())
-            );
+            return Center(child: Text(snapshot.error.toString()));
           }
+
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(),
             );
           }
+
           if (snapshot.data!.count != 0) {
-            return ListView.builder(// container를 넣고 child를 넣고 그안에 futurebuilder 이건 재민이형 api 받을수있게
-                itemCount: snapshot.data!.singleRoomList.length,
-                padding: EdgeInsets.symmetric(vertical: 0),
-                itemBuilder: (context, index) {
-                  int _mid = snapshot.data!.singleRoomList[index].mid1 == _memberId
-                      ? snapshot.data!.singleRoomList[index].mid2 :
-                  snapshot.data!.singleRoomList[index].mid1;
-                  roomSingleNumberList.add(snapshot.data!.singleRoomList[index].id);
-                  return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
-                });
-          }
-          else {
-            return Center(child: Container(child: Text('생성된 채팅방이 없습니다'),));
+            singleRoomModelList.clear();
+            singleRoomModelList = snapshot.data!.singleRoomList;
+
+            return ListView.builder(
+              // container를 넣고 child를 넣고 그안에 futurebuilder 이건 재민이형 api 받을수있게
+              itemCount: snapshot.data!.singleRoomList.length,
+              padding: EdgeInsets.symmetric(vertical: 0),
+              itemBuilder: (context, index) {
+                int _mid = singleRoomModelList[index].mid1 == _memberId
+                    ? singleRoomModelList[index].mid2
+                    : singleRoomModelList[index].mid1;
+
+                // roomSingleNumberList.add(singleRoomModelList[index].id);
+
+                return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
+              },
+            );
+          } else {
+            return Center(
+                child: Container(
+              child: Text('생성된 채팅방이 없습니다'),
+            ));
           }
         },
       ),
     );
+  }
+
+  // _memberId 유저의 싱글 채팅방 리스트 호출
+  Future<SingleRoomListModel> getSingleRoomList() async {
+    print("getRoomList 실행");
+    final dio = Dio();
+
+    try {
+      final response = await dio
+          .get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
+      return SingleRoomListModel.fromJson(json: response.data);
+    } on DioError catch (e) {
+      print("getSingleRoomList 에러 발생");
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<MemberModel> getUserInfo(int mid) async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getInfo = await dio.get(
+        CATCHME_URL + '/api/v1/members/${mid}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      ); // 여기에 mid1이나 mid2값을 넣는 방법은?
+      return MemberModel.fromJson(json: getInfo.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      print(e);
+      rethrow;
+    }
   }
 
   Widget renderMemberLInfo(int mid, int indexNum) {
@@ -280,8 +296,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.data! != 0) {
-            return _renderSingleRoomListView(
-                snapshot.data!, indexNum);
+            return _renderSingleRoomListView(snapshot.data!, indexNum);
           } else {
             return Center(
               child: Text("해당 정보가 없습니다."),
@@ -292,11 +307,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  Widget _renderSingleRoomListView(MemberModel l, int indexNum){ // 여기서 회원 정보를 받고 아래서 돌리기
+  Widget _renderSingleRoomListView(MemberModel l, int indexNum) {
+    // 여기서 회원 정보를 받고 아래서 돌리기
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
     double _sw = getMediaWidth(context);
+
+    print(roomSingleNumberList);
 
     return Container(
       width: double.infinity,
@@ -318,25 +336,26 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               child: Container(
                 height: _sw * 0.15,
                 width: _sw * 0.15,
-                child: l.imageUrls.length > 0 ? Image.network(  //memberinfo에서 imgurl가져오기
-                  l.imageUrls[0],
-                  fit: BoxFit.fill,
-                ):
-                Center(child: Text("NoImg")),
+                child: l.imageUrls.length > 0
+                    ? Image.network(
+                        //memberinfo에서 imgurl가져오기
+                        l.imageUrls[0],
+                        fit: BoxFit.fill,
+                      )
+                    : Center(child: Text("NoImg")),
               ),
             ),
           ),
           Container(
-            padding:
-            EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
+            padding: EdgeInsets.fromLTRB(10 * fem, 6 * fem, 3 * fem, 6 * fem),
             height: double.infinity,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   // autogroupyuqsm5o (6J36NpyWkaQoJqNmfxYUqs)
-                  margin: EdgeInsets.fromLTRB(
-                      0 * fem, 0 * fem, 80 * fem, 0 * fem),
+                  margin:
+                      EdgeInsets.fromLTRB(0 * fem, 0 * fem, 80 * fem, 0 * fem),
                   width: 80 * fem,
                   height: 42 * fem,
                   child: GestureDetector(
@@ -345,8 +364,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => SingleChattingScreen(
-                            roomNum: roomSingleNumberList[indexNum],
+                            roomNum: singleRoomModelList[indexNum].id,
                             token: _token,
+                            imgUrl: l.imageUrls[0],
+                            nickname: l.nickname,
                             // 0번째 채팅방 생성시간
                           ),
                         ),
@@ -363,7 +384,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                               width: 60 * fem,
                               height: 25 * fem,
                               child: Text(
-                                l.nickname,  // 이부분은 id에 해당하는 이름으로 바꿔줘야함
+                                l.nickname, // 이부분은 id에 해당하는 이름으로 바꿔줘야함
                                 style: SafeGoogleFont(
                                   'Estonia',
                                   fontSize: 20 * ffem,
@@ -388,74 +409,73 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   //그룹 채팅방 리스트 호출
-  Future<GroupRoomListModel> getGroupRoomList() async{
+  Future<GroupRoomListModel> getGroupRoomList() async {
     print("getRoomList 실행");
     final dio = Dio();
     final List<String> ls;
 
     try{
-      final response = await dio.get('http://localhost:9081/api/v1/group_room?mid=$_memberId');
+      final response = await dio.get(CHATTING_API_URL + '/api/v1/group_room?mid=$_memberId');
       return GroupRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
-      print("에러 발생");
-      print(e);
+      print("getGroupRoomList 에러 발생");
+      print(e.response!.data);
       rethrow;
     }
   }
 
   Widget _renderGroupListView() {
     return Container(
-      child: FutureBuilder<GroupRoomListModel>(
-        future: getGroupRoomList(),
-          builder: (_, AsyncSnapshot<GroupRoomListModel> snapshot) {
+        child: FutureBuilder<GroupRoomListModel>(
+            future: getGroupRoomList(),
+            builder: (_, AsyncSnapshot<GroupRoomListModel> snapshot) {
               if (snapshot.hasError) {
                 return Center(child: Text(snapshot.error.toString()));
               }
               if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator(),);
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
               }
-              if (snapshot.data!.count != 0) {
+              if (snapshot.data!.count != 0 && snapshot.data!.groupRoomList != null) {
                 return ListView.builder(
-                    itemCount: snapshot.data!.groupRoomList.length,
+                    itemCount: snapshot.data!.groupRoomList!.length,
                     padding: EdgeInsets.symmetric(vertical: 0),
-                  itemBuilder: (context, index){
-                     return _renderGroupListChild(snapshot.data!.groupRoomList[index], index);
-                  });
+                    itemBuilder: (context, index) {
+                      return _renderGroupListChild(
+                          snapshot.data!.groupRoomList[index], index);
+                    });
+              } else {
+                return Center(
+                    child: Container(child: Text('생성된 그룹 채팅방이 없습니다.')));
               }
-              else{
-                return Center(child: Container(child: Text('생성된 그룹 채팅방이 없습니다.')));
-              }
-          }
-      )
-    );
+            }));
   }
 
-  Widget _renderGroupListChild(GroupRoomModel m, int i){
+  Widget _renderGroupListChild(GroupRoomModel m, int i) {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
 
     return InkWell(
-      onTap: (){
+      onTap: () {
         Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GroupChattingScreen(
-            roomData: m,
-            token: _token
-            // 0번째 채팅방 생성시간
+          context,
+          MaterialPageRoute(
+            builder: (context) => GroupChattingScreen(roomData: m, token: _token
+                // 0번째 채팅방 생성시간
+                ),
           ),
-        ),
-      );},
+        );
+      },
       child: Container(
-          width: double.infinity,
-          height: 62 * fem,
-          child: Text("그룹채팅 $i"),
+        width: double.infinity,
+        height: 62 * fem,
+        child: Text("그룹채팅 $i"),
       ),
     );
-
   }
 
-  /*
+/*
   Widget GroupsListviewBuilder() {
     double baseWidth = 380;
     double fem = MediaQuery.of(context).size.width / baseWidth;
