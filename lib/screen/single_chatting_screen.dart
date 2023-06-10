@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:captone4/chat/message.dart';
 import 'package:captone4/chat/new_message.dart';
+import 'package:captone4/model/ChattingHistoryModel.dart';
 import 'package:captone4/provider/time_provider.dart';
 import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/utils/utils.dart';
@@ -22,8 +23,11 @@ class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   int? roomNum;
 
-  SingleChattingScreen({required this.roomNum, Key? key, @required this.token})
-      : super(key: key);
+  SingleChattingScreen({
+    required this.roomNum,
+    Key? key,
+    @required this.token,
+  }) : super(key: key);
 
   @override
   ConsumerState<SingleChattingScreen> createState() =>
@@ -81,6 +85,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   final List<String> _sender = <String>[];
   final List<String> _text = <String>[];
 
+  List<ChattingHistory> chatHistoryList = [];
+
   late Token _token;
 
   @override
@@ -104,10 +110,10 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    });
+    // WidgetsBinding.instance!.addPostFrameCallback((_) {
+    //   // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
+    //   _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    // });
   }
 
   void connectToStomp() {
@@ -196,55 +202,72 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     // ref.read(TimerProvider.notifier).pause();
   }
 
-  Future<SingleRoomListModel> getSingleRoomList() async {
-    print("getRoomList 실행");
+  Future<ChattingHistoryListModel> getChattingHistory() async {
     final dio = Dio();
-    final List<String> ls;
 
     try {
-      final response = await dio
-          .get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
-      return SingleRoomListModel.fromJson(json: response.data);
+      final response = await dio.get(CHATTING_API_URL +
+          '/api/v1/single_records?singleId=${widget.roomNum}');
+      return ChattingHistoryListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("에러 발생");
       print(e);
       rethrow;
     }
   }
-  // 싱글룸 정보를 통해 sender Id 구하기
-  Widget getSenderId() {
-    return Container(
-      child: FutureBuilder<SingleRoomListModel>(
-        future: getSingleRoomList(),
-        builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
-          }
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          if (snapshot.data!.count != 0) {
-            return ListView.builder(
-                itemCount: snapshot.data!.singleRoomList.length,
-                padding: EdgeInsets.symmetric(vertical: 0),
-                itemBuilder: (context, index) {
-                  senderId =
-                      snapshot.data!.singleRoomList[index].mid1 == _memberId
-                          ? snapshot.data!.singleRoomList[index].mid2
-                          : snapshot.data!.singleRoomList[index].mid1;
-                  return renderSenderInfoBuild(senderId); // 여기서 회원 정보 던져줘야 하는 상황
-                });
-          } else {
-            return const Center(
-              child: Text("There's no such information."),
-            );
-          }
-        },
-      ),
-    );
-  }
+
+  //
+  // Future<SingleRoomListModel> getSingleRoomList() async {
+  //   print("getRoomList 실행");
+  //   final dio = Dio();
+  //   final List<String> ls;
+  //
+  //   try {
+  //     final response = await dio
+  //   //         .get(CHATTING_API_URL + '/api/v1/single_room?mid=$_memberId');
+  //   //     return SingleRoomListModel.fromJson(json: response.data);
+  //   } on DioError catch (e) {
+  //     print("에러 발생");
+  //     print(e);
+  //     rethrow;
+  //   }
+  // }
+  //
+  // // 싱글룸 정보를 통해 sender Id 구하기
+  // Widget getSenderId() {
+  //   return Container(
+  //     child: FutureBuilder<SingleRoomListModel>(
+  //       future: getSingleRoomList(),
+  //       builder: (_, AsyncSnapshot<SingleRoomListModel> snapshot) {
+  //         if (snapshot.hasError) {
+  //           return Center(child: Text(snapshot.error.toString()));
+  //         }
+  //         if (!snapshot.hasData) {
+  //           return Center(
+  //             child: CircularProgressIndicator(),
+  //           );
+  //         }
+  //         if (snapshot.data!.count != 0) {
+  //           return ListView.builder(
+  //               itemCount: snapshot.data!.singleRoomList.length,
+  //               padding: EdgeInsets.symmetric(vertical: 0),
+  //               itemBuilder: (context, index) {
+  //                 senderId =
+  //                     snapshot.data!.singleRoomList[index].mid1 == _memberId
+  //                         ? snapshot.data!.singleRoomList[index].mid2
+  //                         : snapshot.data!.singleRoomList[index].mid1;
+  //                 return renderSenderInfoBuild(
+  //                     senderId); // 여기서 회원 정보 던져줘야 하는 상황
+  //               });
+  //         } else {
+  //           return const Center(
+  //             child: Text("There's no such information."),
+  //           );
+  //         }
+  //       },
+  //     ),
+  //   );
+  // }
 
   // sender 정보 얻기
   Future<MemberModel> getSenderInfo(int senderId) async {
@@ -390,22 +413,88 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _name.length,
-                // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
-                itemBuilder: (context, index) {
-                  scrollListToEnd();
-                  scrollMax = false;
-                  return ChatBubbles(
-                      _text[index],
-                      _sender[index] == _memberId.toString(),
-                      _name[index],
-                      _img[index]);
-                  // chat bubble 안에 메세지들을 넣어준다
-                },
+              child: Container(
+                child: FutureBuilder<ChattingHistoryListModel>(
+                  future: getChattingHistory(),
+                  builder: (_, AsyncSnapshot<ChattingHistoryListModel> snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          snapshot.error.toString(),
+                        ),
+                      );
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.data! != 0) {
+                      // return _renderSingleRoomListView(snapshot.data!, indexNum);
+                      ChattingHistoryListModel chattingHistoryListModel =
+                          snapshot.data!;
+
+
+                      if (chattingHistoryListModel.count != 0) {
+                        chatHistoryList =
+                            List.from(snapshot.data!.chattingHistory!.reversed);
+
+                        return ListView.builder(
+                          itemCount: chattingHistoryListModel.count,
+                          itemBuilder: (context, index) {
+                            return ChatBubbles(
+                              chatHistoryList[index].message,
+                              chatHistoryList[index].sender == widget.token!.id,
+                              chatHistoryList[index].sender.toString(),
+                              "",
+                            );
+                          },
+                        );
+                      } else {
+                        return Center(
+                          child: Text("해당 정보가 없습니다."),
+                        );
+                      }
+
+                      // return ListView.builder(
+                      //   // container를 넣고 child를 넣고 그안에 futurebuilder 이건 재민이형 api 받을수있게
+                      //   itemCount: snapshot.data!.singleRoomList.length,
+                      //   padding: EdgeInsets.symmetric(vertical: 0),
+                      //   itemBuilder: (context, index) {
+                      //     int _mid = singleRoomModelList[index].mid1 == _memberId
+                      //         ? singleRoomModelList[index].mid2
+                      //         : singleRoomModelList[index].mid1;
+                      //
+                      //     // roomSingleNumberList.add(singleRoomModelList[index].id);
+                      //
+                      //     return renderMemberLInfo(_mid, index); // 여기서 회원 정보 던져줘야 하는 상황
+                      //   },
+                      // );
+                      //
+                    } else {
+                      return Center(
+                        child: Text("해당 정보가 없습니다."),
+                      );
+                    }
+                  },
+                ),
               ),
             ),
+            // Expanded(
+            //   child: ListView.builder(
+            //     controller: _scrollController,
+            //     itemCount: _name.length,
+            //     // 데이터가 null값이면 안되기에 여기에 해당 톡방에 쌓여있는 문자들 수 들어갈 수 있게
+            //     itemBuilder: (context, index) {
+            //       scrollListToEnd();
+            //       scrollMax = false;
+            //       return ChatBubbles(
+            //           _text[index],
+            //           _sender[index] == _memberId.toString(),
+            //           _name[index],
+            //           _img[index]);
+            //       // chat bubble 안에 메세지들을 넣어준다
+            //     },
+            //   ),
+            // ),
             Visibility(
               visible: _visibility,
               child: Container(
