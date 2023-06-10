@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:captone4/const/data.dart';
+import 'package:captone4/model/GroupRoomListModel.dart';
 import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/screen/favorite_list_screen.dart';
 import 'package:captone4/screen/main_page_screen.dart';
@@ -29,44 +32,21 @@ class RootTab extends StatefulWidget {
 
 class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   late TabController controller;
-  late StompClient stompClient;
   int _bottomNavIndex = 0;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     controller = TabController(length: 4, vsync: this);
     controller.addListener(tabListener);
-
-    connectToStomp();
   }
 
-  void connectToStomp(){
-    print("root_tab 연결");
-    stompClient = StompClient(
-      config: StompConfig(
-        url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-        onConnect: onConnectCallback, // 연결 성공 시 호출되는 콜백 함수
-      ),
-    );
-  }
 
-  void onConnectCallback(StompFrame connectFrame) { //decoder, imgurl 앞에서 받아올것
-    stompClient.subscribe(
-      //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.default', // 구독할 주제 경로  abc방을 구독
-      callback: (connectFrame) {
-        print("root_tab 연결");
-        print(connectFrame.body); //메시지를 받았을때!
-        // 메시지 처리
-      },
-    );
-  }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    stompClient.deactivate();
     print("메인 stomp 연결해제");
     controller.removeListener(tabListener);
     super.dispose();
@@ -97,8 +77,6 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    stompClient.activate();
-
     return DefaultLayout(
       // backgroundColor: BACKGROUND_COLOR,
       child: TabBarView(
