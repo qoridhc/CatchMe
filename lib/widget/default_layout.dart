@@ -66,10 +66,9 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
 
   @override
   void initState(){
-
-
     super.initState();
   }
+
   @override
   void dispose(){
     print("레이아웃 종료");

@@ -338,7 +338,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 child: l.imageUrls.length > 0
                     ? Image.network(
                         //memberinfo에서 imgurl가져오기
-                        l.imageUrls[0],
+                        l.imageUrls[l.imageUrls.length-1],
                         fit: BoxFit.fill,
                       )
                     : Center(child: Text("NoImg")),
@@ -365,7 +365,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           builder: (context) => SingleChattingScreen(
                             roomNum: singleRoomModelList[indexNum].id,
                             token: _token,
-                            imgUrl: l.imageUrls[0],
+                            imgUrl: l.imageUrls[l.imageUrls.length-1],
                             nickname: l.nickname,
                             // 0번째 채팅방 생성시간
                           ),

@@ -124,7 +124,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     // _stompClient = widget.stompClient!;
 
     // _stompClient.deactivate();
-    connectToStomp(); //stomp 연결
+    // connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
     print("닉네임:" + widget.nickname);
 
@@ -151,7 +151,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
       destination: '/topic/room.single' + widget.roomNum.toString(),
-      headers: {"auto-delete": "true"}, // "id": "1234", "durable": "true",
+      // headers: {"auto-delete": "false", "id": "${_memberId}", "durable": "true"},
       // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
         print("connectFrame.body 출력 :");
@@ -207,6 +207,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
     print(body);
     _stompClient.send(
+      // headers: {"auto-delete": "false", "id": "${_memberId}", "durable": "true"},
       destination: '/app/chat.enter.single' + widget.roomNum.toString(),
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: body,
@@ -334,7 +335,10 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     final state = ref.watch(memberProfileNotifierProvider);
     ScrollController _scrollController = ScrollController();
     final memberState = ref.watch(memberNotifierProvider);
+
+    connectToStomp();
     _stompClient.activate();
+
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(

@@ -47,7 +47,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   @override
   void dispose() {
     // TODO: implement dispose
-    print("메인 stomp 연결해제");
+    // print("메인 stomp 연결해제");
     controller.removeListener(tabListener);
     super.dispose();
   }
