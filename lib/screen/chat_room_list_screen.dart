@@ -366,6 +366,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           builder: (context) => SingleChattingScreen(
                             roomNum: singleRoomModelList[indexNum].id,
                             token: _token,
+                            imgUrl: l.imageUrls[0],
+                            nickname: l.nickname,
                             // 0번째 채팅방 생성시간
                           ),
                         ),
@@ -412,9 +414,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final dio = Dio();
     final List<String> ls;
 
-    try {
-      final response = await dio
-          .get('http://localhost:9081/api/v1/group_room?mid=$_memberId');
+    try{
+      final response = await dio.get(CHATTING_API_URL + '/api/v1/group_room?mid=$_memberId');
       return GroupRoomListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print("getGroupRoomList 에러 발생");
@@ -436,9 +437,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   child: CircularProgressIndicator(),
                 );
               }
-              if (snapshot.data!.count != 0) {
+              if (snapshot.data!.count != 0 && snapshot.data!.groupRoomList != null) {
                 return ListView.builder(
-                    itemCount: snapshot.data!.groupRoomList.length,
+                    itemCount: snapshot.data!.groupRoomList!.length,
                     padding: EdgeInsets.symmetric(vertical: 0),
                     itemBuilder: (context, index) {
                       return _renderGroupListChild(

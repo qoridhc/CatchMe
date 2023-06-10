@@ -22,7 +22,12 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   final GroupRoomModel? roomData;
 
-  GroupChattingScreen({required this.roomData, Key? key, @required this.token})
+
+  GroupChattingScreen(
+      {
+      required this.roomData,
+      Key? key,
+      @required this.token})
       : super(key: key);
 
   @override
