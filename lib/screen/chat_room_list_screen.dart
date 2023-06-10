@@ -443,7 +443,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     padding: EdgeInsets.symmetric(vertical: 0),
                     itemBuilder: (context, index) {
                       return _renderGroupListChild(
-                          snapshot.data!.groupRoomList[index], index);
+                          snapshot.data!.groupRoomList![index], index);
                     });
               } else {
                 return Center(
