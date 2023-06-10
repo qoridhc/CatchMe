@@ -80,7 +80,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
   late int senderId;
   bool _visibility = true;
-
+  bool _scrollToEnd = false;
   bool scrollMax = false;
 
   late StompClient _stompClient;
@@ -142,7 +142,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
     //decoder, imgurl 앞에서 받아올것
     _stompClient.subscribe(
       //메세지 서버에서 받고 rabbitmq로 전송
-      destination: '/topic/room.aba',
+      destination: '/topic/room.single' + widget.roomNum.toString(),
       headers: {"auto-delete": "true"},// "id": "1234", "durable": "true",
       // 구독할 주제 경로  abc방을 구독
       callback: (connectFrame) {
@@ -151,7 +151,8 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
         setState(() {
           Map<String, dynamic> chat =
-          (json.decode(connectFrame.body.toString())); // 여기 고쳐야함
+          (json.decode(connectFrame.body.toString()));
+
 
           ChatMessage? chatMessage;
           chatMessage?.type = chat["type"];
@@ -187,7 +188,7 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
 
     print(body);
     _stompClient.send(
-      destination: '/app/chat.enter.aba',
+      destination: '/app/chat.enter.single' + widget.roomNum.toString(),
       // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
       body: body,
     );
