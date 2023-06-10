@@ -21,6 +21,7 @@ import '../model/member_model.dart';
 import '../model/single_room_model.dart';
 import '../provider/member_profile_provider.dart';
 import '../provider/member_provider.dart';
+import '../widget/poll.dart';
 
 class SingleChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
@@ -331,17 +332,9 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(memberProfileNotifierProvider);
+    ScrollController _scrollController = ScrollController();
     final memberState = ref.watch(memberNotifierProvider);
     _stompClient.activate();
-    SchedulerBinding.instance?.addPostFrameCallback((_) {
-      if (_scrollToEnd) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
@@ -372,14 +365,34 @@ class _SingleChattingScreenState extends ConsumerState<SingleChattingScreen> {
                         chatHistoryList =
                             List.from(snapshot.data!.chattingHistory!.reversed);
 
+                        SchedulerBinding.instance.addPostFrameCallback((_) {
+                          // if (_scrollToEnd) {
+                          //   _scrollController.animateTo(
+                          //     _scrollController.position.maxScrollExtent,
+                          //     duration: const Duration(milliseconds: 300),
+                          //     curve: Curves.easeOut,
+                          //   );
+                          // }
+                          // 채팅 화면을 가장 맨 아래로 이동
+                          _scrollController.jumpTo(
+                              _scrollController.position.maxScrollExtent);
+                        });
                         return ListView.builder(
+                          controller: _scrollController,
                           itemCount: chattingHistoryListModel.count,
                           itemBuilder: (context, index) {
                             return ChatBubbles(
                               chatHistoryList[index].message,
-                              chatHistoryList[index].sender == _memberId.toString(),
-                              chatHistoryList[index].sender.toString() != _memberId.toString() ? widget.nickname : memberState.nickname,
-                              chatHistoryList[index].sender == _memberId.toString()?state.images.last.url : widget.imgUrl,
+                              chatHistoryList[index].sender ==
+                                  _memberId.toString(),
+                              chatHistoryList[index].sender.toString() !=
+                                      _memberId.toString()
+                                  ? widget.nickname
+                                  : memberState.nickname,
+                              chatHistoryList[index].sender ==
+                                      _memberId.toString()
+                                  ? state.images.last.url
+                                  : widget.imgUrl,
                             );
                           },
                         );
