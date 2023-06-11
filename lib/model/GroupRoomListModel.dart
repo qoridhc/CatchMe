@@ -1,3 +1,4 @@
+
 class GroupRoomListModel{
   final count;
   final List<GroupRoomModel>? groupRoomList;
@@ -21,7 +22,7 @@ class GroupRoomListModel{
 }
 
 class GroupRoomModel{
-  final String createAt;
+  final DateTime createAt;
   final int mid1;
   final int mid2;
   final int mid3;
@@ -50,7 +51,7 @@ class GroupRoomModel{
     required Map<String, dynamic> json,
   }) {
     return GroupRoomModel(
-        createAt: json['created_at'],
+        createAt: DateTime.parse(json['created_at'].toString()) ,
         mid1: json['mid1'] ,// ?? 0 붙이면 될수도
         mid2: json['mid2'],
         mid3: json['mid3'],

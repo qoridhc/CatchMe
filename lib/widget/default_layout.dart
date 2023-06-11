@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:captone4/MatchingUser.dart';
 import 'package:captone4/Token.dart';
+import 'package:captone4/model/GroupRoomListModel.dart';
+import 'package:captone4/screen/group_chatting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
@@ -71,9 +73,17 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
 
   @override
   void dispose(){
+    //취소 하는거 넣어야함
+
     print("레이아웃 종료");
     try{
-        stompClient!.deactivate();
+      if(stompClient!.connected)
+        {
+
+          stompClient?.deactivate();
+
+        }
+
     }
     catch (e){
       print("error : $e");
@@ -137,11 +147,32 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
     matchingUser = new MatchingUser(id: id, gender: gender);
     body = json.encode(matchingUser);
 
+    stompClient!.subscribe(
+        destination: '/topic/matchingResult',
+        callback: (connectFrame){
+          Map<String,dynamic> body2 = json.decode(connectFrame.body.toString());
+          GroupRoomModel groupRoomModel = GroupRoomModel.fromJson(json: body2);
+          String createAt = groupRoomModel.createAt.toString();
+          DateTime dateTimeCreateAt = DateTime.parse(createAt).toLocal();
+          //자기 매칭인지 확인
+          if(groupRoomModel.mid1 == token!.id ||
+              groupRoomModel.mid2 == token!.id ||
+              groupRoomModel.mid3 == token!.id ||
+              groupRoomModel.mid4 == token!.id ||
+              groupRoomModel.mid5 == token!.id ||
+              groupRoomModel.mid6 == token!.id ){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupChattingScreen(createTime: dateTimeCreateAt, roomData: groupRoomModel, token: token)));
+          }
+          //자기꺼 맞으면 navigator푸시
+
+
+    });
 
     //여기서 멤버 조회로 id값이랑 gender값 가져오기
     //가져온걸 send로 매칭에게 보내기
     stompClient!.send(
         destination: '/pub/matching',body: body);
+    print(body);
   }
 
   connectToStomp(){
