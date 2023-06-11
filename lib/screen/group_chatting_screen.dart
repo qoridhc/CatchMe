@@ -26,12 +26,11 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   DateTime? createTime;
   List? midList;
 
-  GroupChattingScreen(
-      {required this.createTime,
-        required this.roomData,
-        required this.midList,
-        Key? key,
-        @required this.token})
+  GroupChattingScreen({required this.createTime,
+    required this.roomData,
+    required this.midList,
+    Key? key,
+    @required this.token})
       : super(key: key);
 
   @override
@@ -46,20 +45,20 @@ class ChatMessage {
   String? message;
   String? roomType;
 
-  Map<String, dynamic> toJson() => {
-    'type': type,
-    'roomId': roomId,
-    'sender': sender,
-    'message': message,
-    'roomType': roomType,
-  };
+  Map<String, dynamic> toJson() =>
+      {
+        'type': type,
+        'roomId': roomId,
+        'sender': sender,
+        'message': message,
+        'roomType': roomType,
+      };
 
-  ChatMessage(
-      {required this.type,
-        required this.roomId,
-        required this.sender,
-        required this.message,
-        required this.roomType});
+  ChatMessage({required this.type,
+    required this.roomId,
+    required this.sender,
+    required this.message,
+    required this.roomType});
 
   factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
     return ChatMessage(
@@ -77,6 +76,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late int _memberId;
   late String _memberToken;
   late String senderImage;
+  late String senderGender;
   late GroupRoomModel groupRoomModel;
   late String userGender;
   var _userEnterMessage = '';
@@ -451,7 +451,6 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     ScrollController _scrollController = ScrollController();
@@ -491,16 +490,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                               _scrollController.position.maxScrollExtent);
                         });
 
-                        print("@@@@@@@@@@@@@@@@");
-                        print("midList = ${widget.midList}");
-                        print("midGender = ${midGender}");
-
                         return ListView.builder(
                           controller: _scrollController,
                           itemCount: chattingHistoryListModel.count,
                           itemBuilder: (context, index) {
-
-                            print("chatHistoryList[index].sender = ${chatHistoryList[index].sender}");
+                            print(
+                                "chatHistoryList[index].sender = ${chatHistoryList[index]
+                                    .sender}");
 
                             int genderIndex = 0;
 
@@ -553,7 +549,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                     IconButton(
                       // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
                       onPressed:
-                      _userEnterMessage.trim().isEmpty ? null : sendMessage,
+                      _userEnterMessage
+                          .trim()
+                          .isEmpty ? null : sendMessage,
                       // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
                       icon: const Icon(Icons.send),
                       // 보내기 버튼
@@ -569,10 +567,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     );
   }
 
-  String getName(String sender){
-    
-    for(int i = 0 ; i < 6; i++) {
-      if(widget.midList![i].toString() == sender) {
+  String getName(String sender) {
+    for (int i = 0; i < 6; i++) {
+      if (widget.midList![i].toString() == sender) {
         if (midGender[i] == 'M') {
           i++;
           return "남자" + i.toString();
