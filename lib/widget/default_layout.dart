@@ -11,6 +11,7 @@ import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../const/colors.dart';
+import '../model/received_matching_model.dart';
 
 class DefaultLayout extends ConsumerStatefulWidget {
   final Widget child;
@@ -150,18 +151,45 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
     stompClient!.subscribe(
         destination: '/topic/matchingResult',
         callback: (connectFrame){
-          Map<String,dynamic> body2 = json.decode(connectFrame.body.toString());
-          GroupRoomModel groupRoomModel = GroupRoomModel.fromJson(json: body2);
-          String createAt = groupRoomModel.createAt.toString();
-          DateTime dateTimeCreateAt = DateTime.parse(createAt).toLocal();
+
+          print(connectFrame.body.runtimeType); //프
+
+          Map<String,dynamic> body2 = json.decode(connectFrame.body!);
+          ReceivedMatchingModel receivedMatchingModel = ReceivedMatchingModel.fromJson(json: body2);
+
+          String time = '';
+          int i = 0;
+          time = receivedMatchingModel.createdAt[0].toString()+'-0'+receivedMatchingModel.createdAt[1].toString()+'-'+
+          receivedMatchingModel.createdAt[2].toString()+ ' ' + receivedMatchingModel.createdAt[3].toString()+':'+
+          receivedMatchingModel.createdAt[4].toString()+':'+ receivedMatchingModel.createdAt[5].toString()+'.'+
+          receivedMatchingModel.createdAt[6].toString() + 'z';
+          // for(; i < receivedMatchingModel.createdAt.length-1; i++){
+          //   time = time + receivedMatchingModel.createdAt[i].toString()+'-';
+          // }
+          // time = time + receivedMatchingModel.createdAt[receivedMatchingModel.createdAt.length-1].toString();
+
+          GroupRoomModel groupRoomModel = new GroupRoomModel(
+              createAt: DateTime.parse(time),
+              mid1: receivedMatchingModel.mid1,
+              mid2: receivedMatchingModel.mid2,
+              mid3: receivedMatchingModel.mid3,
+              mid4: receivedMatchingModel.mid4,
+              mid5: receivedMatchingModel.mid5,
+              mid6: receivedMatchingModel.mid6,
+              id: receivedMatchingModel.id,
+              staus: receivedMatchingModel.status,
+              jerry_id: receivedMatchingModel.jerryId
+          );
+
+          print(groupRoomModel.createAt.runtimeType);
           //자기 매칭인지 확인
-          if(groupRoomModel.mid1 == token!.id ||
-              groupRoomModel.mid2 == token!.id ||
-              groupRoomModel.mid3 == token!.id ||
-              groupRoomModel.mid4 == token!.id ||
-              groupRoomModel.mid5 == token!.id ||
-              groupRoomModel.mid6 == token!.id ){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupChattingScreen(createTime: dateTimeCreateAt, roomData: groupRoomModel, token: token)));
+          if(groupRoomModel.mid1 == ref.read(tokenProvider.notifier).state.id ||
+              groupRoomModel.mid2 == ref.read(tokenProvider.notifier).state.id||
+              groupRoomModel.mid3 == ref.read(tokenProvider.notifier).state.id||
+              groupRoomModel.mid4 == ref.read(tokenProvider.notifier).state.id ||
+              groupRoomModel.mid5 == ref.read(tokenProvider.notifier).state.id ||
+              groupRoomModel.mid6 == ref.read(tokenProvider.notifier).state.id ){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupChattingScreen(createTime: groupRoomModel.createAt, roomData: groupRoomModel, token: ref.read(tokenProvider.notifier).state)));
           }
           //자기꺼 맞으면 navigator푸시
 

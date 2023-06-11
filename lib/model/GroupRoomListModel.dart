@@ -51,7 +51,7 @@ class GroupRoomModel{
     required Map<String, dynamic> json,
   }) {
     return GroupRoomModel(
-        createAt: DateTime.parse(json['created_at'].toString()) ,
+        createAt: json['created_at'],
         mid1: json['mid1'] ,// ?? 0 붙이면 될수도
         mid2: json['mid2'],
         mid3: json['mid3'],
