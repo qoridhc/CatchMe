@@ -13,7 +13,6 @@ import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../const/colors.dart';
-import '../model/received_matching_model.dart';
 
 class DefaultLayout extends ConsumerStatefulWidget {
   final Widget child;
