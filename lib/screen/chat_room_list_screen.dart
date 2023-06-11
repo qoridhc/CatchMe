@@ -339,7 +339,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     ? Image.network(
                         //memberinfo에서 imgurl가져오기
                         l.imageUrls[l.imageUrls.length-1],
-                        fit: BoxFit.fill,
+                        fit: BoxFit.cover,
                       )
                     : Center(child: Text("NoImg")),
               ),
@@ -458,6 +458,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
     double _sw = getMediaWidth(context);
+    List<int> genderList = [];
+
+    genderList.add(m.mid1);
+    genderList.add(m.mid2);
+    genderList.add(m.mid3);
+    genderList.add(m.mid4);
+    genderList.add(m.mid5);
+    genderList.add(m.mid6);
 
     return Container(
       width: double.infinity,
@@ -508,6 +516,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             roomData: m,
                             token: _token,
                             createTime: m.createAt,
+                            midList : genderList,
                             // 0번째 채팅방 생성시간
                           ),
                         ),

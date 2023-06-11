@@ -24,12 +24,13 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   final GroupRoomModel? roomData;
   DateTime? createTime;
+  List? midList;
 
-  GroupChattingScreen(
-      {required this.createTime,
-      required this.roomData,
-      Key? key,
-      @required this.token})
+  GroupChattingScreen({required this.createTime,
+    required this.roomData,
+    required this.midList,
+    Key? key,
+    @required this.token})
       : super(key: key);
 
   @override
@@ -44,7 +45,8 @@ class ChatMessage {
   String? message;
   String? roomType;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         'type': type,
         'roomId': roomId,
         'sender': sender,
@@ -52,12 +54,11 @@ class ChatMessage {
         'roomType': roomType,
       };
 
-  ChatMessage(
-      {required this.type,
-      required this.roomId,
-      required this.sender,
-      required this.message,
-      required this.roomType});
+  ChatMessage({required this.type,
+    required this.roomId,
+    required this.sender,
+    required this.message,
+    required this.roomType});
 
   factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
     return ChatMessage(
@@ -66,7 +67,7 @@ class ChatMessage {
         sender: json['sender'],
         message: json['message'],
         roomType: json['roomType'].map<ChatMessage>(
-          (x) => ChatMessage.fromJson(json: x),
+              (x) => ChatMessage.fromJson(json: x),
         ));
   }
 }
@@ -77,6 +78,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late String senderImage;
   late String senderGender;
   late GroupRoomModel groupRoomModel;
+  late String userGender;
   var _userEnterMessage = '';
 
   bool _visibility = true;
@@ -86,11 +88,21 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   int defaultTime = 900;
   bool scrollMax = false;
 
+  List<String> midGender = [];
+
   late StompClient _stompClient;
 
   TextEditingController messageController = TextEditingController();
   List<DateTime> roomCreateTimeList = [];
   late ScrollController _scrollController;
+  List<String> img_ = [
+    'https://static.wikia.nocookie.net/line/images/b/bb/2015-brown.png/revision/latest?cb=20150808131630',
+    'https://static.wikia.nocookie.net/line/images/1/10/2015-cony.png/revision/latest?cb=20150806042102',
+    'https://static.wikia.nocookie.net/line/images/a/af/Image-1.jpg/revision/latest?cb=20151124042517',
+    'https://static.wikia.nocookie.net/line/images/4/4c/IMG_3360.JPG/revision/latest?cb=20221209161733',
+    'https://static.wikia.nocookie.net/line/images/6/64/2015-jessica.png/revision/latest?cb=20150804060241',
+    'https://static.wikia.nocookie.net/line/images/2/2f/2015-james.png/revision/latest?cb=20151224075718'
+  ];
 
   List<ChattingHistory> chatHistoryList = [];
 
@@ -112,6 +124,78 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     }
   }
 
+  Future<MemberModel> getUserGender() async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getGender = await dio.get(
+        CATCHME_URL + '/api/v1/members/${_memberId}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      return MemberModel.fromJson(json: getGender.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      rethrow;
+    }
+  }
+
+  void renderUserGenderBuild() async {
+    MemberModel memberModel = await getUserGender();
+    userGender = memberModel.gender;
+    midGender.clear();
+    if (widget.roomData!.mid1 == _memberId ||
+        widget.roomData!.mid2 == _memberId ||
+        widget.roomData!.mid5 == _memberId ||
+        widget.roomData!.mid6 == _memberId) {
+      if (userGender == 'M') {
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+      } else {
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+      }
+    } else if (widget.roomData!.mid3 == _memberId ||
+        widget.roomData!.mid4 == _memberId) {
+      if (userGender == 'M') {
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+      } else {
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+      }
+    }
+
+    for (int i = 0; i < 6; i++) {
+      if (widget.midList![i] == widget.roomData!.jerry_id) {
+        if (midGender[i] == "M") {
+          midGender[i] = "W";
+        } else {
+          midGender[i] = "M";
+        }
+      }
+    }
+    print(midGender);
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -121,13 +205,11 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
-    (anonymousFemale.values.elementAt(0) == -1) ? callRender() : Container();
-
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
 
       setState(
-        () {
+            () {
           if ((defaultTime - timeDiff!.inSeconds) > 0) {
             time = defaultTime - timeDiff!.inSeconds;
           } else {
@@ -144,20 +226,15 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
-    //   _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    // });
   }
 
   void connectToStomp() {
     _stompClient = StompClient(
         config: StompConfig(
-      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-      onConnect: onConnectCallback,
-    ) // 연결 성공 시 호출되는 콜백 함수
-        );
+          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+          onConnect: onConnectCallback,
+        ) // 연결 성공 시 호출되는 콜백 함수
+    );
     _stompClient.activate();
     print("chating 연결성공");
   }
@@ -173,7 +250,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         print(connectFrame.body); //메시지를 받았을때!
         setState(() {
           Map<String, dynamic> chat =
-              (json.decode(connectFrame.body.toString()));
+          (json.decode(connectFrame.body.toString()));
 
           ChatMessage? chatMessage;
           chatMessage?.type = chat["type"];
@@ -261,7 +338,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void _handleTimer() {
     _timer = Timer.periodic(
       Duration(seconds: 1),
-      (timer) {
+          (timer) {
         setState(() {
           if (time <= 0) {
             _visibility = false;
@@ -272,170 +349,6 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         });
       },
     );
-  }
-
-  // sender 정보 얻기
-  Future<MemberModel> getSenderInfo(int senderId, int index) async {
-    print("Get user's information");
-    final dio = Dio();
-
-    try {
-      final getUser = await dio.get(
-        CATCHME_URL + '/api/v1/members/${senderId}',
-        options: Options(
-          headers: {'authorization': 'Bearer ${_memberToken}'},
-        ),
-      );
-      print('멤버와 관련된 정보 ${MemberModel.fromJson(json: getUser.data).gender}');
-      if (index == 5) {
-        if (anonymousFemale.length == 3) {
-          anonymousMale[anonymousMale.keys.last] = senderId;
-// snapshot.data!.memberId as int;
-// return Container();
-        } else {
-          anonymousFemale[anonymousFemale.keys.last] = senderId;
-// snapshot.data!.memberId as int;
-// return Container();
-        }
-      } else {
-        if (senderGender == 'M') {
-          anonymousMale.forEach(
-            (key, value) {
-              if (value == -1) {
-                anonymousMale[key] = senderId;
-// anonymousMale[key] = snapshot.data!.memberId as int;
-                debugPrint(anonymousMale.toString());
-                return;
-              }
-            },
-          );
-        } else {
-          anonymousFemale.forEach(
-            (key, value) {
-              if (value == -1) {
-                anonymousFemale[key] = senderId;
-                print(anonymousFemale.toString());
-                return;
-              }
-            },
-          );
-        }
-      }
-      return MemberModel.fromJson(json: getUser.data);
-    } on DioError catch (e) {
-      print('error: $e');
-      throw e;
-    }
-  }
-
-// 제리를 제외한 유저들을 아래 맵들에 성별 구분해서 넣으려고 함.
-  var anonymousMale = {'남자 1호': -1, '남자 2호': -1, '남자 3호': -1};
-  var anonymousFemale = {'여자 1호': -1, '여자 2호': -1, '여자 3호': -1};
-
-  Widget renderSenderInfoBuild({required int senderId, required int index}) {
-    print('renderSenderInfoBuild 실행');
-    print('senderId $senderId index $index');
-    return Container(
-      child: FutureBuilder<MemberModel>(
-        future: getSenderInfo(senderId, index),
-        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
-          print('builder까지 성공~!');
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-              ),
-            );
-          }
-          if (!snapshot.hasData) {
-            return Container();
-          }
-          if (snapshot.data!.gender != null) {
-            debugPrint('데이터 1개 이상 있음');
-            debugPrint('$senderId 성별 ${snapshot.data!.gender}');
-            senderGender = snapshot.data!.gender;
-            if (index == 5) {
-              if (anonymousFemale.length == 3) {
-                anonymousMale[anonymousMale.keys.last] =
-                    snapshot.data!.memberId as int;
-                return Container();
-              } else {
-                anonymousFemale[anonymousFemale.keys.last] =
-                    snapshot.data!.memberId as int;
-                return Container();
-              }
-            } else {
-              if (senderGender == 'M') {
-                anonymousMale.forEach(
-                  (key, value) {
-                    if (value == -1) {
-                      anonymousMale[key] = snapshot.data!.memberId as int;
-                      debugPrint(anonymousMale.toString());
-                      return;
-                    }
-                  },
-                );
-              } else {
-                anonymousFemale.forEach(
-                  (key, value) {
-                    if (value == -1) {
-                      anonymousFemale[key] = snapshot.data!.memberId as int;
-                      print(anonymousFemale.toString());
-                      return;
-                    }
-                  },
-                );
-              }
-            }
-            debugPrint('익명 남자 리스트 $anonymousMale');
-            debugPrint('익명 여자 리스트 $anonymousFemale');
-            return _buildAppBar();
-          }
-          return const Center(
-            child: Text("There's no such information."),
-          );
-        },
-      ),
-    );
-  }
-
-  void callRender() {
-    var realUsers = [
-      widget.roomData?.mid1,
-      widget.roomData?.mid2,
-      widget.roomData?.mid3,
-      widget.roomData?.mid4,
-      widget.roomData?.mid5,
-      widget.roomData?.mid6,
-// widget.roomData?.jerry_id
-    ];
-    var jerryId = widget.roomData!.jerry_id;
-// 재정렬할 리스트
-    var rearrangeList = [];
-
-    for (int i = 0; i < 6; i++) {
-      if (jerryId != realUsers[i]) {
-        rearrangeList.add(realUsers[i]);
-      } else {
-        rearrangeList.insert(0, jerryId);
-      }
-    }
-
-// 제리를 리스트 맨 뒤에위치하기 위한 조건문
-    int indexToMove = 0;
-    if (indexToMove >= 0 && indexToMove < rearrangeList.length) {
-      int elementToMove = rearrangeList.removeAt(indexToMove)
-          as int; // 제리 아이디가 인덱스 0에 있으니 설정 쉽게 하기 위해 제거
-      rearrangeList.add(elementToMove); // 제리를 리스트의 맨 뒤에 추가
-    }
-    print('재정렬한 리스트 $rearrangeList');
-
-    renderSenderInfoBuild(senderId: rearrangeList[0], index: 0);
-    renderSenderInfoBuild(senderId: rearrangeList[1], index: 1);
-    renderSenderInfoBuild(senderId: rearrangeList[2], index: 2);
-    renderSenderInfoBuild(senderId: rearrangeList[3], index: 3);
-    renderSenderInfoBuild(senderId: rearrangeList[4], index: 4);
-    renderSenderInfoBuild(senderId: rearrangeList[5], index: 5);
   }
 
   AppBar _buildAppBar() {
@@ -456,13 +369,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       flexibleSpace: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(
-          colors: [
-            Color(0xffFF6961),
-            Color(0xffFF6961),
-            Color(0xffFF6961),
-            Color(0xffFF6961),
-          ],
-        )),
+              colors: [
+                Color(0xffFF6961),
+                Color(0xffFF6961),
+                Color(0xffFF6961),
+                Color(0xffFF6961),
+              ],
+            )),
       ),
       title: Container(
         padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
@@ -476,7 +389,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                        AssetImage('assets/images/information_image.png'),
+                    AssetImage('assets/images/information_image.png'),
                   ),
                 ),
               ),
@@ -545,9 +458,11 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     ScrollController _scrollController = ScrollController();
+    renderUserGenderBuild();
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
@@ -572,7 +487,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                     if (snapshot.data! != 0) {
                       // return _renderSingleRoomListView(snapshot.data!, indexNum);
                       ChattingHistoryListModel chattingHistoryListModel =
-                          snapshot.data!;
+                      snapshot.data!;
 
                       if (chattingHistoryListModel.count != 0) {
                         chatHistoryList =
@@ -587,16 +502,29 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                           controller: _scrollController,
                           itemCount: chattingHistoryListModel.count,
                           itemBuilder: (context, index) {
+                            print(
+                                "chatHistoryList[index].sender = ${chatHistoryList[index]
+                                    .sender}");
+
+                            int genderIndex = 0;
+
+                            /*chatHistoryList[index].sender가 midList에 몇번째에 있는지 보고 해당 숫자의
+                            midGender 리스트 번째에 있는 값이 "W"면 여자x "M"이면 남자x를 ChatBubbles에 넘길 수 있게 해줘
+                            예를 들어  chatHistoryList[index].sender가 1 이고 midList가[5,6,1,2,3,4]이고
+                            midGender가 [W,W,M,M,W,W]이면 "여기"부분의 값이 남자3이 넘어가게 해줘*/
+
+                           /* List<int> myList = [10, 20, 30, 40, 50];
+                            int value = 30;
+                            int index = myList.indexOf(value);
+                            print(index);*/
+
+                            print("genderIdx = $genderIndex");
                             return ChatBubbles(
                               chatHistoryList[index].message,
                               chatHistoryList[index].sender ==
                                   _memberId.toString(),
-                              chatHistoryList[index].sender.toString() !=
-                                      _memberId.toString()
-                                  ? "fdas"
-                                  : "Asdf",
-                              "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
-                              "z2geqehuje_1686184911395.jpg",
+                              getName(chatHistoryList[index].sender,),
+                              getimg(chatHistoryList[index].sender,),
                             );
                           },
                         );
@@ -638,7 +566,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                     IconButton(
                       // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
                       onPressed:
-                          _userEnterMessage.trim().isEmpty ? null : sendMessage,
+                      _userEnterMessage
+                          .trim()
+                          .isEmpty ? null : sendMessage,
                       // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
                       icon: const Icon(Icons.send),
                       // 보내기 버튼
@@ -652,5 +582,32 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         ),
       ),
     );
+  }
+
+  String getimg(String sender) {
+    for (int i = 0; i < 6; i++) {
+      if (widget.midList![i].toString() == sender) {
+          return img_[i];
+      }
+    }
+    return "";
+  }
+
+
+  String getName(String sender) {
+    for (int i = 0; i < 6; i++) {
+      if (widget.midList![i].toString() == sender) {
+        if (midGender[i] == 'M') {
+          i++;
+          return "남자" + i.toString();
+        }
+        if (midGender[i] == 'W') {
+          i++;
+          return "여자" + i.toString();
+        }
+      }
+    }
+
+    return "";
   }
 }
