@@ -7,6 +7,7 @@ import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
@@ -157,6 +158,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
           onConnect: onConnectCallback,
         ) // 연결 성공 시 호출되는 콜백 함수
     );
+    _stompClient.activate();
     print("chating 연결성공");
   }
 
@@ -215,14 +217,17 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     var body = json.encode(chatMessage);
     print(body);
 
-    _stompClient.send(
-      destination: '/app/chat.enter.Multi' + widget.roomData!.id.toString(),
-      // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
-      body: body,
-    );
+    setState(() {
+      _stompClient.send(
+        // headers: {"auto-delete": "false", "id": "${_memberId}", "durable": "true"},
+        destination: '/app/chat.enter.Multi' + widget.roomData!.id.toString(),
+        // Spring Boot 서버의 메시지 핸들러 엔드포인트 경로  abc방에 보낸다
+        body: body,
+      );
+    });
+
     print("전송!");
 
-    scrollMax = true;
     scrollListToEnd();
     messageController.clear();
     _userEnterMessage = '';
@@ -230,8 +235,11 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
   void scrollListToEnd() {
     if (scrollMax) {
-      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-          duration: const Duration(seconds: 2), curve: Curves.easeOut);
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -239,6 +247,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void dispose() {
     // TODO: implement dispose
     _stompClient.deactivate();
+    if(_stompClient.isActive){
+      _stompClient.deactivate();
+    }
     super.dispose();
     if (_timer.isActive) _timer.cancel();
     print("dispose");
@@ -372,7 +383,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _stompClient.activate();
+    ScrollController _scrollController = ScrollController();
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
@@ -403,7 +414,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                         chatHistoryList =
                             List.from(snapshot.data!.chattingHistory!.reversed);
 
+                        SchedulerBinding.instance.addPostFrameCallback((_) {
+                          _scrollController.jumpTo(
+                              _scrollController.position.maxScrollExtent);
+                        });
+
                         return ListView.builder(
+                          controller: _scrollController,
                           itemCount: chattingHistoryListModel.count,
                           itemBuilder: (context, index) {
                             return ChatBubbles(
