@@ -95,6 +95,14 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   TextEditingController messageController = TextEditingController();
   List<DateTime> roomCreateTimeList = [];
   late ScrollController _scrollController;
+  List<String> img_ = [
+    'https://static.wikia.nocookie.net/line/images/b/bb/2015-brown.png/revision/latest?cb=20150808131630',
+    'https://static.wikia.nocookie.net/line/images/1/10/2015-cony.png/revision/latest?cb=20150806042102',
+    'https://static.wikia.nocookie.net/line/images/a/af/Image-1.jpg/revision/latest?cb=20151124042517',
+    'https://static.wikia.nocookie.net/line/images/4/4c/IMG_3360.JPG/revision/latest?cb=20221209161733',
+    'https://static.wikia.nocookie.net/line/images/6/64/2015-jessica.png/revision/latest?cb=20150804060241',
+    'https://static.wikia.nocookie.net/line/images/2/2f/2015-james.png/revision/latest?cb=20151224075718'
+  ];
 
   List<ChattingHistory> chatHistoryList = [];
 
@@ -500,14 +508,23 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
                             int genderIndex = 0;
 
+                            /*chatHistoryList[index].sender가 midList에 몇번째에 있는지 보고 해당 숫자의
+                            midGender 리스트 번째에 있는 값이 "W"면 여자x "M"이면 남자x를 ChatBubbles에 넘길 수 있게 해줘
+                            예를 들어  chatHistoryList[index].sender가 1 이고 midList가[5,6,1,2,3,4]이고
+                            midGender가 [W,W,M,M,W,W]이면 "여기"부분의 값이 남자3이 넘어가게 해줘*/
+
+                           /* List<int> myList = [10, 20, 30, 40, 50];
+                            int value = 30;
+                            int index = myList.indexOf(value);
+                            print(index);*/
+
                             print("genderIdx = $genderIndex");
                             return ChatBubbles(
                               chatHistoryList[index].message,
                               chatHistoryList[index].sender ==
                                   _memberId.toString(),
                               getName(chatHistoryList[index].sender,),
-                              "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
-                                  "z2geqehuje_1686184911395.jpg",
+                              getimg(chatHistoryList[index].sender,),
                             );
                           },
                         );
@@ -566,6 +583,16 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       ),
     );
   }
+
+  String getimg(String sender) {
+    for (int i = 0; i < 6; i++) {
+      if (widget.midList![i].toString() == sender) {
+          return img_[i];
+      }
+    }
+    return "";
+  }
+
 
   String getName(String sender) {
     for (int i = 0; i < 6; i++) {
