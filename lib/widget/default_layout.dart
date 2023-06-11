@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:captone4/MatchingUser.dart';
 import 'package:captone4/Token.dart';
 import 'package:captone4/model/GroupRoomListModel.dart';
+import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/screen/group_chatting_screen.dart';
+import 'package:captone4/screen/root_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
@@ -17,8 +19,6 @@ class DefaultLayout extends ConsumerStatefulWidget {
   final String? title;
   final Widget? bottomNavigationBar;
   final Color? backgroundColor;
-
-
 
   const DefaultLayout({
     required this.child,
@@ -35,7 +35,7 @@ class DefaultLayout extends ConsumerStatefulWidget {
 class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
 
   late StompClient? stompClient;
-  Token? token;
+  late Token? token;
   MatchingUser? matchingUser;
   var body;
   void _showDialog(BuildContext context) {
@@ -69,6 +69,8 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
   @override
   void initState(){
     super.initState();
+    
+    token = ref.read(tokenProvider.notifier).state;
   }
 
   @override
@@ -152,8 +154,8 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
         callback: (connectFrame){
           Map<String,dynamic> body2 = json.decode(connectFrame.body.toString());
           GroupRoomModel groupRoomModel = GroupRoomModel.fromJson(json: body2);
-          String createAt = groupRoomModel.createAt.toString();
-          DateTime dateTimeCreateAt = DateTime.parse(createAt).toLocal();
+          // String createAt = groupRoomModel.createAt.toString();
+          // DateTime dateTimeCreateAt = DateTime.parse(createAt).toLocal();
           //자기 매칭인지 확인
           if(groupRoomModel.mid1 == token!.id ||
               groupRoomModel.mid2 == token!.id ||
@@ -161,7 +163,7 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
               groupRoomModel.mid4 == token!.id ||
               groupRoomModel.mid5 == token!.id ||
               groupRoomModel.mid6 == token!.id ){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupChattingScreen(createTime: dateTimeCreateAt, roomData: groupRoomModel, token: token, midList: [],)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => RootTab(token: token, pageIndex: 1,)));
           }
           //자기꺼 맞으면 navigator푸시
 

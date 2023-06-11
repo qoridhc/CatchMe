@@ -64,6 +64,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     _memberId = widget.token!.id!; // 로그인한 사람
     _memberToken = widget.token!.accessToken!; // 여기 에러 왜?????????
     //channel = IOWebSocketChannel.connect('ws://10.0.2.2:9081/chat');
+    List<dynamic> serverTime = [2023, 6, 11, 12, 14, 43, 421564000];
+    DateTime parseTime = DateTime.parse(
+        "${serverTime[0]}-${serverTime[1].toString().padLeft(2, '0')}-${serverTime[2].toString().padLeft(2, '0')} ${serverTime[3].toString().padLeft(2, '0')}:${serverTime[4].toString().padLeft(2, '0')}:${serverTime[5].toString().padLeft(2, '0')}.${serverTime[6]}"
+    );
+
+    print("parseTime = $parseTime");
+
   }
 
   @override

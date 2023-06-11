@@ -205,6 +205,8 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
+    print(widget.createTime);
+
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
 

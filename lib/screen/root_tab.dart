@@ -20,10 +20,12 @@ import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
   final Token? token;
+  final int? pageIndex;
 
   const RootTab({
     Key? key,
     @required this.token,
+    this.pageIndex,
   }) : super(key: key);
 
   @override
@@ -40,9 +42,12 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     super.initState();
     controller = TabController(length: 4, vsync: this);
     controller.addListener(tabListener);
+
+    if(widget.pageIndex != null){
+      _bottomNavIndex = widget.pageIndex!;
+    }
+
   }
-
-
 
   @override
   void dispose() {
@@ -83,8 +88,8 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         physics: NeverScrollableScrollPhysics(),
         controller: controller,
         children: [
-          MainPageScreen(token:widget.token!),
-          ChatRoomScreen(token:widget.token!),
+          MainPageScreen(token: widget.token!),
+          ChatRoomScreen(token: widget.token!),
           FavoriteListScreen(token: widget.token!),
           MyPageScreen(
             token: widget.token!,
