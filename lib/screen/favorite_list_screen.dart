@@ -336,7 +336,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                     height: _sw * 0.15,
                     width: _sw * 0.15,
                     child: l.imgUrls.length > 0 ? Image.network(
-                      l.imgUrls[0],
+                      l.imgUrls[l.imgUrls.length - 1],
                       fit: BoxFit.fill,
                     ):
                     Center(child: Text("NoImg")),
