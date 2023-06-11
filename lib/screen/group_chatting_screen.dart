@@ -24,12 +24,12 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   final Token? token;
   final GroupRoomModel? roomData;
   DateTime? createTime;
-
+  List? midList;
 
   GroupChattingScreen(
-      {
-        required this.createTime,
+      {required this.createTime,
         required this.roomData,
+        required this.midList,
         Key? key,
         @required this.token})
       : super(key: key);
@@ -69,8 +69,7 @@ class ChatMessage {
         message: json['message'],
         roomType: json['roomType'].map<ChatMessage>(
               (x) => ChatMessage.fromJson(json: x),
-        )
-    );
+        ));
   }
 }
 
@@ -79,6 +78,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late String _memberToken;
   late String senderImage;
   late GroupRoomModel groupRoomModel;
+  late String userGender;
   var _userEnterMessage = '';
 
   bool _visibility = true;
@@ -87,6 +87,8 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   int time = 0;
   int defaultTime = 3000;
   bool scrollMax = false;
+
+  List<String> midGender = [];
 
   late StompClient _stompClient;
 
@@ -104,13 +106,86 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
     try {
       final response = await dio.get(
-        CHATTING_API_URL + '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
+        CHATTING_API_URL +
+            '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
       );
       return ChattingHistoryListModel.fromJson(json: response.data);
     } on DioError catch (e) {
       print('error: $e');
       rethrow;
     }
+  }
+
+  Future<MemberModel> getUserGender() async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getGender = await dio.get(
+        CATCHME_URL + '/api/v1/members/${_memberId}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      return MemberModel.fromJson(json: getGender.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      rethrow;
+    }
+  }
+
+  void renderUserGenderBuild() async {
+    MemberModel memberModel = await getUserGender();
+    userGender = memberModel.gender;
+    midGender.clear();
+    if (widget.roomData!.mid1 == _memberId ||
+        widget.roomData!.mid2 == _memberId ||
+        widget.roomData!.mid5 == _memberId ||
+        widget.roomData!.mid6 == _memberId) {
+      if (userGender == 'M') {
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+      } else {
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+      }
+    } else if (widget.roomData!.mid3 == _memberId ||
+        widget.roomData!.mid4 == _memberId) {
+      if (userGender == 'M') {
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+      } else {
+        midGender.add("M");
+        midGender.add("M");
+        midGender.add("W");
+        midGender.add("W");
+        midGender.add("M");
+        midGender.add("M");
+      }
+    }
+
+    for (int i = 0; i < 6; i++) {
+      if (widget.midList![i] == widget.roomData!.jerry_id) {
+        if (midGender[i] == "M") {
+          midGender[i] = "W";
+        } else {
+          midGender[i] = "M";
+        }
+      }
+    }
+    print(midGender);
   }
 
   @override
@@ -123,8 +198,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberToken = widget.token!.accessToken!;
 
     if (widget.createTime != null) {
-      timeDiff =
-          DateTime.now().difference(widget.createTime!);
+      timeDiff = DateTime.now().difference(widget.createTime!);
 
       setState(
             () {
@@ -144,11 +218,6 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
     connectToStomp(); //stomp 연결
     print("웹 소캣 연결");
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   // 위젯이 빌드되고 난 후 스크롤 위치를 설정합니다.
-    //   _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    // });
   }
 
   void connectToStomp() {
@@ -247,7 +316,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void dispose() {
     // TODO: implement dispose
     _stompClient.deactivate();
-    if(_stompClient.isActive){
+    if (_stompClient.isActive) {
       _stompClient.deactivate();
     }
     super.dispose();
@@ -381,9 +450,12 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     );
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     ScrollController _scrollController = ScrollController();
+    renderUserGenderBuild();
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
@@ -419,14 +491,25 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                               _scrollController.position.maxScrollExtent);
                         });
 
+                        print("@@@@@@@@@@@@@@@@");
+                        print("midList = ${widget.midList}");
+                        print("midGender = ${midGender}");
+
                         return ListView.builder(
                           controller: _scrollController,
                           itemCount: chattingHistoryListModel.count,
                           itemBuilder: (context, index) {
+
+                            print("chatHistoryList[index].sender = ${chatHistoryList[index].sender}");
+
+                            int genderIndex = 0;
+
+                            print("genderIdx = $genderIndex");
                             return ChatBubbles(
                               chatHistoryList[index].message,
-                              chatHistoryList[index].sender == _memberId.toString(),
-                              chatHistoryList[index].sender.toString() != _memberId.toString() ? "fdas" : "Asdf",
+                              chatHistoryList[index].sender ==
+                                  _memberId.toString(),
+                              getName(chatHistoryList[index].sender,),
                               "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
                                   "z2geqehuje_1686184911395.jpg",
                             );
@@ -484,5 +567,23 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         ),
       ),
     );
+  }
+
+  String getName(String sender){
+    
+    for(int i = 0 ; i < 6; i++) {
+      if(widget.midList![i].toString() == sender) {
+        if (midGender[i] == 'M') {
+          i++;
+          return "남자" + i.toString();
+        }
+        if (midGender[i] == 'W') {
+          i++;
+          return "여자" + i.toString();
+        }
+      }
+    }
+
+    return "";
   }
 }

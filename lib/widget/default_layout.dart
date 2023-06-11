@@ -161,7 +161,7 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
               groupRoomModel.mid4 == token!.id ||
               groupRoomModel.mid5 == token!.id ||
               groupRoomModel.mid6 == token!.id ){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupChattingScreen(createTime: dateTimeCreateAt, roomData: groupRoomModel, token: token)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupChattingScreen(createTime: dateTimeCreateAt, roomData: groupRoomModel, token: token, midList: [],)));
           }
           //자기꺼 맞으면 navigator푸시
 
