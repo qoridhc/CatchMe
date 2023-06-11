@@ -56,7 +56,7 @@ dependencies:
   flutter_rounded_date_picker: ^3.0.3
   flutter_rating_bar: ^4.0.1
   fluttertoast: ^8.0.7
-  flutter_native_splash: ^2.2.19
+#  flutter_native_splash: ^2.2.19
 
   web_socket_channel: ^2.4.0
   stomp_dart_client: ^0.4.4
