@@ -25,13 +25,11 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   final GroupRoomModel? roomData;
   DateTime? createTime;
 
-
   GroupChattingScreen(
-      {
-        required this.createTime,
-        required this.roomData,
-        Key? key,
-        @required this.token})
+      {required this.createTime,
+      required this.roomData,
+      Key? key,
+      @required this.token})
       : super(key: key);
 
   @override
@@ -47,19 +45,19 @@ class ChatMessage {
   String? roomType;
 
   Map<String, dynamic> toJson() => {
-    'type': type,
-    'roomId': roomId,
-    'sender': sender,
-    'message': message,
-    'roomType': roomType,
-  };
+        'type': type,
+        'roomId': roomId,
+        'sender': sender,
+        'message': message,
+        'roomType': roomType,
+      };
 
   ChatMessage(
       {required this.type,
-        required this.roomId,
-        required this.sender,
-        required this.message,
-        required this.roomType});
+      required this.roomId,
+      required this.sender,
+      required this.message,
+      required this.roomType});
 
   factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
     return ChatMessage(
@@ -68,9 +66,8 @@ class ChatMessage {
         sender: json['sender'],
         message: json['message'],
         roomType: json['roomType'].map<ChatMessage>(
-              (x) => ChatMessage.fromJson(json: x),
-        )
-    );
+          (x) => ChatMessage.fromJson(json: x),
+        ));
   }
 }
 
@@ -78,6 +75,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late int _memberId;
   late String _memberToken;
   late String senderImage;
+  late String senderGender;
   late GroupRoomModel groupRoomModel;
   var _userEnterMessage = '';
 
@@ -104,7 +102,8 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
 
     try {
       final response = await dio.get(
-        CHATTING_API_URL + '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
+        CHATTING_API_URL +
+            '/api/v1/group_records?groupId=${widget.roomData!.id.toString()}',
       );
       return ChattingHistoryListModel.fromJson(json: response.data);
     } on DioError catch (e) {
@@ -122,12 +121,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
+    (anonymousFemale.values.elementAt(0) == -1) ? callRender() : Container();
+
     if (widget.createTime != null) {
-      timeDiff =
-          DateTime.now().difference(widget.createTime!);
+      timeDiff = DateTime.now().difference(widget.createTime!);
 
       setState(
-            () {
+        () {
           if ((defaultTime - timeDiff!.inSeconds) > 0) {
             time = defaultTime - timeDiff!.inSeconds;
           } else {
@@ -154,10 +154,10 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void connectToStomp() {
     _stompClient = StompClient(
         config: StompConfig(
-          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-          onConnect: onConnectCallback,
-        ) // 연결 성공 시 호출되는 콜백 함수
-    );
+      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+      onConnect: onConnectCallback,
+    ) // 연결 성공 시 호출되는 콜백 함수
+        );
     _stompClient.activate();
     print("chating 연결성공");
   }
@@ -173,7 +173,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         print(connectFrame.body); //메시지를 받았을때!
         setState(() {
           Map<String, dynamic> chat =
-          (json.decode(connectFrame.body.toString()));
+              (json.decode(connectFrame.body.toString()));
 
           ChatMessage? chatMessage;
           chatMessage?.type = chat["type"];
@@ -247,7 +247,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void dispose() {
     // TODO: implement dispose
     _stompClient.deactivate();
-    if(_stompClient.isActive){
+    if (_stompClient.isActive) {
       _stompClient.deactivate();
     }
     super.dispose();
@@ -261,7 +261,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void _handleTimer() {
     _timer = Timer.periodic(
       Duration(seconds: 1),
-          (timer) {
+      (timer) {
         setState(() {
           if (time <= 0) {
             _visibility = false;
@@ -272,6 +272,170 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         });
       },
     );
+  }
+
+  // sender 정보 얻기
+  Future<MemberModel> getSenderInfo(int senderId, int index) async {
+    print("Get user's information");
+    final dio = Dio();
+
+    try {
+      final getUser = await dio.get(
+        CATCHME_URL + '/api/v1/members/${senderId}',
+        options: Options(
+          headers: {'authorization': 'Bearer ${_memberToken}'},
+        ),
+      );
+      print('멤버와 관련된 정보 ${MemberModel.fromJson(json: getUser.data).gender}');
+      if (index == 5) {
+        if (anonymousFemale.length == 3) {
+          anonymousMale[anonymousMale.keys.last] = senderId;
+// snapshot.data!.memberId as int;
+// return Container();
+        } else {
+          anonymousFemale[anonymousFemale.keys.last] = senderId;
+// snapshot.data!.memberId as int;
+// return Container();
+        }
+      } else {
+        if (senderGender == 'M') {
+          anonymousMale.forEach(
+            (key, value) {
+              if (value == -1) {
+                anonymousMale[key] = senderId;
+// anonymousMale[key] = snapshot.data!.memberId as int;
+                debugPrint(anonymousMale.toString());
+                return;
+              }
+            },
+          );
+        } else {
+          anonymousFemale.forEach(
+            (key, value) {
+              if (value == -1) {
+                anonymousFemale[key] = senderId;
+                print(anonymousFemale.toString());
+                return;
+              }
+            },
+          );
+        }
+      }
+      return MemberModel.fromJson(json: getUser.data);
+    } on DioError catch (e) {
+      print('error: $e');
+      throw e;
+    }
+  }
+
+// 제리를 제외한 유저들을 아래 맵들에 성별 구분해서 넣으려고 함.
+  var anonymousMale = {'남자 1호': -1, '남자 2호': -1, '남자 3호': -1};
+  var anonymousFemale = {'여자 1호': -1, '여자 2호': -1, '여자 3호': -1};
+
+  Widget renderSenderInfoBuild({required int senderId, required int index}) {
+    print('renderSenderInfoBuild 실행');
+    print('senderId $senderId index $index');
+    return Container(
+      child: FutureBuilder<MemberModel>(
+        future: getSenderInfo(senderId, index),
+        builder: (_, AsyncSnapshot<MemberModel> snapshot) {
+          print('builder까지 성공~!');
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+              ),
+            );
+          }
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          if (snapshot.data!.gender != null) {
+            debugPrint('데이터 1개 이상 있음');
+            debugPrint('$senderId 성별 ${snapshot.data!.gender}');
+            senderGender = snapshot.data!.gender;
+            if (index == 5) {
+              if (anonymousFemale.length == 3) {
+                anonymousMale[anonymousMale.keys.last] =
+                    snapshot.data!.memberId as int;
+                return Container();
+              } else {
+                anonymousFemale[anonymousFemale.keys.last] =
+                    snapshot.data!.memberId as int;
+                return Container();
+              }
+            } else {
+              if (senderGender == 'M') {
+                anonymousMale.forEach(
+                  (key, value) {
+                    if (value == -1) {
+                      anonymousMale[key] = snapshot.data!.memberId as int;
+                      debugPrint(anonymousMale.toString());
+                      return;
+                    }
+                  },
+                );
+              } else {
+                anonymousFemale.forEach(
+                  (key, value) {
+                    if (value == -1) {
+                      anonymousFemale[key] = snapshot.data!.memberId as int;
+                      print(anonymousFemale.toString());
+                      return;
+                    }
+                  },
+                );
+              }
+            }
+            debugPrint('익명 남자 리스트 $anonymousMale');
+            debugPrint('익명 여자 리스트 $anonymousFemale');
+            return _buildAppBar();
+          }
+          return const Center(
+            child: Text("There's no such information."),
+          );
+        },
+      ),
+    );
+  }
+
+  void callRender() {
+    var realUsers = [
+      widget.roomData?.mid1,
+      widget.roomData?.mid2,
+      widget.roomData?.mid3,
+      widget.roomData?.mid4,
+      widget.roomData?.mid5,
+      widget.roomData?.mid6,
+// widget.roomData?.jerry_id
+    ];
+    var jerryId = widget.roomData!.jerry_id;
+// 재정렬할 리스트
+    var rearrangeList = [];
+
+    for (int i = 0; i < 6; i++) {
+      if (jerryId != realUsers[i]) {
+        rearrangeList.add(realUsers[i]);
+      } else {
+        rearrangeList.insert(0, jerryId);
+      }
+    }
+
+// 제리를 리스트 맨 뒤에위치하기 위한 조건문
+    int indexToMove = 0;
+    if (indexToMove >= 0 && indexToMove < rearrangeList.length) {
+      int elementToMove = rearrangeList.removeAt(indexToMove)
+          as int; // 제리 아이디가 인덱스 0에 있으니 설정 쉽게 하기 위해 제거
+      rearrangeList.add(elementToMove); // 제리를 리스트의 맨 뒤에 추가
+    }
+    print('재정렬한 리스트 $rearrangeList');
+
+    renderSenderInfoBuild(senderId: rearrangeList[0], index: 0);
+    renderSenderInfoBuild(senderId: rearrangeList[1], index: 1);
+    renderSenderInfoBuild(senderId: rearrangeList[2], index: 2);
+    renderSenderInfoBuild(senderId: rearrangeList[3], index: 3);
+    renderSenderInfoBuild(senderId: rearrangeList[4], index: 4);
+    renderSenderInfoBuild(senderId: rearrangeList[5], index: 5);
   }
 
   AppBar _buildAppBar() {
@@ -292,13 +456,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       flexibleSpace: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xffFF6961),
-                Color(0xffFF6961),
-                Color(0xffFF6961),
-                Color(0xffFF6961),
-              ],
-            )),
+          colors: [
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+          ],
+        )),
       ),
       title: Container(
         padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
@@ -312,7 +476,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                    AssetImage('assets/images/information_image.png'),
+                        AssetImage('assets/images/information_image.png'),
                   ),
                 ),
               ),
@@ -408,7 +572,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                     if (snapshot.data! != 0) {
                       // return _renderSingleRoomListView(snapshot.data!, indexNum);
                       ChattingHistoryListModel chattingHistoryListModel =
-                      snapshot.data!;
+                          snapshot.data!;
 
                       if (chattingHistoryListModel.count != 0) {
                         chatHistoryList =
@@ -425,10 +589,14 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                           itemBuilder: (context, index) {
                             return ChatBubbles(
                               chatHistoryList[index].message,
-                              chatHistoryList[index].sender == _memberId.toString(),
-                              chatHistoryList[index].sender.toString() != _memberId.toString() ? "fdas" : "Asdf",
+                              chatHistoryList[index].sender ==
+                                  _memberId.toString(),
+                              chatHistoryList[index].sender.toString() !=
+                                      _memberId.toString()
+                                  ? "fdas"
+                                  : "Asdf",
                               "https://aws-s3-catchme.s3.ap-northeast-2.amazonaws.com/20230608/"
-                                  "z2geqehuje_1686184911395.jpg",
+                              "z2geqehuje_1686184911395.jpg",
                             );
                           },
                         );
@@ -470,7 +638,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                     IconButton(
                       // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
                       onPressed:
-                      _userEnterMessage.trim().isEmpty ? null : sendMessage,
+                          _userEnterMessage.trim().isEmpty ? null : sendMessage,
                       // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
                       icon: const Icon(Icons.send),
                       // 보내기 버튼
