@@ -13,12 +13,15 @@ import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
 import '../const/colors.dart';
+import '../model/received_matching_model.dart';
 
 class DefaultLayout extends ConsumerStatefulWidget {
   final Widget child;
   final String? title;
   final Widget? bottomNavigationBar;
   final Color? backgroundColor;
+
+
 
   const DefaultLayout({
     required this.child,
@@ -69,7 +72,7 @@ class _DefaultLayoutState extends ConsumerState<DefaultLayout> {
   @override
   void initState(){
     super.initState();
-    
+
     token = ref.read(tokenProvider.notifier).state;
   }
 

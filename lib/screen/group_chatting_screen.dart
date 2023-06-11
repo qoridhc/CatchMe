@@ -85,7 +85,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   late Timer _timer;
   Duration? timeDiff = null;
   int time = 0;
-  int defaultTime = 3000;
+  int defaultTime = 900;
   bool scrollMax = false;
 
   List<String> midGender = [];
