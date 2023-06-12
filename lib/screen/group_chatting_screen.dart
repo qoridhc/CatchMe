@@ -5,6 +5,7 @@ import 'package:captone4/chat/new_message.dart';
 import 'package:captone4/provider/time_provider.dart';
 import 'package:captone4/screen/chat_room_list_screen.dart';
 import 'package:captone4/utils/utils.dart';
+import 'package:captone4/widget/poll.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -26,11 +27,12 @@ class GroupChattingScreen extends ConsumerStatefulWidget {
   DateTime? createTime;
   List? midList;
 
-  GroupChattingScreen({required this.createTime,
-    required this.roomData,
-    required this.midList,
-    Key? key,
-    @required this.token})
+  GroupChattingScreen(
+      {required this.createTime,
+      required this.roomData,
+      required this.midList,
+      Key? key,
+      @required this.token})
       : super(key: key);
 
   @override
@@ -45,8 +47,7 @@ class ChatMessage {
   String? message;
   String? roomType;
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'type': type,
         'roomId': roomId,
         'sender': sender,
@@ -54,11 +55,12 @@ class ChatMessage {
         'roomType': roomType,
       };
 
-  ChatMessage({required this.type,
-    required this.roomId,
-    required this.sender,
-    required this.message,
-    required this.roomType});
+  ChatMessage(
+      {required this.type,
+      required this.roomId,
+      required this.sender,
+      required this.message,
+      required this.roomType});
 
   factory ChatMessage.fromJson({required Map<String, dynamic> json}) {
     return ChatMessage(
@@ -67,7 +69,7 @@ class ChatMessage {
         sender: json['sender'],
         message: json['message'],
         roomType: json['roomType'].map<ChatMessage>(
-              (x) => ChatMessage.fromJson(json: x),
+          (x) => ChatMessage.fromJson(json: x),
         ));
   }
 }
@@ -142,6 +144,9 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     }
   }
 
+  late String jerryGender;
+  late int jerryId;
+
   void renderUserGenderBuild() async {
     MemberModel memberModel = await getUserGender();
     userGender = memberModel.gender;
@@ -191,9 +196,12 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         } else {
           midGender[i] = "M";
         }
+        debugPrint("jerry id ${widget.roomData!.jerry_id} ${midGender[i]}");
+
+        jerryGender = midGender[i];
+        jerryId = widget.roomData!.jerry_id;
       }
     }
-    print(midGender);
   }
 
   @override
@@ -205,13 +213,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     _memberId = widget.token!.id!;
     _memberToken = widget.token!.accessToken!;
 
-    print(widget.createTime);
-
     if (widget.createTime != null) {
       timeDiff = DateTime.now().difference(widget.createTime!);
+      // timeDiff = DateTime.now().difference(DateTime.now());
+      // print("widget create Time ${DateTime.now().difference(DateTime.now())}");
 
       setState(
-            () {
+        () {
           if ((defaultTime - timeDiff!.inSeconds) > 0) {
             time = defaultTime - timeDiff!.inSeconds;
           } else {
@@ -222,6 +230,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     }
 
     _handleTimer();
+    print("남은 시간 ${time}");
 
     DateTime room0CreateTime = DateTime.now(); // 임시로 현재 시간을 채팅방0 생성 시간으로 설정
     roomCreateTimeList.add(room0CreateTime); // 시간 리스트에 저장
@@ -233,10 +242,10 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void connectToStomp() {
     _stompClient = StompClient(
         config: StompConfig(
-          url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
-          onConnect: onConnectCallback,
-        ) // 연결 성공 시 호출되는 콜백 함수
-    );
+      url: CHATTING_WS_URL, // Spring Boot 서버의 WebSocket URL
+      onConnect: onConnectCallback,
+    ) // 연결 성공 시 호출되는 콜백 함수
+        );
     _stompClient.activate();
     print("chating 연결성공");
   }
@@ -252,7 +261,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
         print(connectFrame.body); //메시지를 받았을때!
         setState(() {
           Map<String, dynamic> chat =
-          (json.decode(connectFrame.body.toString()));
+              (json.decode(connectFrame.body.toString()));
 
           ChatMessage? chatMessage;
           chatMessage?.type = chat["type"];
@@ -340,7 +349,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   void _handleTimer() {
     _timer = Timer.periodic(
       Duration(seconds: 1),
-          (timer) {
+      (timer) {
         setState(() {
           if (time <= 0) {
             _visibility = false;
@@ -371,13 +380,13 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
       flexibleSpace: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xffFF6961),
-                Color(0xffFF6961),
-                Color(0xffFF6961),
-                Color(0xffFF6961),
-              ],
-            )),
+          colors: [
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+            Color(0xffFF6961),
+          ],
+        )),
       ),
       title: Container(
         padding: EdgeInsets.only(top: 0, bottom: 0, right: 0),
@@ -391,7 +400,7 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
                   height: getMediaHeight(context) * 0.1,
                   child: CircleAvatar(
                     backgroundImage:
-                    AssetImage('assets/images/information_image.png'),
+                        AssetImage('assets/images/information_image.png'),
                   ),
                 ),
               ),
@@ -460,128 +469,135 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     ScrollController _scrollController = ScrollController();
     renderUserGenderBuild();
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Container(
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                child: FutureBuilder<ChattingHistoryListModel>(
-                  future: getGroupChatRecord(),
-                  builder:
-                      (_, AsyncSnapshot<ChattingHistoryListModel> snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          snapshot.error.toString(),
-                        ),
-                      );
-                    }
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.data! != 0) {
-                      // return _renderSingleRoomListView(snapshot.data!, indexNum);
-                      ChattingHistoryListModel chattingHistoryListModel =
-                      snapshot.data!;
+      body: Stack(
+        children: [
+          Container(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    child: FutureBuilder<ChattingHistoryListModel>(
+                      future: getGroupChatRecord(),
+                      builder: (_,
+                          AsyncSnapshot<ChattingHistoryListModel> snapshot) {
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Text(
+                              snapshot.error.toString(),
+                            ),
+                          );
+                        }
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (snapshot.data! != 0) {
+                          // return _renderSingleRoomListView(snapshot.data!, indexNum);
+                          ChattingHistoryListModel chattingHistoryListModel =
+                              snapshot.data!;
 
-                      if (chattingHistoryListModel.count != 0) {
-                        chatHistoryList =
-                            List.from(snapshot.data!.chattingHistory!.reversed);
+                          if (chattingHistoryListModel.count != 0) {
+                            chatHistoryList = List.from(
+                                snapshot.data!.chattingHistory!.reversed);
 
-                        SchedulerBinding.instance.addPostFrameCallback((_) {
-                          _scrollController.jumpTo(
-                              _scrollController.position.maxScrollExtent);
-                        });
+                            SchedulerBinding.instance.addPostFrameCallback((_) {
+                              _scrollController.jumpTo(
+                                  _scrollController.position.maxScrollExtent);
+                            });
 
-                        return ListView.builder(
-                          controller: _scrollController,
-                          itemCount: chattingHistoryListModel.count,
-                          itemBuilder: (context, index) {
-                            print(
-                                "chatHistoryList[index].sender = ${chatHistoryList[index]
-                                    .sender}");
+                            return ListView.builder(
+                              controller: _scrollController,
+                              itemCount: chattingHistoryListModel.count,
+                              itemBuilder: (context, index) {
+                                print(
+                                    "chatHistoryList[index].sender = ${chatHistoryList[index].sender}");
 
-                            int genderIndex = 0;
+                                int genderIndex = 0;
 
-                            /*chatHistoryList[index].sender가 midList에 몇번째에 있는지 보고 해당 숫자의
-                            midGender 리스트 번째에 있는 값이 "W"면 여자x "M"이면 남자x를 ChatBubbles에 넘길 수 있게 해줘
-                            예를 들어  chatHistoryList[index].sender가 1 이고 midList가[5,6,1,2,3,4]이고
-                            midGender가 [W,W,M,M,W,W]이면 "여기"부분의 값이 남자3이 넘어가게 해줘*/
+                                /*chatHistoryList[index].sender가 midList에 몇번째에 있는지 보고 해당 숫자의
+                              midGender 리스트 번째에 있는 값이 "W"면 여자x "M"이면 남자x를 ChatBubbles에 넘길 수 있게 해줘
+                              예를 들어  chatHistoryList[index].sender가 1 이고 midList가[5,6,1,2,3,4]이고
+                              midGender가 [W,W,M,M,W,W]이면 "여기"부분의 값이 남자3이 넘어가게 해줘*/
 
-                           /* List<int> myList = [10, 20, 30, 40, 50];
-                            int value = 30;
-                            int index = myList.indexOf(value);
-                            print(index);*/
+                                /* List<int> myList = [10, 20, 30, 40, 50];
+                              int value = 30;
+                              int index = myList.indexOf(value);
+                              print(index);*/
 
-                            print("genderIdx = $genderIndex");
-                            return ChatBubbles(
-                              chatHistoryList[index].message,
-                              chatHistoryList[index].sender ==
-                                  _memberId.toString(),
-                              getName(chatHistoryList[index].sender,),
-                              getimg(chatHistoryList[index].sender,),
+                                print("genderIdx = $genderIndex");
+                                return ChatBubbles(
+                                  chatHistoryList[index].message,
+                                  chatHistoryList[index].sender ==
+                                      _memberId.toString(),
+                                  getName(
+                                    chatHistoryList[index].sender,
+                                  ),
+                                  getimg(
+                                    chatHistoryList[index].sender,
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      } else {
-                        return Center(
-                          child: Text("해당 정보가 없습니다."),
-                        );
-                      }
-                    } else {
-                      return Center(
-                        child: Text("해당 정보가 없습니다."),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ),
-            Visibility(
-              visible: _visibility,
-              child: Container(
-                margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        maxLines: null,
-                        controller: messageController,
-                        decoration: const InputDecoration(
-                            labelText: 'Send a message...'),
-                        onChanged: (value) {
-                          setState(() {
-                            // 이렇게 설정하면 변수에다가 입력된 값이 바로바로 들어가기 때문에 send 버튼 활성화,비활성화 설정가능
-                            _userEnterMessage = value;
-                          });
-                        },
-                      ),
+                          } else {
+                            return Center(
+                              child: Text("해당 정보가 없습니다."),
+                            );
+                          }
+                        } else {
+                          return Center(
+                            child: Text("해당 정보가 없습니다."),
+                          );
+                        }
+                      },
                     ),
-                    IconButton(
-                      // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
-                      onPressed:
-                      _userEnterMessage
-                          .trim()
-                          .isEmpty ? null : sendMessage,
-                      // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
-                      icon: const Icon(Icons.send),
-                      // 보내기 버튼
-                      color: Colors.blue,
-                    )
-                  ],
+                  ),
                 ),
-              ),
+                Visibility(
+                  visible: _visibility,
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            maxLines: null,
+                            controller: messageController,
+                            decoration: const InputDecoration(
+                                labelText: 'Send a message...'),
+                            onChanged: (value) {
+                              setState(() {
+                                // 이렇게 설정하면 변수에다가 입력된 값이 바로바로 들어가기 때문에 send 버튼 활성화,비활성화 설정가능
+                                _userEnterMessage = value;
+                              });
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          // 텍스트 입력창에 텍스트가 입력되어 있을때만 활성화 되게 설정
+                          onPressed: _userEnterMessage.trim().isEmpty
+                              ? null
+                              : sendMessage,
+                          // 만약 메세지 값이 비어있다면 null을 전달하여 비활성화하고 값이 있다면 활성화시킴
+                          icon: const Icon(Icons.send),
+                          // 보내기 버튼
+                          color: Colors.blue,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          PollsDemo(chatTime: time),
+        ],
       ),
     );
   }
@@ -589,12 +605,11 @@ class _GroupChattingScreenState extends ConsumerState<GroupChattingScreen> {
   String getimg(String sender) {
     for (int i = 0; i < 6; i++) {
       if (widget.midList![i].toString() == sender) {
-          return img_[i];
+        return img_[i];
       }
     }
     return "";
   }
-
 
   String getName(String sender) {
     for (int i = 0; i < 6; i++) {
